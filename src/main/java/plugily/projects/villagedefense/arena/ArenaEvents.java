@@ -46,6 +46,11 @@ import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
 
 /**
+ * 村庄守卫的竞技场事件扩展。
+ *
+ * <p>{@link PluginArenaEvents} 已处理通用小游戏事件。本类只处理玩法相关规则：
+ * 村民受伤/死亡、宠物死亡、腐肉掉落、玩家死亡转旁观、狼击杀归属等。</p>
+ *
  * @author Plajer
  * <p>
  * Created at 13.03.2018
@@ -63,6 +68,7 @@ public class ArenaEvents extends PluginArenaEvents {
   //override WorldGuard build deny flag where villagers cannot be damaged
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onVillagerDamage(EntityDamageByEntityEvent e) {
+    // 只允许竞技场内敌人伤害本竞技场村民，不影响普通世界村民。
     if(e.getEntityType() != XEntityType.VILLAGER.get() || !(e.getDamager() instanceof Creature)) {
       return;
     }
@@ -79,6 +85,7 @@ public class ArenaEvents extends PluginArenaEvents {
 
   @EventHandler
   public void onDieEntity(EntityDamageByEntityEvent e) {
+    // Bukkit 不会把狼击杀算作玩家击杀，这里给狼主人补统计和经验。
     if(!(e.getDamager() instanceof Wolf && e.getEntity() instanceof Creature)) {
       return;
     }
@@ -109,6 +116,7 @@ public class ArenaEvents extends PluginArenaEvents {
   public void onItemDrop(ItemSpawnEvent e) {
     org.bukkit.entity.Item item = e.getEntity();
 
+    // 腐肉是本玩法资源，其他掉落不进入 Arena 跟踪集合。
     if(item.getItemStack().getType() != Material.ROTTEN_FLESH) {
       return;
     }
@@ -118,6 +126,7 @@ public class ArenaEvents extends PluginArenaEvents {
     for(Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
       Location start = arena.getStartLocation();
 
+      // 只接管竞技场附近腐肉，避免误处理其他小游戏或普通世界掉落。
       if(itemLoc.getWorld() != start.getWorld() || itemLoc.distance(start) > 150) {
         continue;
       }
@@ -128,6 +137,7 @@ public class ArenaEvents extends PluginArenaEvents {
 
   @EventHandler
   public void onEntityDamage(EntityDamageEvent event) {
+    // 友方实体死亡由 Arena 集合统一管理，避免默认死亡流程产生重复掉落或残留引用。
     if(event.getEntityType() != XEntityType.IRON_GOLEM.get() && event.getEntityType() != XEntityType.WOLF.get())
       return;
 
@@ -184,6 +194,7 @@ public class ArenaEvents extends PluginArenaEvents {
         if(!arena.getVillagers().contains(entity)) {
           continue;
         }
+        // 村民死亡是核心失败条件之一，清空掉落并触发奖励/节日效果。
         arena.getStartLocation().getWorld().strikeLightningEffect(entity.getLocation());
         event.getDrops().clear();
         event.setDroppedExp(0);
@@ -192,6 +203,7 @@ public class ArenaEvents extends PluginArenaEvents {
         plugin.getHolidayManager().applyHolidayDeathEffects(entity);
         new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_VILLAGER_DIED").asKey().arena(arena).sendArena();
       } else if(ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_8)) {
+        // 1.8 NMS 自定义实体的死亡统计走这里；高版本在 v1_9_UP 事件中处理。
         if(!arena.getEnemies().contains(entity)) {
           continue;
         }
@@ -222,6 +234,7 @@ public class ArenaEvents extends PluginArenaEvents {
     final Player player = e.getEntity();
     PlayerInventory inventory = player.getInventory();
 
+    // 手动掉落背包，再清空 Bukkit 默认掉落，避免死亡和旁观切换过程中重复物品。
     for(ItemStack item : player.getInventory().getContents()) {
       if(item != null && Material.AIR != item.getType() && item.getType().isItem()) {
         player.getWorld().dropItemNaturally(player.getLocation(), item);
@@ -238,11 +251,13 @@ public class ArenaEvents extends PluginArenaEvents {
 
     plugin.getServer().getScheduler().runTask(plugin, () -> {
       if(arena.getArenaState() == IArenaState.STARTING) {
+        // 开始倒计时死亡不进入本波旁观逻辑，直接拉回起点。
         VersionUtils.teleport(player, arena.getStartLocation());
         return;
       }
 
       if(arena.getArenaState() == IArenaState.ENDING || arena.getArenaState() == IArenaState.RESTARTING) {
+        // 结束/重启阶段只做清理和传送，避免玩家卡在竞技场世界。
         inventory.clear();
         player.setFlying(false);
         player.setAllowFlight(false);
@@ -253,6 +268,7 @@ public class ArenaEvents extends PluginArenaEvents {
 
       IUser user = plugin.getUserManager().getUser(player);
 
+      // 战斗阶段死亡后成为本波旁观者，是否下一波复活由配置控制。
       plugin.getUserManager().addStat(user, plugin.getStatsStorage().getStatisticType("DEATHS"));
       VersionUtils.teleport(player, arena.getStartLocation());
       user.setSpectator(true);
@@ -317,6 +333,7 @@ public class ArenaEvents extends PluginArenaEvents {
   private void modifyUserOrbs(IUser user) {
     int deathValue = plugin.getConfig().getInt("Orbs.Death.Value", 50);
     int current = user.getStatistic("ORBS");
+    // 死亡后的宝珠处理是玩法配置：保留、加减固定值、设定值或百分比缩放。
     switch(getOrbDeathType()) {
       case KEEP:
         return;
@@ -344,6 +361,7 @@ public class ArenaEvents extends PluginArenaEvents {
 
   @EventHandler
   public void onPickup(PlugilyEntityPickupItemEvent e) {
+    // 只拦截玩家拾取腐肉，旁观者不可拾取，正常玩家拾取后从 Arena 跟踪集合移除。
     if(e.getEntity().getType() != XEntityType.PLAYER.get() || e.getItem().getItemStack().getType() != XMaterial.ROTTEN_FLESH.get()) {
       return;
     }

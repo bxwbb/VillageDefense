@@ -1,34 +1,39 @@
-# You can change custom players permissions here.
-# Player with your custom permission will get int
+# 你可以在这里自定义玩家权限加成
+# 拥有对应权限的玩家会获得额外加成
 
-# Create custom orbs boost permissions
+# 自定义宝珠（游戏货币）倍率权限
 Orbs-Boost:
-  # Do not use dots (.), they won't work.
-  # Increase orbs by 10 percent
+  # 权限名不要加小数点(.)，插件无法识别
+  # 宝珠获取量增加 10%
   orbs-boost-10: 10
+  # 宝珠获取量增加 50%
   orbs-boost-50: 50
-  # Increase orbs by 300 percent
+  # 管理员权限：宝珠获取量增加 300%
   admin-boost: 300
 
-# Create custom exp boost permissions
+# 自定义经验倍率权限
 Exp-Boost:
-  # Do not use dots (.), they won't work.
-  # Increase exp by 10 percent
+  # 权限名不要加小数点(.)，插件无法识别
+  # 经验获取增加 10%
   exp-boost-10: 10
+  # 经验获取增加 50%
   exp-boost-50: 50
-  # Increase exp by 300 percent
+  # 管理员权限：经验获取增加 300%
   admin-boost: 300
 
-# Per player spawn limit for entities
+# 玩家个人可召唤生物数量限制权限
 Spawn-Limit:
+  # 狼 数量限制权限
   Wolves:
     limit-golem-10: 10
+  # 铁傀儡 数量限制权限
   Golems:
     limit-wolve-10: 10
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿修改此处版本校验配置
+# 虽然是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

@@ -34,32 +34,32 @@ import plugily.projects.villagedefense.arena.ArenaUtils;
  */
 public class PowerupHandler implements Listener {
 
-  private final Main plugin;
+    private final Main plugin;
 
-  public PowerupHandler(Main plugin) {
-    this.plugin = plugin;
-    plugin.getServer().getPluginManager().registerEvents(this, plugin);
-  }
-
-  @EventHandler
-  public void onPowerUpPickup(PlugilyPlayerPowerupPickupEvent event) {
-    BasePowerup powerup = event.getPowerup();
-    Arena arena = plugin.getArenaRegistry().getArena(event.getArena().getId());
-    if(arena == null) {
-      return;
+    public PowerupHandler(Main plugin) {
+        this.plugin = plugin;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
-    switch(powerup.getKey().toLowerCase()) {
-      case "map-clean":
-        ArenaUtils.removeSpawnedEnemies(arena);
-        break;
-      case "golem-raid":
-        for(int i = 0; i < (plugin.getPowerupRegistry().getLongestEffect(powerup) == 0 ? 3 : plugin.getPowerupRegistry().getLongestEffect(powerup)); i++) {
-          arena.spawnGolem(arena.getStartLocation(), event.getPlayer());
+
+    @EventHandler
+    public void onPowerUpPickup(PlugilyPlayerPowerupPickupEvent event) {
+        BasePowerup powerup = event.getPowerup();
+        Arena arena = plugin.getArenaRegistry().getArena(event.getArena().getId());
+        if (arena == null) {
+            return;
         }
-        break;
-      default:
-        break;
+        switch (powerup.getKey().toLowerCase()) {
+            case "map-clean":
+                ArenaUtils.removeSpawnedEnemies(arena);
+                break;
+            case "golem-raid":
+                for (int i = 0; i < (plugin.getPowerupRegistry().getLongestEffect(powerup) == 0 ? 3 : plugin.getPowerupRegistry().getLongestEffect(powerup)); i++) {
+                    arena.spawnGolem(arena.getStartLocation(), event.getPlayer());
+                }
+                break;
+            default:
+                break;
+        }
     }
-  }
 
 }

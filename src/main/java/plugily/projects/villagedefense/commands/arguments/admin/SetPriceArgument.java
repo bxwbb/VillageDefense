@@ -42,46 +42,46 @@ import java.util.List;
  */
 public class SetPriceArgument {
 
-  public SetPriceArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("villagedefenseadmin", new LabeledCommandArgument("setprice", "villagedefense.admin.setprice", CommandArgument.ExecutorType.PLAYER,
-        new LabelData("/vda setprice &6<amount>", "/vda setprice <amount>",
-            "&7Set price of holding item, it's required for game shop\n&6Permission: &7villagedefense.admin.setprice")) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        if(args.length == 1) {
-          new MessageBuilder(ChatColor.RED + "Please type price of item!").prefix().send(sender);
-          return;
-        }
+    public SetPriceArgument(ArgumentsRegistry registry) {
+        registry.mapArgument("villagedefenseadmin", new LabeledCommandArgument("setprice", "villagedefense.admin.setprice", CommandArgument.ExecutorType.PLAYER,
+                new LabelData("/vda setprice &6<amount>", "/vda setprice <amount>",
+                        "&7Set price of holding item, it's required for game shop\n&6Permission: &7villagedefense.admin.setprice")) {
+            @Override
+            public void execute(CommandSender sender, String[] args) {
+                if (args.length == 1) {
+                    new MessageBuilder(ChatColor.RED + "Please type price of item!").prefix().send(sender);
+                    return;
+                }
 
-        Player player = (Player) sender;
-        ItemStack item = VersionUtils.getItemInHand(player);
-        if(item == null || item.getType() == Material.AIR) {
-          new MessageBuilder("COMMANDS_HOLD_ANY_ITEM").asKey().player(player).sendPlayer();
-          return;
-        }
+                Player player = (Player) sender;
+                ItemStack item = VersionUtils.getItemInHand(player);
+                if (item == null || item.getType() == Material.AIR) {
+                    new MessageBuilder("COMMANDS_HOLD_ANY_ITEM").asKey().player(player).sendPlayer();
+                    return;
+                }
 
-        ItemMeta meta = item.getItemMeta();
-        if(meta == null || !meta.hasLore()) {
-          VersionUtils.setItemInHand(player, new ItemBuilder(item)
-              .lore(ChatColor.GOLD + args[1] + " " + new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build()).build());
-          new MessageBuilder("COMMANDS_COMMAND_EXECUTED").asKey().player(player).sendPlayer();
-          return;
-        }
+                ItemMeta meta = item.getItemMeta();
+                if (meta == null || !meta.hasLore()) {
+                    VersionUtils.setItemInHand(player, new ItemBuilder(item)
+                            .lore(ChatColor.GOLD + args[1] + " " + new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build()).build());
+                    new MessageBuilder("COMMANDS_COMMAND_EXECUTED").asKey().player(player).sendPlayer();
+                    return;
+                }
 
-        //check any price from lore
-        List<String> lore = ComplementAccessor.getComplement().getLore(meta);
-        for(String search : lore) {
-          if(search.contains(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build())) {
-            lore.remove(search);
-            break;
-          }
-        }
-        lore.add(0, ChatColor.GOLD + args[1] + " " + new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build());
-        ComplementAccessor.getComplement().setLore(meta, lore);
-        item.setItemMeta(meta);
-        new MessageBuilder("COMMANDS_COMMAND_EXECUTED").asKey().player(player).sendPlayer();
-      }
-    });
-  }
+                //check any price from lore
+                List<String> lore = ComplementAccessor.getComplement().getLore(meta);
+                for (String search : lore) {
+                    if (search.contains(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build())) {
+                        lore.remove(search);
+                        break;
+                    }
+                }
+                lore.add(0, ChatColor.GOLD + args[1] + " " + new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build());
+                ComplementAccessor.getComplement().setLore(meta, lore);
+                item.setItemMeta(meta);
+                new MessageBuilder("COMMANDS_COMMAND_EXECUTED").asKey().player(player).sendPlayer();
+            }
+        });
+    }
 
 }

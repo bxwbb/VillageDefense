@@ -1,32 +1,39 @@
-# Entity upgrades section from Entities Upgrades Module
+# 生物升级模块配置（狼、铁傀儡属性升级）
 Entity-Upgrades:
-  # Cost of x tier (in orbs), ex 1: 100 means 1st tier cost 100 orbs to upgrade
+  # 各等级升级消耗宝珠数量
+  # 例：'1': 100 代表 1级升级需要 100 宝珠
+  # 生命值升级价格
   Health-Tiers:
     '1': 100
     '2': 200
     '3': 350
     '4': 500
+  # 攻击力升级价格
   Damage-Tiers:
     '1': 150
     '2': 300
     '3': 450
     '4': 600
+  # 移动速度升级价格
   Speed-Tiers:
     '1': 50
     '2': 100
     '3': 150
     '4': 250
+  # 最终防御等级升级价格
   Final-Defense-Tiers:
     '1': 200
     '2': 350
+  # 集群感知等级升级价格
   Swarm-Awareness-Tiers:
     '1': 200
     '2': 350
 
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿随意修改此处版本校验配置
+# 毕竟是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

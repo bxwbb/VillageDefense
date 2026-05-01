@@ -1,12 +1,22 @@
+# 生物配置总项
 Creatures:
+  # 村庄可骑乘生物配置
   Village:
+    # 可骑乘村民
     RIDEABLE_VILLAGER:
+      # 是否开启节日专属特效
       holiday_effects: true
+      # 生物属性配置
       attributes:
+        # 移动速度
         GENERIC_MOVEMENT_SPEED: 0.3
-        GENERIC_MAX_HEALTH: 25.0
+        # 最大生命值
+        GENERIC_MAX_HEALTH: 200.0
+        # 跟随目标距离范围
         GENERIC_FOLLOW_RANGE: 200.0
+      # 死亡掉落物品 null=无掉落
       drop_item: null
+    # 可骑乘铁傀儡
     RIDEABLE_IRON_GOLEM:
       holiday_effects: true
       attributes:
@@ -14,6 +24,7 @@ Creatures:
         GENERIC_MAX_HEALTH: 100.0
         GENERIC_FOLLOW_RANGE: 200.0
       drop_item: null
+    # 可骑乘狼
     RIDEABLE_WOLF:
       holiday_effects: true
       attributes:
@@ -21,21 +32,33 @@ Creatures:
         GENERIC_MAX_HEALTH: 30.0
         GENERIC_FOLLOW_RANGE: 200.0
       drop_item: null
+
+  # 游戏内僵尸/怪物种类配置
   Content:
+    # 小僵尸
     BABY_ZOMBIE:
+      # 是否启用该怪物
       enabled: true
+      # 波次限制
       wave:
         min: 3
         max: 0
+      # 优先攻击目标类型
       priority_type: ANY
+      # 是否爆炸撞击
       explosive_hit: false
+      # 实体类型
       entity_type: ZOMBIE
+      # 是否幼年体型
       baby: true
       breed: false
       age: 0
       age_lock: false
+      # 击杀获得经验
       exp: 10
+      # 节日特效
       holiday_effects: true
+      # 生成概率配置
       rates:
         spawn:
           '1':
@@ -67,6 +90,7 @@ Creatures:
             wave_higher: 0
             wave_lower: 0
             spawn_lower: 0
+      # 实体属性 参考Spigot官方属性文档
       # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/attribute/Attribute.html
       attributes:
         GENERIC_MOVEMENT_SPEED: 0.3
@@ -74,6 +98,7 @@ Creatures:
         GENERIC_KNOCKBACK_RESISTANCE: 2.0
         GENERIC_ATTACK_DAMAGE: 5.0
         GENERIC_FOLLOW_RANGE: 200.0
+      # 穿戴装备及掉落概率
       equipment:
         helmet:
           item: null
@@ -91,6 +116,8 @@ Creatures:
           item: null
           drop_chance: 0
       drop_item: null
+
+    # 疾速僵尸
     FAST_ZOMBIE:
       enabled: true
       wave:
@@ -170,6 +197,8 @@ Creatures:
           item: null
           drop_chance: 0
       drop_item: null
+
+    # 傀儡破坏者僵尸（优先打铁傀儡）
     GOLEM_BUSTER:
       enabled: true
       wave:
@@ -249,6 +278,8 @@ Creatures:
           item: TNT
           drop_chance: 0
       drop_item: null
+
+    # 重甲僵尸
     HARD_ZOMBIE:
       enabled: true
       wave:
@@ -328,6 +359,8 @@ Creatures:
           item: null
           drop_chance: 0
       drop_item: null
+
+    # 玩家追击僵尸（优先炸玩家）
     PLAYER_BUSTER:
       enabled: true
       wave:
@@ -408,6 +441,8 @@ Creatures:
           item: TNT
           drop_chance: 0
       drop_item: null
+
+    # 坦克高血量僵尸
     TANKER_ZOMBIE:
       enabled: true
       wave:
@@ -468,6 +503,8 @@ Creatures:
           item: GOLDEN_AXE
           drop_chance: 0
       drop_item: null
+
+    # 普通重甲僵尸
     SOFT_HARD_ZOMBIE:
       enabled: true
       wave:
@@ -548,6 +585,8 @@ Creatures:
           item: null
           drop_chance: 0
       drop_item: null
+
+    # 村民爆破僵尸（优先炸村民）
     VILLAGER_BUSTER:
       enabled: true
       wave:
@@ -628,6 +667,8 @@ Creatures:
           item: TNT
           drop_chance: 0
       drop_item: null
+
+    # 村民猎杀者僵尸
     VILLAGER_SLAYER:
       enabled: true
       wave:
@@ -689,10 +730,10 @@ Creatures:
           drop_chance: 0
       drop_item: null
 
-
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿修改此处版本校验
+# 毕竟是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

@@ -38,70 +38,70 @@ import java.util.Map;
  */
 public class CustomRideableCreature {
 
-  private final RideableType rideableType;
-  private final boolean holidayEffects;
-  private final Map<XAttribute, Double> attributes;
-  private final ItemStack dropItem;
+    private final RideableType rideableType;
+    private final boolean holidayEffects;
+    private final Map<XAttribute, Double> attributes;
+    private final ItemStack dropItem;
 
-  public CustomRideableCreature(RideableType rideableType, boolean holidayEffects, Map<XAttribute, Double> attributes, ItemStack dropItem) {
-    this.rideableType = rideableType;
-    this.holidayEffects = holidayEffects;
-    this.attributes = attributes;
-    this.dropItem = dropItem;
-  }
-
-  public Creature spawn(Location location) {
-    EntityType entityType = XEntityType.VILLAGER.get();
-    switch(rideableType) {
-      case VILLAGER:
-        entityType = XEntityType.VILLAGER.get();
-        break;
-      case WOLF:
-        entityType = XEntityType.WOLF.get();
-        break;
-      case IRON_GOLEM:
-        entityType = XEntityType.IRON_GOLEM.get();
-        break;
+    public CustomRideableCreature(RideableType rideableType, boolean holidayEffects, Map<XAttribute, Double> attributes, ItemStack dropItem) {
+        this.rideableType = rideableType;
+        this.holidayEffects = holidayEffects;
+        this.attributes = attributes;
+        this.dropItem = dropItem;
     }
-    Entity entity = VersionUtils.spawnEntity(location, entityType);
-    if(entity instanceof Creature) {
-      Creature creature = (Creature) entity;
-      creature.getAttribute(XAttribute.FOLLOW_RANGE.get()).setBaseValue(200D);
-      for(Map.Entry<XAttribute, Double> attribute : attributes.entrySet()) {
-        creature.getAttribute(attribute.getKey().get()).setBaseValue(attribute.getValue());
-        if(attribute.getKey().get() == XAttribute.MAX_HEALTH.get()) {
-          VersionUtils.setMaxHealth(creature, attribute.getValue());
-          creature.setHealth(attribute.getValue());
+
+    public Creature spawn(Location location) {
+        EntityType entityType = XEntityType.VILLAGER.get();
+        switch (rideableType) {
+            case VILLAGER:
+                entityType = XEntityType.VILLAGER.get();
+                break;
+            case WOLF:
+                entityType = XEntityType.WOLF.get();
+                break;
+            case IRON_GOLEM:
+                entityType = XEntityType.IRON_GOLEM.get();
+                break;
         }
-      }
-      creature.setRemoveWhenFarAway(false);
-      if(ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_16)) {
-        creature.setInvisible(false);
-      }
-      return creature;
-    } else {
-      entity.remove();
-      throw new IllegalStateException("Couldn't spawn Creature " + entityType + " as its not instance of creature");
+        Entity entity = VersionUtils.spawnEntity(location, entityType);
+        if (entity instanceof Creature) {
+            Creature creature = (Creature) entity;
+            creature.getAttribute(XAttribute.FOLLOW_RANGE.get()).setBaseValue(200D);
+            for (Map.Entry<XAttribute, Double> attribute : attributes.entrySet()) {
+                creature.getAttribute(attribute.getKey().get()).setBaseValue(attribute.getValue());
+                if (attribute.getKey().get() == XAttribute.MAX_HEALTH.get()) {
+                    VersionUtils.setMaxHealth(creature, attribute.getValue());
+                    creature.setHealth(attribute.getValue());
+                }
+            }
+            creature.setRemoveWhenFarAway(false);
+            if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_16)) {
+                creature.setInvisible(false);
+            }
+            return creature;
+        } else {
+            entity.remove();
+            throw new IllegalStateException("Couldn't spawn Creature " + entityType + " as its not instance of creature");
+        }
     }
-  }
 
-  public RideableType getRideableType() {
-    return rideableType;
-  }
+    public RideableType getRideableType() {
+        return rideableType;
+    }
 
-  public boolean isHolidayEffects() {
-    return holidayEffects;
-  }
+    public boolean isHolidayEffects() {
+        return holidayEffects;
+    }
 
-  public Map<XAttribute, Double> getAttributes() {
-    return attributes;
-  }
+    public Map<XAttribute, Double> getAttributes() {
+        return attributes;
+    }
 
-  public ItemStack getDropItem() {
-    return dropItem;
-  }
+    public ItemStack getDropItem() {
+        return dropItem;
+    }
 
-  public enum RideableType {
-    VILLAGER, IRON_GOLEM, WOLF
-  }
+    public enum RideableType {
+        VILLAGER, IRON_GOLEM, WOLF
+    }
 }

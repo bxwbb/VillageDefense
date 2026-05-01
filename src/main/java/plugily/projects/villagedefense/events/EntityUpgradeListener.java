@@ -41,93 +41,93 @@ import java.util.ArrayList;
  */
 public class EntityUpgradeListener implements Listener {
 
-  private final EntityUpgradeMenu upgradeMenu;
-  private final Main plugin;
+    private final EntityUpgradeMenu upgradeMenu;
+    private final Main plugin;
 
 
-  public EntityUpgradeListener(EntityUpgradeMenu upgradeMenu) {
-    this.upgradeMenu = upgradeMenu;
-    this.plugin = upgradeMenu.getPlugin();
-    upgradeMenu.getPlugin().getServer().getPluginManager().registerEvents(this, upgradeMenu.getPlugin());
-  }
-
-  @EventHandler
-  public void onDamage(EntityDamageByEntityEvent event) {
-    if(!(event.getDamager() instanceof LivingEntity) || !(event.getDamager() instanceof IronGolem)) {
-      return;
+    public EntityUpgradeListener(EntityUpgradeMenu upgradeMenu) {
+        this.upgradeMenu = upgradeMenu;
+        this.plugin = upgradeMenu.getPlugin();
+        upgradeMenu.getPlugin().getServer().getPluginManager().registerEvents(this, upgradeMenu.getPlugin());
     }
-    switch(event.getDamager().getType()) {
-      case IRON_GOLEM:
-        for(Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-          if(!arena.getIronGolems().contains(event.getDamager())) {
-            continue;
-          }
-          event.setDamage(event.getDamage() + upgradeMenu.getTier(event.getDamager(), upgradeMenu.getUpgrade("Damage")) * 2);
-        }
-        break;
-      case WOLF:
-        for(Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-          if(!arena.getWolves().contains(event.getDamager())) {
-            continue;
-          }
-          int tier = upgradeMenu.getTier(event.getDamager(), upgradeMenu.getUpgrade("Swarm-Awareness"));
-          if(tier == 0) {
+
+    @EventHandler
+    public void onDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof LivingEntity) || !(event.getDamager() instanceof IronGolem)) {
             return;
-          }
-          double multiplier = 1;
-          for(Entity entity : plugin.getBukkitHelper().getNearbyEntities(event.getDamager().getLocation(), 3)) {
-            if(entity instanceof Wolf) {
-              multiplier += tier * 0.2;
+        }
+        switch (event.getDamager().getType()) {
+            case IRON_GOLEM:
+                for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+                    if (!arena.getIronGolems().contains(event.getDamager())) {
+                        continue;
+                    }
+                    event.setDamage(event.getDamage() + upgradeMenu.getTier(event.getDamager(), upgradeMenu.getUpgrade("Damage")) * 2);
+                }
+                break;
+            case WOLF:
+                for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+                    if (!arena.getWolves().contains(event.getDamager())) {
+                        continue;
+                    }
+                    int tier = upgradeMenu.getTier(event.getDamager(), upgradeMenu.getUpgrade("Swarm-Awareness"));
+                    if (tier == 0) {
+                        return;
+                    }
+                    double multiplier = 1;
+                    for (Entity entity : plugin.getBukkitHelper().getNearbyEntities(event.getDamager().getLocation(), 3)) {
+                        if (entity instanceof Wolf) {
+                            multiplier += tier * 0.2;
+                        }
+                    }
+                    event.setDamage(event.getDamage() * multiplier);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @EventHandler
+    public void onFinalDefense(EntityDeathEvent event) {
+        if (event.getEntityType() != XEntityType.IRON_GOLEM.get()) {
+            return;
+        }
+
+        LivingEntity livingEntity = event.getEntity();
+
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            if (!arena.getIronGolems().contains(livingEntity)) {
+                continue;
             }
-          }
-          event.setDamage(event.getDamage() * multiplier);
+            int tier = upgradeMenu.getTier(livingEntity, upgradeMenu.getUpgrade("Final-Defense"));
+            if (tier == 0) {
+                return;
+            }
+            VersionUtils.sendParticles("EXPLOSION_HUGE", arena.getPlayers(), livingEntity.getLocation(), 5);
+            for (Entity en : plugin.getBukkitHelper().getNearbyEntities(livingEntity.getLocation(), tier * 5)) {
+                if (CreatureUtils.isEnemy(en)) {
+                    ((Creature) en).damage(10000.0, livingEntity);
+                }
+            }
+            for (Creature zombie : new ArrayList<>(arena.getEnemies())) {
+                XPotion.SLOWNESS.buildPotionEffect(5, 0).apply(zombie);
+                zombie.damage(0.5, livingEntity);
+            }
         }
-        break;
-      default:
-        break;
-    }
-  }
-
-  @EventHandler
-  public void onFinalDefense(EntityDeathEvent event) {
-    if(event.getEntityType() != XEntityType.IRON_GOLEM.get()) {
-      return;
     }
 
-    LivingEntity livingEntity = event.getEntity();
-
-    for(Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-      if(!arena.getIronGolems().contains(livingEntity)) {
-        continue;
-      }
-      int tier = upgradeMenu.getTier(livingEntity, upgradeMenu.getUpgrade("Final-Defense"));
-      if(tier == 0) {
-        return;
-      }
-      VersionUtils.sendParticles("EXPLOSION_HUGE", arena.getPlayers(), livingEntity.getLocation(), 5);
-      for(Entity en : plugin.getBukkitHelper().getNearbyEntities(livingEntity.getLocation(), tier * 5)) {
-        if(CreatureUtils.isEnemy(en)) {
-          ((Creature) en).damage(10000.0, livingEntity);
+    @EventHandler
+    public void onEntityClick(PlugilyPlayerInteractEntityEvent event) {
+        if ((event.getRightClicked().getType() != XEntityType.IRON_GOLEM.get() && event.getRightClicked().getType() != XEntityType.WOLF.get())
+                || VersionUtils.checkOffHand(event.getHand()) || !event.getPlayer().isSneaking()
+                || event.getRightClicked().getCustomName() == null) {
+            return;
         }
-      }
-      for(Creature zombie : new ArrayList<>(arena.getEnemies())) {
-        XPotion.SLOWNESS.buildPotionEffect( 5, 0).apply(zombie);
-        zombie.damage(0.5, livingEntity);
-      }
-    }
-  }
 
-  @EventHandler
-  public void onEntityClick(PlugilyPlayerInteractEntityEvent event) {
-    if((event.getRightClicked().getType() != XEntityType.IRON_GOLEM.get() && event.getRightClicked().getType() != XEntityType.WOLF.get())
-        || VersionUtils.checkOffHand(event.getHand()) || !event.getPlayer().isSneaking()
-        || event.getRightClicked().getCustomName() == null) {
-      return;
+        if (plugin.getArenaRegistry().getArena(event.getPlayer()) != null && !upgradeMenu.getPlugin().getUserManager().getUser(event.getPlayer()).isSpectator()) {
+            upgradeMenu.openUpgradeMenu((LivingEntity) event.getRightClicked(), event.getPlayer());
+        }
     }
-
-    if(plugin.getArenaRegistry().getArena(event.getPlayer()) != null && !upgradeMenu.getPlugin().getUserManager().getUser(event.getPlayer()).isSpectator()) {
-      upgradeMenu.openUpgradeMenu((LivingEntity) event.getRightClicked(), event.getPlayer());
-    }
-  }
 
 }

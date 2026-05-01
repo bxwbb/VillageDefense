@@ -26,45 +26,29 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
 
 public interface BaseCreatureInitializer {
 
-  default String getCreatureCustomIDMetadata() {
-    return "VD_CREATURE_ID";
-  }
+    default String getCreatureCustomIDMetadata() {
+        return "VD_CREATURE_ID";
+    }
 
-  default String getCreatureCustomNameMetadata() {
-    return "VD_CREATURE_CUSTOM_NAME";
-  }
+    default String getCreatureCustomNameMetadata() {
+        return "VD_CREATURE_CUSTOM_NAME";
+    }
 
-  Villager spawnVillager(Location location);
+    Villager spawnVillager(Location location);
 
-  Wolf spawnWolf(Location location);
+    Wolf spawnWolf(Location location);
 
-  IronGolem spawnGolem(Location location);
+    IronGolem spawnGolem(Location location);
 
-  Creature spawnFastZombie(Location location);
+    default void applyFollowRange(Creature zombie) {
+        MiscUtils.getEntityAttribute(zombie, XAttribute.FOLLOW_RANGE.get()).ifPresent(ai -> ai.setBaseValue(200.0D));
+    }
 
-  Creature spawnBabyZombie(Location location);
+    default void applyDamageModifier(LivingEntity entity, double value) {
+        MiscUtils.getEntityAttribute(entity, XAttribute.ATTACK_DAMAGE.get()).ifPresent(ai -> ai.setBaseValue(value));
+    }
 
-  Creature spawnHardZombie(Location location);
-
-  Creature spawnPlayerBuster(Location location);
-
-  Creature spawnGolemBuster(Location location);
-
-  Creature spawnVillagerBuster(Location location);
-
-  Creature spawnKnockbackResistantZombies(Location location);
-
-  Creature spawnVillagerSlayer(Location location);
-
-  default void applyFollowRange(Creature zombie) {
-    MiscUtils.getEntityAttribute(zombie, XAttribute.FOLLOW_RANGE.get()).ifPresent(ai -> ai.setBaseValue(200.0D));
-  }
-
-  default void applyDamageModifier(LivingEntity entity, double value) {
-    MiscUtils.getEntityAttribute(entity, XAttribute.ATTACK_DAMAGE.get()).ifPresent(ai -> ai.setBaseValue(value));
-  }
-
-  default void applySpeedModifier(LivingEntity entity, double value) {
-    MiscUtils.getEntityAttribute(entity, XAttribute.MOVEMENT_SPEED.get()).ifPresent(ai -> ai.setBaseValue(value));
-  }
+    default void applySpeedModifier(LivingEntity entity, double value) {
+        MiscUtils.getEntityAttribute(entity, XAttribute.MOVEMENT_SPEED.get()).ifPresent(ai -> ai.setBaseValue(value));
+    }
 }

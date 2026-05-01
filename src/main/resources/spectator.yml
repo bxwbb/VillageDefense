@@ -1,97 +1,118 @@
-# Make sure to read the wiki for further reference!
-# section keys with DEFAULT_SPEED, SPEED1, SPEED2, SPEED3, SPEED4, AUTO_TELEPORT, NIGHT_VISION, FIRST_PERSON_MODE, SPECTATORS_VISIBILITY have a defined function
+# 建议查看官方维基了解更多详细设置！
+# 以下固定键名请勿改名：
+# DEFAULT_SPEED、SPEED1~SPEED4、AUTO_TELEPORT、NIGHT_VISION、FIRST_PERSON_MODE、SPECTATORS_VISIBILITY
+# 这些都是插件内置绑定好的功能标识
 
+# 旁观者设置菜单
 Settings-Menu:
-  Inventory-name: "&7Spectator settings"
+  Inventory-name: "&7旁观者设置"
   Content:
+    # 默认移动速度
     'DEFAULT_SPEED':
       material: LEATHER_BOOTS
-      # slot at the inventory, 0 is first slot
+      # 菜单格子位置，0 为第一格
       slot: 11
-      name: "Default Speed"
+      name: "默认速度"
       description:
-        - "Sets the default minecraft speed"
+        - "恢复为原版默认移动速度"
       permission: ""
       execute:
-        # You could also add a potion effect by console command
+        # 也可以用控制台指令自定义添加药水效果
         - ""
+
+    # 速度 I
     'SPEED1':
       material: CHAINMAIL_BOOTS
       slot: 12
-      name: "Speed I"
+      name: "速度 Ⅰ"
       description:
-        - "Adds a speed 1 potion"
+        - "给予速度 1 药水效果"
       permission: ""
       execute:
         - ""
+
+    # 速度 II
     'SPEED2':
       material: IRON_BOOTS
       slot: 13
-      name: "Speed II"
+      name: "速度 Ⅱ"
       description:
-        - "Adds a speed 2 potion"
+        - "给予速度 2 药水效果"
       permission: ""
       execute:
         - ""
+
+    # 速度 III
     'SPEED3':
       material: GOLDEN_BOOTS
       slot: 14
-      name: "Speed III"
+      name: "速度 Ⅲ"
       description:
-        - "Adds a speed 3 potion"
+        - "给予速度 3 药水效果"
       permission: ""
       execute:
         - ""
+
+    # 速度 IV
     'SPEED4':
       material: DIAMOND_BOOTS
       slot: 15
-      name: "Speed IV"
+      name: "速度 Ⅳ"
       description:
-        - "Adds a speed 4 potion"
+        - "给予速度 4 药水效果"
       permission: ""
       execute:
         - ""
+
+    # 自动跟随传送
     'AUTO_TELEPORT':
       material: COMPASS
       slot: 20
-      name: "Automatically teleport"
+      name: "自动跟随传送"
       description:
-        - "Automatically teleports you to your targeted player"
+        - "自动传送到你所跟随的玩家身边"
       permission: ""
       execute:
         - ""
+
+    # 夜视模式
     'NIGHT_VISION':
       material: ENDER_PEARL
       slot: 21
-      name: "Night vision"
+      name: "夜视效果"
       description:
-        - "With nigh vision you will be able to see ghosts"
+        - "开启夜视，黑暗中也能清晰看见玩家"
       permission: ""
       execute:
         - ""
+
+    # 第一人称旁观
     'FIRST_PERSON_MODE':
       material: CLOCK
       slot: 23
-      name: "First person mode"
+      name: "第一人称模式"
       description:
-        - "When in first person mode you will spectate like you would play yourself"
+        - "以第一人称视角旁观玩家游玩"
       permission: ""
       execute:
         - ""
+
+    # 旁观者可见性
     'SPECTATORS_VISIBILITY':
       material: REDSTONE
       slot: 24
-      name: "Spectators visibility"
+      name: "旁观者可见开关"
       description:
-        - "Its a good choice if you hate other players"
+        - "可以隐藏/显示其他旁观者，避免视线遮挡"
       permission: ""
       execute:
         - ""
 
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿修改此处版本校验配置
+# 虽然是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

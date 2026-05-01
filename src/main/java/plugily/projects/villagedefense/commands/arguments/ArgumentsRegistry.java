@@ -33,18 +33,18 @@ import plugily.projects.villagedefense.commands.arguments.admin.arena.SetWaveArg
  */
 public class ArgumentsRegistry extends PluginArgumentsRegistry {
 
-  public ArgumentsRegistry(Main plugin) {
-    super(plugin);
+    public ArgumentsRegistry(Main plugin) {
+        super(plugin);
 
-    //register Village Defense admin arguments
-    //arena related arguments
-    new SetWaveArgument(this);
+        //register Village Defense admin arguments
+        //arena related arguments
+        new SetWaveArgument(this);
 
 
-    //other admin related arguments
-    new AddOrbsArgument(this);
-    new ClearEntitiesArgument(this);
-    new RespawnArgument(this);
-    new SetPriceArgument(this);
-  }
+        //other admin related arguments
+        new AddOrbsArgument(this);
+        new ClearEntitiesArgument(this);
+        new RespawnArgument(this);
+        new SetPriceArgument(this);
+    }
 }

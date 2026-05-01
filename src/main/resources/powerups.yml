@@ -1,99 +1,98 @@
-## Plugily Projects powerups.yml
-#Example
+## Plugily Projects 随机道具配置文件
+# 配置示例
+
 Powerups:
+  # 拾取道具提示
   Pickup:
     Chat: "&a%player% picked the &4Powerup %value% up"
+  # 道具效果结束提示
   Ended:
     Title: "&4Powerup %value% from %player%"
     Subtitle: "&chas ended"
     Chat: "&4Powerup %value% from %player% has ended%"
+  # 地面随机掉落道具概率
   Drop:
     Chance: 1
+  # 各类随机道具内容配置
   Content:
+    # 地图清理器：清除全场怪物
     Map-Clean:
-      name: "&e&lMAP CLEANER"
-      description: "&7Map has been cleaned!"
+      name: "&e&l地图清理"
+      description: "&7瞬间清空地图所有怪物！"
       material: BLAZE_POWDER
-      # Add as many potion effects as you want
-      # Format: PotionName, Duration, Amplifier
+      # 可自定义添加任意药水效果
+      # 格式：药水类型, 持续秒数, 等级
       potion-effect:
         - ""
-      # PLAYER for pickup player | ALL for all arena players
+      # 生效范围：
+      # PLAYER = 仅拾取者生效
+      # ALL = 竞技场全体玩家生效
       potion-type: PLAYER
-      # like rewards
-      #ArenaUtils.removeSpawnedEnemies(pickup.getArena());
-      execute:
-        - ""
-    Double-Damage:
-      name: "&c&lDOUBLE DAMAGE"
-      description: "&7Double damage for %number% seconds!"
-      material: REDSTONE
-      # Add as many potion effects as you want
-      # Format: PotionName, Duration, Amplifier
-      potion-effect:
-        - "INCREASE_DAMAGE, 20, 1"
-      # PLAYER for pickup player | ALL for all arena players
-      potion-type: ALL
-      # like rewards
-      execute:
-        - ""
-    Healing:
-      name: "&6&lREJUVENATION"
-      description: "&7Healing for %number% seconds!"
-      material: GOLDEN_APPLE
-      # Add as many potion effects as you want
-      # Format: PotionName, Duration, Amplifier
-      potion-effect:
-        - "REGENERATION, 10, 1"
-      # PLAYER for pickup player | ALL for all arena players
-      potion-type: ALL
-      # like rewards
-      execute:
-        - ""
-    Golem-Raid:
-      name: "&a&lIRONBOUND RAID"
-      description: "&7Golems have invaded this village!"
-      material: IRON_INGOT
-      # Add as many potion effects as you want
-      # Format: PotionName, Duration, Amplifier
-      potion-effect:
-        - "REGENERATION, 3, 1"
-      # PLAYER for pickup player | ALL for all arena players
-      potion-type: PLAYER
-      # like rewards
-      execute:
-        - ""
-    One-Shot-One-Kill:
-      name: "&b&lFRENZY"
-      description: "&7Every zombie for 1 hit!"
-      material: DIAMOND_SWORD
-      # Add as many potion effects as you want
-      # Format: PotionName, Duration, Amplifier
-      potion-effect:
-        - "INCREASE_DAMAGE, 15, 1000"
-      # PLAYER for pickup player | ALL for all arena players
-      potion-type: ALL
-      # like rewards
-      execute:
-        - ""
-    Speed:
-      active: true
-      name: "&a&lSPEED BOOSTER"
-      description: "&7Double speed for %number% seconds!"
-      material: FEATHER
-      # Add as many potion effects as you want
-      # Format: PotionName, Duration, Amplifier
-      potion-effect:
-        - "SPEED, 15, 1"
-      # PLAYER for pickup player | ALL for all arena players
-      potion-type: PLAYER
-      # like rewards
+      # 可执行自定义指令/脚本（同奖励配置格式）
       execute:
         - ""
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+    # 双倍伤害
+    Double-Damage:
+      name: "&c&l双倍伤害"
+      description: "&7接下来 %number% 秒伤害翻倍！"
+      material: REDSTONE
+      # 药水效果：类型, 时长, 等级
+      potion-effect:
+        - "INCREASE_DAMAGE, 20, 1"
+      potion-type: ALL
+      execute:
+        - ""
+
+    # 群体回血
+    Healing:
+      name: "&6&l生命恢复"
+      description: "&7接下来 %number% 秒持续回血！"
+      material: GOLDEN_APPLE
+      potion-effect:
+        - "REGENERATION, 10, 1"
+      potion-type: ALL
+      execute:
+        - ""
+
+    # 铁傀儡增援
+    Golem-Raid:
+      name: "&a&l傀儡援军"
+      description: "&7召唤铁傀儡守护村庄！"
+      material: IRON_INGOT
+      potion-effect:
+        - "REGENERATION, 3, 1"
+      potion-type: PLAYER
+      execute:
+        - ""
+
+    # 一击秒杀
+    One-Shot-One-Kill:
+      name: "&b&l狂暴模式"
+      description: "&7所有僵尸只需一击秒杀！"
+      material: DIAMOND_SWORD
+      potion-effect:
+        - "INCREASE_DAMAGE, 15, 1000"
+      potion-type: ALL
+      execute:
+        - ""
+
+    # 极速加速
+    Speed:
+      active: true
+      name: "&a&l速度增幅"
+      description: "&7接下来 %number% 秒移动速度翻倍！"
+      material: FEATHER
+      potion-effect:
+        - "SPEED, 15, 1"
+      potion-type: PLAYER
+      execute:
+        - ""
+
+# 请勿修改此处版本校验配置
+# 虽然是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

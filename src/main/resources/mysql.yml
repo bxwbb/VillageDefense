@@ -1,26 +1,29 @@
-# MySQL database configuration, you don't need to touch this unless you enabled MySQL support.
-# To enable MySQL support go to > config.yml and set 'DatabaseEnabled' to true
+# MySQL 数据库配置
+# 除非你开启了 MySQL 支持，否则不需要修改这里
+# 开启方法：进入 config.yml，将 Database 设置为 true
 
-# Replace <databasename> with your database
+# 数据库连接地址
+# 将 <databasename> 替换为你的数据库名称
 address: jdbc:mysql://localhost:3306/<databasename>?useSSL=false&autoReConnect=true
 
-# MySQL user name
+# MySQL 用户名
 user: <user>
 
-# MySQL user password
+# MySQL 密码
 password: <password>
 
-# MySQL tablename
+# 数据表名称
 table: vd_playerstats
 
-# Maximum life time for HikariCP database.
-# For documentation, see https://github.com/brettwooldridge/HikariCP#frequently-used
-# Default 1800000 = 30 minute
+# HikariCP 数据库连接最大生命周期
+# 文档参考：https://github.com/brettwooldridge/HikariCP#frequently-used
+# 默认 1800000 = 30 分钟
 maxLifeTime: 1800000
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿修改此处版本校验配置
+# 虽然是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

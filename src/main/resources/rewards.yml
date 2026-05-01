@@ -1,77 +1,86 @@
 #
-#           Plugily Projects rewards configuration
+#           Plugily Projects 奖励系统配置文件
 #
-#                          Placeholders list:
+#                          占位符列表:
 #             https://wiki.plugily.xyz/minigame/placeholders
 #
-#        Commands are executed by default BY CONSOLE, use "p:" to preform command by player
-#  You can use chance to execute command adding "chance(NUMBER):" (ex chance(10):) at the beginning of command
+#        指令默认由【控制台】执行，使用 "p:" 代表【玩家自己执行】
+#  可以给指令加概率：开头写 "chance(数字):" 即可（例 chance(10):）
 #
-#  Commands examples:
-#    - p:say Hello everyone in %arena_name%!     # Player will say "Hello everyone in <map name here>"
-#    - broadcast Game %arena_name% has ended!   # Will broadcast "Game <arena name here> has ended" message
-#    - chance(1):p:say I was very lucky!              # Player has 1% chance to say "I was very lucky!"
-#    - p:chance(99):spawn                             # Player has 99% chance to teleport to spawn
-#       ^ YOU CAN EVEN SWAP CHANCE WITH PLAYER!
-#    - chance(50):eco give %player% 10                # Console has 10% chance to give player 10$
+#  指令示例:
+#    - p:say Hello everyone in %arena_name%!     # 玩家会说：大家好，这里是 %地图名%
+#    - broadcast Game %arena_name% has ended!   # 全服广播：游戏 %地图名% 已结束
+#    - chance(1):p:say I was very lucky!              # 1% 概率让玩家说：我运气太好了！
+#    - p:chance(99):spawn                             # 99% 概率让玩家传送出生点
+#       ^ 概率和玩家执行前缀可以互换位置！
+#    - chance(50):eco give %player% 10                # 控制台 50% 概率给玩家 10 金币
 #
-#  Performed rewards:
-#  game-end
+#  奖励执行时机:
+#  game-end      游戏结束
+#  game-start    游戏开始
 #
-#   You can unlock full potential of rewards using our script engine! (since 4.0.0)
-#    Just add example reward:
-#    - script:player.sendMessage("oh, hi %player%");      # It will send "oh, hi <player name>" to player! 100% plain java!
-#    - script:server.broadcastMessage("hello everyone");  # Broadcasts "hello everyone" to whole server
+#   从 4.0.0 版本开始，你可以用脚本引擎解锁奖励全部功能！
+#    示例奖励:
+#    - script:player.sendMessage("oh, hi %player%");      # 给玩家发送消息：纯Java代码！
+#    - script:server.broadcastMessage("hello everyone");  # 全服广播消息
 #    - script:player.getInventory().addItem(new org.bukkit.inventory.ItemStack(org.bukkit.Material.DIRT));
-#         ^ Gives player dirt item (you must always use direct package names for not provided objects)
+#         ^ 给玩家一个泥土块（必须使用完整包名）
 #
-#                               All script provided objects:
-#            player - Player object (API methods https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/Player.html)
-#    arena - Plugin arena (API methods https://jd.plugily.xyz/apidocs/minecraft/PLUGILYPROJECTS/plugily/projects/PLUGILYPROJECTS/arena/Arena.html)
-#            server - Bukkit server object (API methods https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Server.html)
+#                               所有可用脚本对象:
+#            player - 玩家对象 (API文档 https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/Player.html)
+#    arena - 竞技场对象 (API文档 https://jd.plugily.xyz/apidocs/minecraft/PLUGILYPROJECTS/plugily/projects/PLUGILYPROJECTS/arena/Arena.html)
+#            server - 服务器对象 (API文档 https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Server.html)
 #
-#                            Whole documentation of scripts soon!
+#                            完整脚本文档即将推出！
 
-# Rewards must be enabled via config.yml first!
+# 奖励必须先在 config.yml 中启用才能生效！
 rewards:
-  # Commands performed when game is started
+  # 游戏开始时执行的指令
   game-start:
-    - say %arena_name% has started
-    - say Ooh and there are playing %arena_players_size% players
-  # Commands performed when game is finished
+    - say %arena_name% 游戏已开始
+    - say 共有 %arena_players_size% 名玩家参与游戏
+
+  # 游戏结束时执行的指令
   game-end:
-    - say %arena_name% has ended, reached wave %arena_wave%
-    - say Ooh and there were playing %arena_players_size% players
+    - say %arena_name% 游戏已结束，最终波数：%arena_wave%
+    - say 本次共有 %arena_players_size% 名玩家参与
+
+  # 每一波开始时执行
   start-wave:
-    - say Wave started
-  # Commands performed every wave end
-  # Use "WAVE NUMBER:" to execute command in specific wave (ex. 1:)
-  # wave number can be also deleted to have code executed on any end wave
-  # Delete everything if you don't want to use this section
+    - say 第 %arena_wave% 波已开始！
+
+  # 每一波结束时执行的指令
+  # 使用 "数字:" 可以指定只在某一波结束执行（例 1:）
+  # 不写波号 = 每一波都执行
+  # 不需要可以清空
   end-wave:
     1:
-      - say You reached wave %arena_wave%, nice!
+      - say 你成功抵达第 %arena_wave% 波，加油！
     5:
-      - say You reached wave %arena_wave%, good job!
+      - say 你成功抵达第 %arena_wave% 波，太棒了！
       - eco give %player% 5
     10:
-      - broadcast Woah! %arena_name% reached wave %arena_wave%!
+      - broadcast 哇！%arena_name% 地图打到了第 %arena_wave% 波！
     99:
-      - say Nice try %player%...
-  # Commands executed when zombie is killed
+      - say 很棒的尝试 %player%，继续加油！
+
+  # 击杀僵尸时执行的指令
   zombie-kill:
     - eco give %player% 2
     - chance(10):eco give %player% 8
-  # Commands executed when villager is death
+
+  # 村民死亡时执行的指令
   villager-death:
-    - say Protect the villager better next time!
-  # Commands executed when player is death
+    - say 下次一定要好好保护村民！
+
+  # 玩家死亡时执行的指令
   player-death:
     - script:player.sendMessage("Hey, you died");
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿修改此处版本校验配置
+# 虽然是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

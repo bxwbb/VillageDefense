@@ -36,6 +36,7 @@ import plugily.projects.villagedefense.boot.MessageInitializer;
 import plugily.projects.villagedefense.boot.PlaceholderInitializer;
 import plugily.projects.villagedefense.commands.arguments.ArgumentsRegistry;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
+import plugily.projects.villagedefense.creatures.v1_9_UP.CustomCreatureEvents;
 import plugily.projects.villagedefense.events.PluginEvents;
 import plugily.projects.villagedefense.handlers.LanguageMigrator;
 import plugily.projects.villagedefense.handlers.powerup.PowerupHandler;
@@ -51,153 +52,173 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Created by Tom on 12/08/2014.
- * Updated by Tigerpanzer_02 on 03.12.2021
+ * Village Defense 的插件入口，也是本项目接入 miniGameBox 的边界。
+ *
+ * <p>{@link PluginMain} 负责通用小游戏能力：配置文件、语言、竞技场生命周期、玩家数据、
+ * 职业、奖励、权限、占位符、计分板等。本类只注册村庄守卫自己的业务模块。</p>
+ *
+ * <p>Created by Tom on 12/08/2014.
+ * Updated by Tigerpanzer_02 on 03.12.2021</p>
  */
 public class Main extends PluginMain {
 
-  private FileConfiguration entityUpgradesConfig;
-  private EnemySpawnerRegistryLegacy enemySpawnerRegistry;
-  private ArenaRegistry arenaRegistry;
-  private ArenaManager arenaManager;
-  private ArgumentsRegistry argumentsRegistry;
-  private EntityUpgradeMenu entityUpgradeMenu;
+    private FileConfiguration entityUpgradesConfig;
+    private EnemySpawnerRegistryLegacy enemySpawnerRegistry;
+    private ArenaRegistry arenaRegistry;
+    private ArenaManager arenaManager;
+    private ArgumentsRegistry argumentsRegistry;
+    private EntityUpgradeMenu entityUpgradeMenu;
 
-  @TestOnly
-  public Main() {
-    super();
-  }
-
-  @Override
-  public void onEnable() {
-    long start = System.currentTimeMillis();
-    new LanguageMigrator(this);
-    MessageInitializer messageInitializer = new MessageInitializer(this);
-    super.onEnable();
-    getDebugger().debug("[System] [Plugin] Initialization start");
-    new PlaceholderInitializer(this);
-    messageInitializer.registerMessages();
-    new AdditionalValueInitializer(this);
-    initializePluginClasses();
-    addKits();
-    getDebugger().debug("Full {0} plugin enabled", getName());
-    getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
-  }
-
-  public void initializePluginClasses() {
-    addFileName("powerups");
-    addFileName("creatures");
-    Arena.init(this);
-    ArenaUtils.init(this);
-    new ArenaEvents(this);
-    arenaManager = new ArenaManager(this);
-    arenaRegistry = new ArenaRegistry(this);
-    arenaRegistry.registerArenas();
-    getSignManager().loadSigns();
-    getSignManager().updateSigns();
-    argumentsRegistry = new ArgumentsRegistry(this);
-    if(ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_8)) {
-      enemySpawnerRegistry = new EnemySpawnerRegistryLegacy(this);
-    } else {
-      enemySpawnerRegistry = new EnemySpawnerRegistry(this);
+    @TestOnly
+    public Main() {
+        super();
     }
-    if(getConfigPreferences().getOption("UPGRADES")) {
-      entityUpgradesConfig = ConfigUtils.getConfig(this, "entity_upgrades");
-      Upgrade.init(this);
-      UpgradeBuilder.init(this);
-      entityUpgradeMenu = new EntityUpgradeMenu(this);
+
+    @Override
+    public void onEnable() {
+        long start = System.currentTimeMillis();
+        // 语言迁移要早于框架加载 language.yml，否则旧键无法映射到当前 Message 注册表。
+        new LanguageMigrator(this);
+        MessageInitializer messageInitializer = new MessageInitializer(this);
+
+        // 初始化 miniGameBox 的公共管理器。后续 Village Defense 模块都依赖这些 getter。
+        super.onEnable();
+        getDebugger().debug("[System] [Plugin] Initialization start");
+
+        // 这些初始化只做注册工作，不保存生命周期对象，因此大多不需要字段持有。
+        new PlaceholderInitializer(this);
+        messageInitializer.registerMessages();
+        new AdditionalValueInitializer(this);
+        initializePluginClasses();
+        addKits();
+        getDebugger().debug("Full {0} plugin enabled", getName());
+        getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
     }
-    new DoorBreakListener(this);
-    CreatureUtils.init(this);
-    new PowerupHandler(this);
-    new PluginEvents(this);
-    addPluginMetrics();
-  }
 
-  public void addKits() {
-    if(!getConfigPreferences().getOption("KITS")) {
-      // Kits are disabled, no kits will be loaded
-      return;
+    public void initializePluginClasses() {
+        // 注册本插件额外的默认配置文件，交给 PluginMain#setupFiles 释放到数据目录。
+        addFileName("powerups");
+        addFileName("creatures");
+
+        // 框架创建 Arena 时不直接注入 Main，这里用静态 init 维持旧 API 的访问方式。
+        Arena.init(this);
+        ArenaUtils.init(this);
+        new ArenaEvents(this);
+        arenaManager = new ArenaManager(this);
+        arenaRegistry = new ArenaRegistry(this);
+        arenaRegistry.registerArenas();
+        getSignManager().loadSigns();
+        getSignManager().updateSigns();
+        argumentsRegistry = new ArgumentsRegistry(this);
+
+        // 1.8 使用 NMS 自定义实体；高版本使用 Bukkit/兼容层实现，外部统一通过 Legacy 基类访问。
+        if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_8)) {
+            enemySpawnerRegistry = new EnemySpawnerRegistryLegacy(this);
+        } else {
+            enemySpawnerRegistry = new EnemySpawnerRegistry(this);
+        }
+
+        // 升级系统是可选功能，关闭时避免加载额外配置和事件菜单。
+        if (getConfigPreferences().getOption("UPGRADES")) {
+            entityUpgradesConfig = ConfigUtils.getConfig(this, "entity_upgrades");
+            Upgrade.init(this);
+            UpgradeBuilder.init(this);
+            entityUpgradeMenu = new EntityUpgradeMenu(this);
+        }
+        new DoorBreakListener(this);
+        CreatureUtils.init(this);
+        new PowerupHandler(this);
+        new PluginEvents(this);
+        new CustomCreatureEvents(this);
+        addPluginMetrics();
     }
-    long start = System.currentTimeMillis();
-    new KitAbilityInitializer(this);
-    getDebugger().performance("Kit", "Adding kits...");
-    addFileName("kits/archer");
-    addFileName("kits/blocker");
-    addFileName("kits/cleaner");
-    addFileName("kits/dog_friend");
-    addFileName("kits/golem_friend");
-    addFileName("kits/hardcore");
-    addFileName("kits/hardcore_master");
-    addFileName("kits/healer");
-    addFileName("kits/heavy_tank");
-    addFileName("kits/knight");
-    addFileName("kits/light_tank");
-    addFileName("kits/looter");
-    addFileName("kits/medic");
-    addFileName("kits/medium_tank");
-    addFileName("kits/puncher");
-    addFileName("kits/runner");
-    addFileName("kits/shotbow_master");
-    addFileName("kits/teleporter");
-    addFileName("kits/terminator");
-    addFileName("kits/tornado");
-    addFileName("kits/wild_naked");
-    addFileName("kits/wizard");
-    addFileName("kits/worker");
-    addFileName("kits/zombie_teleporter");
-    List<String> optionalConfigurations = new ArrayList<>();
-    optionalConfigurations.add("restock");
-    optionalConfigurations.add("cooldown");
 
-    getKitRegistry().setHandleItem((player, item) -> KitUtils.handleItem(this, player, item));
-    getKitRegistry().registerKits(optionalConfigurations);
-    getDebugger().debug(Level.INFO, "Kits loaded: ");
-    for(IKit kit : getKitRegistry().getKits()) {
-      getDebugger().debug(kit.getName());
+    public void addKits() {
+        if (!getConfigPreferences().getOption("KITS")) {
+            // Kits are disabled, no kits will be loaded
+            return;
+        }
+        long start = System.currentTimeMillis();
+        // 先注册技能处理器，再让 KitRegistry 读取各 kit yml，否则 ability key 无法解析。
+        new KitAbilityInitializer(this);
+        getDebugger().performance("Kit", "Adding kits...");
+        addFileName("kits/archer");
+        addFileName("kits/blocker");
+        addFileName("kits/cleaner");
+        addFileName("kits/dog_friend");
+        addFileName("kits/golem_friend");
+        addFileName("kits/hardcore");
+        addFileName("kits/hardcore_master");
+        addFileName("kits/healer");
+        addFileName("kits/heavy_tank");
+        addFileName("kits/knight");
+        addFileName("kits/light_tank");
+        addFileName("kits/looter");
+        addFileName("kits/medic");
+        addFileName("kits/medium_tank");
+        addFileName("kits/puncher");
+        addFileName("kits/runner");
+        addFileName("kits/shotbow_master");
+        addFileName("kits/teleporter");
+        addFileName("kits/terminator");
+        addFileName("kits/tornado");
+        addFileName("kits/wild_naked");
+        addFileName("kits/wizard");
+        addFileName("kits/worker");
+        addFileName("kits/zombie_teleporter");
+        List<String> optionalConfigurations = new ArrayList<>();
+        optionalConfigurations.add("restock");
+        optionalConfigurations.add("cooldown");
+
+        // miniGameBox 负责识别职业物品；实际点击效果委托给本插件的 KitUtils。
+        getKitRegistry().setHandleItem((player, item) -> KitUtils.handleItem(this, player, item));
+        getKitRegistry().registerKits(optionalConfigurations);
+        getDebugger().debug(Level.INFO, "Kits loaded: ");
+        for (IKit kit : getKitRegistry().getKits()) {
+            getDebugger().debug(kit.getName());
+        }
+        getKitRegistry().setDefaultKit("knight");
+        getDebugger().debug("Kit adding finished took {0}ms", System.currentTimeMillis() - start);
     }
-    getKitRegistry().setDefaultKit("knight");
-    getDebugger().debug("Kit adding finished took {0}ms", System.currentTimeMillis() - start);
-  }
 
-  private void addPluginMetrics() {
-    getMetrics().addCustomChart(new Metrics.SimplePie("hooked_addons", () -> {
-      if(getServer().getPluginManager().getPlugin("VillageDefense-Enhancements") != null) {
-        return "Enhancements";
-      }
-      return "None";
-    }));
-  }
+    private void addPluginMetrics() {
+        getMetrics().addCustomChart(new Metrics.SimplePie("hooked_addons", () -> {
+            if (getServer().getPluginManager().getPlugin("VillageDefense-Enhancements") != null) {
+                return "Enhancements";
+            }
+            return "None";
+        }));
+    }
 
-  public FileConfiguration getEntityUpgradesConfig() {
-    return entityUpgradesConfig;
-  }
+    public FileConfiguration getEntityUpgradesConfig() {
+        return entityUpgradesConfig;
+    }
 
-  public EnemySpawnerRegistryLegacy getEnemySpawnerRegistry() {
-    return enemySpawnerRegistry;
-  }
+    public EnemySpawnerRegistryLegacy getEnemySpawnerRegistry() {
+        return enemySpawnerRegistry;
+    }
 
-  @Override
-  public ArenaRegistry getArenaRegistry() {
-    return arenaRegistry;
-  }
+    @Override
+    public ArenaRegistry getArenaRegistry() {
+        return arenaRegistry;
+    }
 
-  @Override
-  public ArgumentsRegistry getArgumentsRegistry() {
-    return argumentsRegistry;
-  }
+    @Override
+    public ArgumentsRegistry getArgumentsRegistry() {
+        return argumentsRegistry;
+    }
 
-  @Override
-  public ArenaManager getArenaManager() {
-    return arenaManager;
-  }
+    @Override
+    public ArenaManager getArenaManager() {
+        return arenaManager;
+    }
 
-  public EntityUpgradeMenu getEntityUpgradeMenu() {
-    return entityUpgradeMenu;
-  }
+    public EntityUpgradeMenu getEntityUpgradeMenu() {
+        return entityUpgradeMenu;
+    }
 
-  @Override
-  public PluginSetupCategoryManager getSetupCategoryManager(SetupInventory setupInventory) {
-    return new SetupCategoryManager(setupInventory);
-  }
+    @Override
+    public PluginSetupCategoryManager getSetupCategoryManager(SetupInventory setupInventory) {
+        return new SetupCategoryManager(setupInventory);
+    }
 }

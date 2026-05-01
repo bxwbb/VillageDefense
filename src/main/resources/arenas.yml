@@ -1,20 +1,34 @@
+# 竞技场实例配置
 instances:
+  # 默认竞技场实例
   default:
+    # 大厅传送坐标: 世界,X,Y,Z,偏航,俯仰
     lobbylocation: world,364.0,63.0,-72.0,0.0,0.0
+    # 游戏出生初始坐标
     startlocation: world,364.0,63.0,-72.0,0.0,0.0
+    # 游戏结束退出坐标
     endlocation: world,364.0,63.0,-72.0,0.0,0.0
+    # 旁观者出生坐标
     spectatorlocation: world,364.0,63.0,-72.0,0.0,0.0
+    # 开局最低人数
     minimumplayers: 2
+    # 本局最大人数
     maximumplayers: 10
+    # 地图显示名称
     mapname: mapname
+    # 地图所在世界名
     world: worldname
+    # 绑定的游戏告示牌列表
     signs: [ ]
+    # 是否完成全部竞技场配置 true=已配置完成 false=未配置
     isdone: false
+    # 商店NPC/商店位置坐标
     shop: world,364.0,63.0,-72.0,0.0,0.0
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿随意修改此处版本校验配置
+# 毕竟是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

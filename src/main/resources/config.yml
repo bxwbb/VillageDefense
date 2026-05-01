@@ -1,60 +1,62 @@
-## Thanks for using our plugins! ~Tigerpanzer_02 from Plugily Projects
-#      villagedefense configuration file
+## 感谢使用我们的插件！~Plugily Projects 作者 Tigerpanzer_02
+#      村庄防御 主配置文件
 #
-#    You can edit here the basic things of villagedefense
-#      Please read everything CAREFULLY!
-#   You don't want to break anything, do you?
+#    你可以在此修改村庄防御的基础配置
+#      请仔细阅读每一行注释！
+#   乱改配置容易导致插件出错，请谨慎修改！
 #
 
-# Select locale of villagedefense, default it's English.
-# Available locales:
-#    default - English language. Uses 'language.yml'.
-#    See https://github.com/Plugily-Projects/locale_storage/tree/master/plugins/minecraft/villagedefense
-#    Use filename of the language e.g. de_DE.yml -> locale: de_DE
+# 设置插件语言区域，默认英文
+# 可用语言列表：
+#    default - 使用英语，读取语言文件 language.yml
+#    语言包仓库：https://github.com/Plugily-Projects/locale_storage/tree/master/plugins/minecraft/villagedefense
+#    使用对应语言文件名即可 例如 de_DE.yml → 填写 locale: de_DE
 locale: default
 
 
-# Should we display a boss bar with additional arena information?
+# 是否在游戏顶部显示Boss血条，展示竞技场额外信息
 Bossbar:
   Display: true
-  # Interval in seconds between messages
+  # 血条轮换消息间隔（秒）
   Interval: 10
 
 
-# Should we display the scoreboard ingame?
+# 是否在游戏内显示右侧计分板
 Scoreboard:
   Display: true
 
 
-# Should we hook into bungeecord? (If you wanna use arena per server option)
-# This option will let you access bungee.yml and its options.
-# You STILL need to use external addon for HUB server game signs
-# Check here for more info: https://wiki.plugily.xyz/
+# 是否启用跨服BC联动模式（单服务器多竞技场推荐关闭）
+# 开启后将启用 bungee.yml 配置
+# 如需大厅跨服跳转告示牌，还需要额外安装配套附属插件
+# 查看教程：https://wiki.plugily.xyz/
 Bungee-Mode: false
 
 
-# Enable Inventory Manager for your games? (VERY USEFUL feature for MULTI ARENA)
-# This saves inventory of players and restores it after player leaves arena.
-# Saved elements: max health, health, food, experience, full inventory, armor contents, fire ticks, active potions
+# 是否开启游戏背包管理功能（多竞技场非常实用）
+# 自动保存玩家进游戏前的背包、血量、饱食度、经验、盔甲、药水效果
+# 退出游戏后自动还原所有物品和状态
 Inventory-Manager: true
 
 
-# Kits configuration
-# A server restart is required for changes to apply
+# 职业套装配置
+# 修改后需要重启服务器才可生效
 Kit:
-  # Should we load kits?
+  # 是否启用职业套装系统
   Enabled: true
-  # What is the default kit for players?
-  # This should be the same name as the file name of the kits file in the kits folder
+  # 玩家默认初始职业
+  # 名称需和 kits 文件夹内职业配置文件名一致
   Default: "knight"
 
 
+# 指令相关配置
 Commands:
-  # Commands which can be used in game, remove all of them to disable (only works if Block.In-Game.Commands = true)
+  # 游戏内允许使用的白名单指令
+  # 清空列表即完全禁止游戏内使用指令（需配合下方 Block.In-Game.Commands 开启）
   Whitelist:
     - me
     - help
-  # Enable and Disable predefined shortened commands or add your own
+  # 自定义快捷缩写指令
   Shorter:
     '1':
       Short: "start"
@@ -78,213 +80,220 @@ Commands:
       Enabled: false
 
 
-# Block some functions of your players
+# 玩家行为限制配置
 Block:
   In-Game:
-    # Should we block every not plugin associated commands in game?
+    # 是否封禁游戏内所有非插件自带指令
     Commands: true
-    # Should the leave command be blocked inside arena?
+    # 是否禁止在竞技场中使用退出指令
     Leave: false
-    # Cancels Item Movement into player crafting, enchantment tables, anvils ...
+    # 禁止将物品移入合成台、附魔台、铁砧等容器
     Item-Move: true
     ArmorStand:
-      # Should we block armor stand destroy with double click?
+      # 是否禁止双击盔甲架破坏
       Destroy: true
-      # Should we block armor stand interaction?
+      # 是否禁止右键交互盔甲架
       Interact: true
-      # Should these only be blocked while ingame and arena state is in_game? (e.g. Lobby and Ending is blocked)
-      # Setting it to false means on all stages of the game the event will be cancelled.
-      # Setting it to true means only while IN_GAME the event will be cancelled.
+      # 仅在游戏进行中生效限制？
+      # true = 只在对局中禁止 / false = 大厅、结束、开局全阶段都禁止
       Check: true
-    # Should all interactions with interactive materials such as doors / buttons / fences / redstone be blocked during ingame
-    # Full list see https://github.com/CryptoMorin/XSeries/blob/e84000a2bead7367d893cf8661f8d5432116adaa/core/src/main/java/com/cryptomorin/xseries/XTag.java#L2793
+    # 是否禁止游戏内交互门、按钮、栅栏、红石等功能性方块
+    # 完整方块列表：https://github.com/CryptoMorin/XSeries/blob/e84000a2bead7367d893cf8661f8d5432116adaa/core/src/main/java/com/cryptomorin/xseries/XTag.java#L2793
     Interact: false
 
 
-# Enable this option when you're using MySQL, otherwise it won't work.
-# Be careful when changing this because there is NO migrator between
-# flat file and MySQL for player stats.
-# If this option is disabled it means all stats will be saved as flat file!
+# 是否启用MySQL数据库存储玩家数据
+# 开启前请谨慎：插件没有自带存档迁移工具
+# 关闭则所有玩家数据以本地文件形式保存
 Database: false
 
 
-# Should we enable in game rewards? See rewards.yml for more...
-# You should also check out our script engine tutorial for rewards! https://tutorial.plugily.xyz
+# 是否开启游戏奖励系统，详细配置在 rewards.yml
+# 可搭配脚本引擎自定义奖励规则：https://tutorial.plugily.xyz
 Rewards: false
 
 
+# 聊天格式配置
 Chat:
-  # Enable in game (eg. '[KIT][LEVEL] Tigerpanzer_02: hey') special formatting?
-  # Formatting is configurable in language.yml
-  # You can use PlaceholderAPI placeholders in chat format!
+  # 是否启用游戏内专属聊天格式（职业、等级前缀）
+  # 格式样式可在 language.yml 自定义
+  # 支持PlaceholderAPI占位符
   Format: true
   Separate:
-    # Should we enable a separate arena chat for players inside a arena
-    # Useful on multi arena servers that don't want the same chat for all players on the server
+    # 是否开启竞技场独立聊天框
+    # 多服多竞技场专用，仅同局玩家互相可见聊天
     Arena: true
-    # Should spectators only write with other spectators
+    # 旁观者是否只能和其他旁观者聊天
     Spectators: true
 
 
-# Should we fire some cool fireworks at locations of every player at special events such as the game end?
+# 游戏胜利、波次结束等特殊时刻是否在玩家位置燃放烟花
 Firework: true
 
 
-# Should blocks behind game signs change their color based on game state?
-# They will change color to:
-# - white (waiting for players) stained glass
-# - yellow (starting) stained glass
-# - orange (in game) stained glass
-# - gray (ending) stained glass
-# - black (restarting) stained glass
-# or define your own at signs.yml!
+# 告示牌后方方块是否根据游戏状态自动变色
+# 默认变色规则：
+# - 等待玩家：白色染色玻璃
+# - 即将开局：黄色染色玻璃
+# - 游戏进行：橙色染色玻璃
+# - 游戏结束：灰色染色玻璃
+# - 重启中：黑色染色玻璃
+# 可在 signs.yml 自定义方块样式
 Sign-Block-States: true
 
 
-# Should holiday events for the plugin be enabled?
-# Eg. 4 days before and 4 days after Halloween special effects
-# for death, spooky! There are more holiday events! Check wiki!
-# Wiki: -
+# 是否启用插件节日专属特效
+# 例如万圣节前后4天死亡特效、幽灵音效等节日彩蛋
+# 更多节日活动查看官方维基
 Holidays: true
 
 
-# Should the plugin enable special powerups which can be found in powerups.yml
+# 是否开启随机道具能力系统，配置文件 powerups.yml
 Powerups: true
 
 
-# Should we create leaderboards out of the stats?
+# 是否根据玩家数据生成全服排行榜
 Leaderboard: true
 
 
+# 队伍组队配置
 Parties:
-  # Should we try to hook into your current party plugin? (Supports well know party plugins, see wiki!)
-  # It will group up all players with the party leader. The party leader can join with the whole party!
+  # 是否兼容服务器现有组队插件（支持主流组队插件，查看维基）
+  # 队长加入竞技场时，全队自动跟随加入
   External: true
-  # Should we enable our own party system that can be only used for this plugin?
-  # Check the wiki for commands
+  # 是否启用插件自带独立组队系统（仅适配本小游戏）
+  # 指令用法查看官方维基
   Own: false
 
 
+# 伤害规则配置
 Damage:
-  # Should players get fall damage?
+  # 是否开启掉落伤害
   Fall: true
-  # Should players get drowning damage?
+  # 是否开启溺水伤害
   Drowning: true
-  # Should players get fire damage?
+  # 是否开启火焰伤害
   Fire: true
-  # Should players lose food ingame & get damage?
+  # 是否开启游戏内饥饿掉血机制
   Hunger: true
 
 
+# 天气与时间循环配置
 Cycle:
-  # Should we make permanent clear weather on all worlds where our arenas are?
+  # 是否固定所有竞技场世界永远晴天
   Weather: false
-  # Should the time on the world your arenas are modified to stay at the same time?
+  # 是否锁定竞技场世界时间固定不变
   Daylight:
     Enable: false
     Time: 10000
 
 
-# How many seconds game should take to start.
+# 全局时间管理（单位：秒）
 Time-Manager:
+  # 等待玩家开局倒计时
   Waiting: 20
+  # 人数足够后开局倒计时
   Starting: 60
+  # 人数满员时缩短的开局时间
   Shorten-Waiting: 5
+  # 单局游戏最长时长
   In-Game: 270
-  # Time before next wave starts
+  # 每波僵尸结束到下一波刷新的间隔
   Cooldown-Before-Next-Wave: 25
+  # 游戏结束等待重启时间
   Ending: 10
+  # 竞技场重启重置等待时间
   Restarting: 5
 
 
-# Should we add support for upgradeable Wolves and Golems in game?
-# Configure upgrades pricing in entity_upgrades.yml
+# 是否开启狼、铁傀儡升级系统
+# 升级价格可在 entity_upgrades.yml 配置
 Entity-Upgrades: true
 
 
+# 复活规则配置
 Respawn:
-  # Respawn players when wave ends/starts?
+  # 每波僵尸结束/开始时自动复活阵亡玩家
   After-Wave: true
-  # Should player be able to join on in-game stage with respawn after wave?
+  # 游戏进行中是否允许新玩家加入，等待下一波复活
   In-Game-Join: true
 
 
+# 数量限制配置
 Limit:
   Wave:
-    # Should game have finite amount of waves
+    # 是否开启无限僵尸波次
     Unlimited: true
-    # Limit of waves, if this wave ends game will end
+    # 最大波次限制，到达后游戏直接结束（关闭无限波次生效）
     Game-End: 200
   Spawn:
-    # Limit of mobs can be spawned globally in-game
-    # Will affect only buying them in in-game shop
+    # 全局可生成宠物数量上限（仅商店购买生效）
     Wolves: 20
     Golems: 15
-    # How many villagers will be spawned in an arena?
+    # 单局竞技场生成村民数量
     Villagers: 10
-    # After how many Creatures should we limit them?
-    # Once limit is reached Creatures get more health so it's still harder each wave
+    # 怪物数量达到多少后开始强化怪物属性
     Creatures: 75
-  # Can the players buy again iron golems or wolves if these
-  # entities died? The config limit and permission will be ignored.
+  # 宠物死亡后是否允许重新购买（无视数量上限和权限限制）
   Entity-Buy-After-Death: false
 
 
+# 怪物属性配置
 Creatures:
-  # Active after Creatures limit is reached
-  # Higher value means weaker Creatures
+  # 怪物达到数量上限后 属性削弱倍率（数值越高怪物越弱）
   Multiplier-Divider: 18
-  # Enable very simple health bar for Creatures?
-  # They will have health instead of their names
-  # It will show percentage of health left.
+  # 是否显示怪物简易血量条（替换名字为剩余血量百分比）
   Health-Bar: true
 
 
+# 宝珠（游戏货币）配置
 Orbs:
   Start:
-    # Amount of orbs given to player when game starts
+    # 玩家开局初始宝珠数量
     Amount: 20
   Death:
-    # PERCENTAGE, calculates the percentage of orbs left from the value
-    # AMOUNT, adjusts the orbs to the value (negative value removes orbs, positive value adds orbs)
-    # SET, sets the orbs to the value
-    # KEEP, will leave the orbs like they are
+    # 玩家死亡宝珠扣除规则
+    # PERCENTAGE = 按百分比扣除
+    # AMOUNT = 固定增减数值
+    # SET = 直接设置为固定数值
+    # KEEP = 保留原有宝珠不变
     Type: PERCENTAGE
     Value: 50
 
 
-# Should the name tag of these mobs always visible?
+# 铁傀儡/狼/村民 名字是否永久可见
 Name-Visibility:
   Golem: true
   Wolf: true
   Villager: true
 
 
-# Zombie glow to make it visible to players.
+# 僵尸高亮发光配置
 Glowing-Status:
-  # From which wave should the glowing be activated?
+  # 从第几波开始僵尸自带发光效果
   Starting-Wave: 6
-  # How many creatures should the glow be activated from?
-  # Set to 0 to disable
+  # 剩余多少怪物时触发发光（设0不限制）
   Creatures-Left: 0
 
 
-# Allow spectators on arena instances
+# 是否允许玩家进入竞技场旁观者模式
 Spectators: true
 
 
+# 更新检测提示
 Update-Notifier:
-  # Should we check for updates on plugin start/after admin join?
-  # You REALLY should have this true!
+  # 插件启动/管理员进服时是否检测版本更新
+  # 建议保持开启，及时修复漏洞
   Enabled: true
-  # Should we inform you when beta version is out?
-  # BETA IS NOT ALWAYS AS STABLE AS NORMAL RELEASE!
+  # 是否推送测试版更新通知
+  # 测试版稳定性不如正式版，谨慎更新
   Notify-Beta-Versions: true
 
 
-# Don't edit it. But who's stopping you? It's your server!
-# Really, don't edit ;p
-# You edited it, huh? Next time hurt yourself!
+# 请勿修改此处版本校验配置
+# 毕竟是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 7

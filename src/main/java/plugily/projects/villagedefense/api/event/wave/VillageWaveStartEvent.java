@@ -30,25 +30,25 @@ import plugily.projects.villagedefense.arena.Arena;
  */
 public class VillageWaveStartEvent extends PlugilyEvent {
 
-  private static final HandlerList HANDLERS = new HandlerList();
-  private final Integer waveNumber;
+    private static final HandlerList HANDLERS = new HandlerList();
+    private final Integer waveNumber;
 
-  public VillageWaveStartEvent(Arena arena, Integer waveNumber) {
-    super(arena);
-    this.waveNumber = waveNumber;
-  }
+    public VillageWaveStartEvent(Arena arena, Integer waveNumber) {
+        super(arena);
+        this.waveNumber = waveNumber;
+    }
 
-  public static HandlerList getHandlerList() {
-    return HANDLERS;
-  }
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
 
-  public Integer getWaveNumber() {
-    return waveNumber;
-  }
+    public Integer getWaveNumber() {
+        return waveNumber;
+    }
 
-  @Override
-  public HandlerList getHandlers() {
-    return HANDLERS;
-  }
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
 
 }

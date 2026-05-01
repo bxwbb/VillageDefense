@@ -41,71 +41,71 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class ArenaUtils extends PluginArenaUtils {
 
-  private ArenaUtils() {
-    super();
-  }
-
-  public static void bringDeathPlayersBack(Arena arena) {
-    List<Player> left = arena.getPlayersLeft();
-    org.bukkit.Location startLoc = arena.getStartLocation();
-
-    for(Player player : arena.getPlayers()) {
-      if(left.contains(player)) {
-        continue;
-      }
-
-      IUser user = getPlugin().getUserManager().getUser(player);
-      if(user.isPermanentSpectator() && !getPlugin().getConfigPreferences().getOption("RESPAWN_IN_GAME_JOIN")) {
-        continue;
-      }
-
-      VillagePlayerRespawnEvent event = new VillagePlayerRespawnEvent(player, arena);
-      Bukkit.getPluginManager().callEvent(event);
-      if(event.isCancelled()) {
-        continue;
-      }
-
-      user.setSpectator(false);
-
-      VersionUtils.teleport(player, startLoc);
-      player.setFlying(false);
-      player.setAllowFlight(false);
-      //the default fly speed
-      player.setFlySpeed(0.1f);
-      player.setGameMode(GameMode.SURVIVAL);
-      player.removePotionEffect(PotionEffectType.NIGHT_VISION);
-      player.removePotionEffect(PotionEffectType.SPEED);
-      player.getInventory().clear();
-      ArenaUtils.showPlayer(player, arena);
-      user.getKit().giveKitItems(player);
-      player.updateInventory();
-      new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWNED").asKey().player(player).arena(arena).sendPlayer();
+    private ArenaUtils() {
+        super();
     }
-  }
 
-  public static void removeSpawnedEnemies(Arena arena) {
-    removeSpawnedEnemies(arena, arena.getEnemies().size(), Double.MAX_VALUE);
-  }
+    public static void bringDeathPlayersBack(Arena arena) {
+        List<Player> left = arena.getPlayersLeft();
+        org.bukkit.Location startLoc = arena.getStartLocation();
 
-  public static void removeSpawnedEnemies(Arena arena, int amount, double maxHealthToRemove) {
-    List<Creature> toRemove = new ArrayList<>(arena.getEnemies());
-    toRemove.removeIf(creature -> creature.getHealth() > maxHealthToRemove);
-    if(toRemove.size() > amount) {
-      Collections.shuffle(toRemove, ThreadLocalRandom.current());
-      while(toRemove.size() > amount && !toRemove.isEmpty()) {
-        toRemove.remove(0);
-      }
+        for (Player player : arena.getPlayers()) {
+            if (left.contains(player)) {
+                continue;
+            }
+
+            IUser user = getPlugin().getUserManager().getUser(player);
+            if (user.isPermanentSpectator() && !getPlugin().getConfigPreferences().getOption("RESPAWN_IN_GAME_JOIN")) {
+                continue;
+            }
+
+            VillagePlayerRespawnEvent event = new VillagePlayerRespawnEvent(player, arena);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                continue;
+            }
+
+            user.setSpectator(false);
+
+            VersionUtils.teleport(player, startLoc);
+            player.setFlying(false);
+            player.setAllowFlight(false);
+            //the default fly speed
+            player.setFlySpeed(0.1f);
+            player.setGameMode(GameMode.SURVIVAL);
+            player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+            player.removePotionEffect(PotionEffectType.SPEED);
+            player.getInventory().clear();
+            ArenaUtils.showPlayer(player, arena);
+            user.getKit().giveKitItems(player);
+            player.updateInventory();
+            new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWNED").asKey().player(player).arena(arena).sendPlayer();
+        }
     }
-    arena.getEnemies().removeAll(toRemove);
 
-    boolean eachThree = toRemove.size() > 70;
-    for(int i = 0; i < toRemove.size(); i++) {
-      Creature creature = toRemove.get(i);
-      if(!eachThree || (i % 3) == 0) {
-        VersionUtils.sendParticles("LAVA", arena.getPlayers(), creature.getLocation(), 20);
-      }
-      creature.remove();
+    public static void removeSpawnedEnemies(Arena arena) {
+        removeSpawnedEnemies(arena, arena.getEnemies().size(), Double.MAX_VALUE);
     }
-  }
+
+    public static void removeSpawnedEnemies(Arena arena, int amount, double maxHealthToRemove) {
+        List<Creature> toRemove = new ArrayList<>(arena.getEnemies());
+        toRemove.removeIf(creature -> creature.getHealth() > maxHealthToRemove);
+        if (toRemove.size() > amount) {
+            Collections.shuffle(toRemove, ThreadLocalRandom.current());
+            while (toRemove.size() > amount && !toRemove.isEmpty()) {
+                toRemove.remove(0);
+            }
+        }
+        arena.getEnemies().removeAll(toRemove);
+
+        boolean eachThree = toRemove.size() > 70;
+        for (int i = 0; i < toRemove.size(); i++) {
+            Creature creature = toRemove.get(i);
+            if (!eachThree || (i % 3) == 0) {
+                VersionUtils.sendParticles("LAVA", arena.getPlayers(), creature.getLocation(), 20);
+            }
+            creature.remove();
+        }
+    }
 
 }
