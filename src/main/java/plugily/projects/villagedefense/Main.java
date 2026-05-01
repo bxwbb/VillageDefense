@@ -1,0 +1,203 @@
+/*
+ *  Village Defense - Protect villagers from hordes of zombies
+ *  Copyright (c) 2026 Plugily Projects - maintained by Tigerpanzer_02 and contributors
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package plugily.projects.villagedefense;
+
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.TestOnly;
+import plugily.projects.minigamesbox.api.kit.IKit;
+import plugily.projects.minigamesbox.classic.PluginMain;
+import plugily.projects.minigamesbox.classic.handlers.setup.SetupInventory;
+import plugily.projects.minigamesbox.classic.handlers.setup.categories.PluginSetupCategoryManager;
+import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
+import plugily.projects.minigamesbox.classic.utils.services.metrics.Metrics;
+import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
+import plugily.projects.villagedefense.arena.*;
+import plugily.projects.villagedefense.arena.managers.doors.DoorBreakListener;
+import plugily.projects.villagedefense.arena.managers.enemy.spawner.EnemySpawnerRegistry;
+import plugily.projects.villagedefense.arena.managers.enemy.spawner.EnemySpawnerRegistryLegacy;
+import plugily.projects.villagedefense.boot.AdditionalValueInitializer;
+import plugily.projects.villagedefense.boot.MessageInitializer;
+import plugily.projects.villagedefense.boot.PlaceholderInitializer;
+import plugily.projects.villagedefense.commands.arguments.ArgumentsRegistry;
+import plugily.projects.villagedefense.creatures.CreatureUtils;
+import plugily.projects.villagedefense.events.PluginEvents;
+import plugily.projects.villagedefense.handlers.LanguageMigrator;
+import plugily.projects.villagedefense.handlers.powerup.PowerupHandler;
+import plugily.projects.villagedefense.handlers.setup.SetupCategoryManager;
+import plugily.projects.villagedefense.handlers.upgrade.EntityUpgradeMenu;
+import plugily.projects.villagedefense.handlers.upgrade.upgrades.Upgrade;
+import plugily.projects.villagedefense.handlers.upgrade.upgrades.UpgradeBuilder;
+import plugily.projects.villagedefense.kits.KitAbilityInitializer;
+import plugily.projects.villagedefense.kits.KitUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+
+/**
+ * Created by Tom on 12/08/2014.
+ * Updated by Tigerpanzer_02 on 03.12.2021
+ */
+public class Main extends PluginMain {
+
+  private FileConfiguration entityUpgradesConfig;
+  private EnemySpawnerRegistryLegacy enemySpawnerRegistry;
+  private ArenaRegistry arenaRegistry;
+  private ArenaManager arenaManager;
+  private ArgumentsRegistry argumentsRegistry;
+  private EntityUpgradeMenu entityUpgradeMenu;
+
+  @TestOnly
+  public Main() {
+    super();
+  }
+
+  @Override
+  public void onEnable() {
+    long start = System.currentTimeMillis();
+    new LanguageMigrator(this);
+    MessageInitializer messageInitializer = new MessageInitializer(this);
+    super.onEnable();
+    getDebugger().debug("[System] [Plugin] Initialization start");
+    new PlaceholderInitializer(this);
+    messageInitializer.registerMessages();
+    new AdditionalValueInitializer(this);
+    initializePluginClasses();
+    addKits();
+    getDebugger().debug("Full {0} plugin enabled", getName());
+    getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
+  }
+
+  public void initializePluginClasses() {
+    addFileName("powerups");
+    addFileName("creatures");
+    Arena.init(this);
+    ArenaUtils.init(this);
+    new ArenaEvents(this);
+    arenaManager = new ArenaManager(this);
+    arenaRegistry = new ArenaRegistry(this);
+    arenaRegistry.registerArenas();
+    getSignManager().loadSigns();
+    getSignManager().updateSigns();
+    argumentsRegistry = new ArgumentsRegistry(this);
+    if(ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_8)) {
+      enemySpawnerRegistry = new EnemySpawnerRegistryLegacy(this);
+    } else {
+      enemySpawnerRegistry = new EnemySpawnerRegistry(this);
+    }
+    if(getConfigPreferences().getOption("UPGRADES")) {
+      entityUpgradesConfig = ConfigUtils.getConfig(this, "entity_upgrades");
+      Upgrade.init(this);
+      UpgradeBuilder.init(this);
+      entityUpgradeMenu = new EntityUpgradeMenu(this);
+    }
+    new DoorBreakListener(this);
+    CreatureUtils.init(this);
+    new PowerupHandler(this);
+    new PluginEvents(this);
+    addPluginMetrics();
+  }
+
+  public void addKits() {
+    if(!getConfigPreferences().getOption("KITS")) {
+      // Kits are disabled, no kits will be loaded
+      return;
+    }
+    long start = System.currentTimeMillis();
+    new KitAbilityInitializer(this);
+    getDebugger().performance("Kit", "Adding kits...");
+    addFileName("kits/archer");
+    addFileName("kits/blocker");
+    addFileName("kits/cleaner");
+    addFileName("kits/dog_friend");
+    addFileName("kits/golem_friend");
+    addFileName("kits/hardcore");
+    addFileName("kits/hardcore_master");
+    addFileName("kits/healer");
+    addFileName("kits/heavy_tank");
+    addFileName("kits/knight");
+    addFileName("kits/light_tank");
+    addFileName("kits/looter");
+    addFileName("kits/medic");
+    addFileName("kits/medium_tank");
+    addFileName("kits/puncher");
+    addFileName("kits/runner");
+    addFileName("kits/shotbow_master");
+    addFileName("kits/teleporter");
+    addFileName("kits/terminator");
+    addFileName("kits/tornado");
+    addFileName("kits/wild_naked");
+    addFileName("kits/wizard");
+    addFileName("kits/worker");
+    addFileName("kits/zombie_teleporter");
+    List<String> optionalConfigurations = new ArrayList<>();
+    optionalConfigurations.add("restock");
+    optionalConfigurations.add("cooldown");
+
+    getKitRegistry().setHandleItem((player, item) -> KitUtils.handleItem(this, player, item));
+    getKitRegistry().registerKits(optionalConfigurations);
+    getDebugger().debug(Level.INFO, "Kits loaded: ");
+    for(IKit kit : getKitRegistry().getKits()) {
+      getDebugger().debug(kit.getName());
+    }
+    getKitRegistry().setDefaultKit("knight");
+    getDebugger().debug("Kit adding finished took {0}ms", System.currentTimeMillis() - start);
+  }
+
+  private void addPluginMetrics() {
+    getMetrics().addCustomChart(new Metrics.SimplePie("hooked_addons", () -> {
+      if(getServer().getPluginManager().getPlugin("VillageDefense-Enhancements") != null) {
+        return "Enhancements";
+      }
+      return "None";
+    }));
+  }
+
+  public FileConfiguration getEntityUpgradesConfig() {
+    return entityUpgradesConfig;
+  }
+
+  public EnemySpawnerRegistryLegacy getEnemySpawnerRegistry() {
+    return enemySpawnerRegistry;
+  }
+
+  @Override
+  public ArenaRegistry getArenaRegistry() {
+    return arenaRegistry;
+  }
+
+  @Override
+  public ArgumentsRegistry getArgumentsRegistry() {
+    return argumentsRegistry;
+  }
+
+  @Override
+  public ArenaManager getArenaManager() {
+    return arenaManager;
+  }
+
+  public EntityUpgradeMenu getEntityUpgradeMenu() {
+    return entityUpgradeMenu;
+  }
+
+  @Override
+  public PluginSetupCategoryManager getSetupCategoryManager(SetupInventory setupInventory) {
+    return new SetupCategoryManager(setupInventory);
+  }
+}

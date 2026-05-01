@@ -1,0 +1,58 @@
+/*
+ *  Village Defense - Protect villagers from hordes of zombies
+ *  Copyright (c) 2026 Plugily Projects - maintained by Tigerpanzer_02 and contributors
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package plugily.projects.villagedefense.arena.managers;
+
+import org.bukkit.entity.Player;
+import plugily.projects.minigamesbox.classic.arena.PluginArena;
+import plugily.projects.minigamesbox.classic.arena.managers.PluginScoreboardManager;
+import plugily.projects.villagedefense.arena.Arena;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author Tigerpanzer_02
+ * <p>
+ * Created at 19.12.2021
+ */
+public class ScoreboardManager extends PluginScoreboardManager {
+
+  private final PluginArena arena;
+
+  public ScoreboardManager(PluginArena arena) {
+    super(arena);
+    this.arena = arena;
+  }
+
+  @Override
+  public List<String> getScoreboardLines(Player player) {
+    List<String> lines = new ArrayList<>();
+    switch(arena.getArenaState()) {
+      case IN_GAME: {
+        lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + (((Arena) arena).isFighting() ? "" : "-Waiting"));
+        break;
+      }
+      default: {
+        lines = super.getScoreboardLines(player);
+
+      }
+    }
+    return lines;
+  }
+}

@@ -1,0 +1,57 @@
+name: Bump and Publish Master Branch
+
+on:
+  pull_request:
+    types:
+      - closed
+  workflow_dispatch:
+jobs:
+  bump:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Latest Commit
+        uses: actions/checkout@v4.2.2
+      - name: Bump Version
+        id: bump
+        uses: Plugily-Projects/version-bump-action@v10
+        with:
+          github-token: ${{ secrets.github_token }}
+          auto-version-bump: false
+          auto-version-bump-release: true
+      - name: Print Version
+        run: "echo 'New Version: ${{steps.bump.outputs.version}}'"
+  publish:
+    needs: bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Latest Commit
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: 'master'
+      - name: Set up JDK
+        uses: actions/setup-java@v4.6.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          java-package: jdk
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.2
+      - name: Cache
+        uses: actions/cache@v4.2.2
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
+      - name: Publish with Maven
+        uses: s4u/maven-settings-action@v3.1.0
+        with:
+          servers: |
+            [{
+                "id": "Release",
+                "username": "${{ secrets.RELEASESUSERNAME }}",
+                "password": "${{ secrets.RELEASESPASSWORD }}"
+            }]
+      - run: mvn clean verify compile package site:site javadoc:javadoc javadoc:jar deploy -DaltDeploymentRepository=Release::https://maven.plugily.xyz/releases -f pom.xml
