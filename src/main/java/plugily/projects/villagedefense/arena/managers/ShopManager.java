@@ -21,11 +21,15 @@ package plugily.projects.villagedefense.arena.managers;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
@@ -38,6 +42,10 @@ import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -47,182 +55,148 @@ import java.util.stream.Collectors;
  */
 public class ShopManager {
 
-  private final String defaultGolemItemName;
-  private final String defaultWolfItemName;
+    private final String defaultGolemItemName;
+    private final String defaultWolfItemName;
 
-  private final Main plugin;
-  private final FileConfiguration config;
-  private final Arena arena;
-  private NormalFastInv gui;
-  private Consumer<Player> openMenuConsumer;
+    final Main plugin;
+    private final FileConfiguration config;
+    final Arena arena;
+    private Consumer<Player> openMenuConsumer;
+    final PotionManager potionManager;
+    private final ShopMenu shopMenu;
 
-  public ShopManager(Arena arena) {
-    plugin = arena.getPlugin();
-    config = ConfigUtils.getConfig(plugin, "arenas");
-    this.arena = arena;
+    final Map<Player, Byte[]> playerData = new HashMap<>();
 
-    defaultGolemItemName = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GOLEM_ITEM", false).asKey().build();
-    defaultWolfItemName = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_WOLF_ITEM", false).asKey().build();
+    public static final Map<Material, Integer> prices = new HashMap<>();
 
-    if(config.isSet("instances." + arena.getId() + ".shop")) {
-      registerShop();
+    static {
+        prices.put(Material.LEATHER_HELMET, 10);
+        prices.put(Material.LEATHER_CHESTPLATE, 20);
+        prices.put(Material.LEATHER_LEGGINGS, 15);
+        prices.put(Material.LEATHER_BOOTS, 10);
+        prices.put(Material.IRON_HELMET, 20);
+        prices.put(Material.IRON_CHESTPLATE, 40);
+        prices.put(Material.IRON_LEGGINGS, 30);
+        prices.put(Material.IRON_BOOTS, 20);
+        prices.put(Material.DIAMOND_HELMET, 50);
+        prices.put(Material.DIAMOND_CHESTPLATE, 100);
+        prices.put(Material.DIAMOND_LEGGINGS, 80);
+        prices.put(Material.DIAMOND_BOOTS, 50);
+        prices.put(Material.NETHERITE_HELMET, 100);
+        prices.put(Material.NETHERITE_CHESTPLATE, 200);
+        prices.put(Material.NETHERITE_LEGGINGS, 160);
+        prices.put(Material.NETHERITE_BOOTS, 100);
+        prices.put(Material.STONE_SWORD, 20);
+        prices.put(Material.IRON_SWORD, 30);
+        prices.put(Material.DIAMOND_SWORD, 50);
+        prices.put(Material.NETHERITE_SWORD, 100);
+        prices.put(Material.TRIDENT, 100);
+        prices.put(Material.BOW, 100);
+        prices.put(Material.CROSSBOW, 200);
+        prices.put(Material.TOTEM_OF_UNDYING, 10000);
+        prices.put(Material.LAPIS_ORE, 500);
     }
-    openMenuConsumer = player -> {
-      if(plugin.getArenaRegistry().getArena(player) == null) {
-        return;
-      }
-      if(gui == null) {
-        new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_DEFINED").asKey().player(player).sendPlayer();
-        return;
-      }
-      gui.open(player);
-    };
-  }
 
-  public NormalFastInv getShop() {
-    return gui;
-  }
+    public ShopManager(Arena arena) {
+        shopMenu = new ShopMenuJava(arena, this);
+        plugin = arena.getPlugin();
+        config = ConfigUtils.getConfig(plugin, "arenas");
+        this.arena = arena;
 
-  public void setShop(NormalFastInv gui) {
-    this.gui = gui;
-  }
+        defaultGolemItemName = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GOLEM_ITEM", false).asKey().build();
+        defaultWolfItemName = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_WOLF_ITEM", false).asKey().build();
 
-  public void setOpenMenuConsumer(@NotNull Consumer<Player> openMenuConsumer) {
-    this.openMenuConsumer = openMenuConsumer;
-  }
-
-  /**
-   * Default name of golem spawn item from language.yml
-   *
-   * @return the default golem item name
-   */
-  public String getDefaultGolemItemName() {
-    return defaultGolemItemName;
-  }
-
-  /**
-   * Default name of wolf spawn item from language.yml
-   *
-   * @return the default wolf item name
-   */
-  public String getDefaultWolfItemName() {
-    return defaultWolfItemName;
-  }
-
-  public void openShop(Player player) {
-    if(openMenuConsumer != null) {
-      openMenuConsumer.accept(player);
-    }
-  }
-
-  private void registerShop() {
-    if(!validateShop()) {
-      return;
-    }
-    ItemStack[] contents = ((Chest) LocationSerializer.getLocation(config.getString("instances." + arena.getId() + ".shop"))
-        .getBlock().getState()).getInventory().getContents();
-    gui = new NormalFastInv(plugin.getBukkitHelper().serializeInt(contents.length), new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GUI").asKey().build());
-    gui.addClickHandler(inventoryClickEvent -> inventoryClickEvent.setCancelled(true));
-    for(int slot = 0; slot < contents.length; slot++) {
-      ItemStack itemStack = contents[slot];
-      if(itemStack == null || itemStack.getType() == Material.REDSTONE_BLOCK) {
-        continue;
-      }
-
-      String costString = "";
-      ItemMeta meta = itemStack.getItemMeta();
-      //seek for item price
-      if(meta != null && meta.hasLore()) {
-        String currency = ChatColor.stripColor(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build());
-        for(String itemCurrencyPlaceholder : ComplementAccessor.getComplement().getLore(meta)) {
-          if(itemCurrencyPlaceholder.contains(currency) || itemCurrencyPlaceholder.contains("orbs")) {
-            costString = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', itemCurrencyPlaceholder)).replace(currency, "").replace("orbs", "").trim();
-            break;
-          }
+        if (config.isSet("instances." + arena.getId() + ".shop")) {
+            registerShop();
         }
-      }
-      plugin.getDebugger().debug(Level.INFO, "{0} Coststring {1} of slot {2} !", arena.getId(), costString, slot);
-      int cost;
-      try {
-        cost = Integer.parseInt(costString);
-      } catch(NumberFormatException e) {
-        plugin.getDebugger().debug(Level.WARNING, "No price set for shop item in arena {0} skipping item!", arena.getId());
-        continue;
-      }
-
-      gui.setItem(slot, itemStack, event -> {
-        Player player = (Player) event.getWhoClicked();
-
-        if(!arena.getPlayers().contains(player)) {
-          return;
-        }
-
-        IUser user = plugin.getUserManager().getUser(player);
-        int orbs = user.getStatistic("ORBS");
-
-        if(cost > orbs) {
-          new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_ENOUGH_CURRENCY").asKey().player(player).sendPlayer();
-          return;
-        }
-
-        if(ItemUtils.isItemStackNamed(itemStack)) {
-          String name = ComplementAccessor.getComplement().getDisplayName(itemStack.getItemMeta());
-          if(name.contains(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GOLEM_ITEM", false).asKey().build())
-              || name.contains(defaultGolemItemName)) {
-            if(!arena.canSpawnMobForPlayer(player, XEntityType.IRON_GOLEM.get())) {
-              return;
+        openMenuConsumer = player -> {
+            if (plugin.getArenaRegistry().getArena(player) == null) {
+                return;
             }
-            arena.spawnGolem(arena.getStartLocation(), player);
-            adjustOrbs(user, cost);
-            return;
-          }
-          if(name.contains(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_WOLF_ITEM", false).asKey().build())
-              || name.contains(defaultWolfItemName)) {
-            if(!arena.canSpawnMobForPlayer(player, XEntityType.WOLF.get())) {
-              return;
+            if (shopMenu.isReady()) {
+                new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_DEFINED").asKey().player(player).sendPlayer();
+                return;
             }
-            arena.spawnWolf(arena.getStartLocation(), player);
-            adjustOrbs(user, cost);
-            return;
-          }
+            shopMenu.open(player);
+        };
+        potionManager = new PotionManager(plugin, this);
+    }
+
+    public void resetPlayerData() {
+        for (Player player : arena.getPlayers()) {
+            // 衣服四件套(最大值，当前值)
+            // 剑，三叉戟
+            playerData.put(player, new Byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
         }
+    }
 
-        ItemStack stack = itemStack.clone();
-        ItemMeta itemMeta = stack.getItemMeta();
+    public void setOpenMenuConsumer(@NotNull Consumer<Player> openMenuConsumer) {
+        this.openMenuConsumer = openMenuConsumer;
+    }
 
-        if(itemMeta != null) {
-          if(itemMeta.hasLore()) {
-            ComplementAccessor.getComplement().setLore(itemMeta, ComplementAccessor.getComplement().getLore(itemMeta).stream().filter(lore ->
-                    !lore.contains(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build()))
-                .collect(Collectors.toList()));
-          }
+    /**
+     * Default name of golem spawn item from language.yml
+     *
+     * @return the default golem item name
+     */
+    public String getDefaultGolemItemName() {
+        return defaultGolemItemName;
+    }
 
-          stack.setItemMeta(itemMeta);
+    /**
+     * Default name of wolf spawn item from language.yml
+     *
+     * @return the default wolf item name
+     */
+    public String getDefaultWolfItemName() {
+        return defaultWolfItemName;
+    }
+
+    public void openShop(Player player) {
+        if (openMenuConsumer != null) {
+            openMenuConsumer.accept(player);
         }
-
-        player.getInventory().addItem(stack);
-        adjustOrbs(user, cost);
-      });
     }
-  }
 
-  private void adjustOrbs(IUser user, int cost) {
-    user.adjustStatistic("ORBS", -cost);
-    arena.changeArenaOptionBy("TOTAL_ORBS_SPENT", cost);
-  }
+    void addMaxStackType(int slot, Player player) {
+        if (slot == 5) {
+            if (playerData.get(player)[slot * 2] >= 2) {
+                if (Objects.equals(playerData.get(player)[slot * 2 + 1], playerData.get(player)[slot * 2])) {
+                    playerData.get(player)[slot * 2 + 1] = 2;
+                } else {
+                    playerData.get(player)[slot * 2 + 1]++;
+                }
+            }
+        } else {
+            if (Objects.equals(playerData.get(player)[slot * 2 + 1], playerData.get(player)[slot * 2])) {
+                playerData.get(player)[slot * 2 + 1] = 0;
+            } else {
+                playerData.get(player)[slot * 2 + 1]++;
+            }
+        }
+    }
 
-  private boolean validateShop() {
-    String shop = config.getString("instances." + arena.getId() + ".shop", "");
-    if(!shop.contains(",")) {
-      plugin.getDebugger().debug(Level.WARNING, "There is no shop for arena {0}! Aborting registering shop!", arena.getId());
-      return false;
+    private void registerShop() {
+        shopMenu.registerShop();
     }
-    Location location = LocationSerializer.getLocation(shop);
-    if(location.getWorld() == null || !(location.getBlock().getState() instanceof Chest)) {
-      plugin.getDebugger().debug(Level.WARNING, "Shop failed to load, invalid location for location {0}", LocationSerializer.locationToString(location));
-      return false;
+
+    void giveItem(Player player, ItemStack itemStack) {
+        player.getInventory().addItem(itemStack);
     }
-    return true;
-  }
+
+    void doubleAddPlayerData(int slot, Player player) {
+        playerData.get(player)[slot * 2]++;
+        playerData.get(player)[slot * 2 + 1] = playerData.get(player)[slot * 2];
+    }
+
+    void setPlayerData(int slot, Player player, byte value) {
+        playerData.get(player)[slot * 2] = value;
+        playerData.get(player)[slot * 2 + 1] = playerData.get(player)[slot * 2];
+    }
+
+    void adjustOrbs(IUser user, int cost) {
+        user.adjustStatistic("ORBS", -cost);
+        arena.changeArenaOptionBy("TOTAL_ORBS_SPENT", cost);
+    }
 
 }

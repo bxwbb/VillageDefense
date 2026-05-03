@@ -49,9 +49,6 @@ public class EnemySpawnerRegistry extends EnemySpawnerRegistryLegacy {
 
     @Override
     public void registerRideableCreatures() {
-        if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_8)) {
-            return;
-        }
         FileConfiguration config = ConfigUtils.getConfig(plugin, "creatures");
         ConfigurationSection village = config.getConfigurationSection("Creatures.Village");
         if (village == null) {
@@ -85,103 +82,103 @@ public class EnemySpawnerRegistry extends EnemySpawnerRegistryLegacy {
         }
     }
 
-//    @Override
-//    public void registerCreatures() {
-//        super.registerCreatures();
-//        new CustomCreatureEvents(plugin);
-//        if (plugin.getServer().getPluginManager().getPlugin("ProtocolLib") != null) {
-//            new RideableCreatureEvents(plugin);
-//        }
-//        FileConfiguration config = ConfigUtils.getConfig(plugin, "creatures");
-//
-//        ConfigurationSection content = config.getConfigurationSection("Creatures.Content");
-//        if (content == null) {
-//            plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content");
-//            return;
-//        }
-//        for (String creature : content.getKeys(false)) {
-//            boolean enabled = content.getBoolean(creature + ".enabled", false);
-//            if (!enabled) {
-//                continue;
-//            }
-//
-//            int waveMin = content.getInt(creature + ".wave.min", 0);
-//            int waveMax = content.getInt(creature + ".wave.max", 0);
-//
-//            CustomCreature.PriorityTarget priorityTarget = CustomCreature.PriorityTarget.valueOf(content.getString(creature + ".priority_type", "ANY"));
-//
-//            boolean explodeTarget = content.getBoolean(creature + ".explosive_hit", false);
-//
-//            String key = creature.toUpperCase();
-//
-//            EntityType entityType = XEntityType.of(content.getString(creature + ".entity_type", "ZOMBIE").toUpperCase()).orElse(XEntityType.ZOMBIE).get();
-//
-//            boolean baby = content.getBoolean(creature + ".baby", false);
-//            boolean breed = content.getBoolean(creature + ".breed", false);
-//            int age = content.getInt(creature + ".age", 0);
-//            boolean ageLook = content.getBoolean(creature + ".age_lock", false);
-//            boolean holidayEffects = content.getBoolean(creature + ".holiday_effects", true);
-//            int expDrop = content.getInt(creature + ".exp", 0);
-//
-//            List<Rate> rates = new ArrayList<>();
-//            ConfigurationSection rate = content.getConfigurationSection(creature + ".rates");
-//            if (rate == null) {
-//                plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content." + creature + ".rates");
-//                continue;
-//            }
-//            for (String rateType : rate.getKeys(false)) {
-//                int phase = rate.getInt(rateType + ".phase", 0);
-//                int waveHigher = rate.getInt(rateType + ".wave_higher", 0);
-//                int waveLower = rate.getInt(rateType + ".wave_lower", 0);
-//                int spawnLower = rate.getInt(rateType + ".spawn_lower", 0);
-//                int rateInt = rate.getInt(rateType + ".rate", 0);
-//                int division = rate.getInt(rateType + ".division", 0);
-//                int reduce = rate.getInt(rateType + ".reduce", 0);
-//                Rate.RateType rateTypeValue = Rate.RateType.valueOf(rateType.toUpperCase());
-//                rates.add(new Rate(phase, waveHigher, waveLower, spawnLower, rateInt, division, reduce, rateTypeValue));
-//            }
-//
-//            Map<XAttribute, Double> attributes = new HashMap<>();
-//            ConfigurationSection attributeSection = content.getConfigurationSection(creature + ".attributes");
-//            if (attributeSection == null) {
-//                plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content." + creature + ".attributes");
-//                continue;
-//            }
-//            for (String attribute : attributeSection.getKeys(false)) {
-//                try {
-//                    attributes.put(XAttribute.of(attribute.toUpperCase()).get(), attributeSection.getDouble(attribute));
-//                } catch (IllegalArgumentException exception) {
-//                    plugin.getDebugger().debug(Level.WARNING, "Creatures attribute {0} not found! Check JavaDocs?", "Creatures.Content." + creature + ".attributes" + attribute);
-//                }
-//            }
-//
-//            List<Equipment> equipments = new ArrayList<>();
-//            ConfigurationSection equipmentSection = content.getConfigurationSection(creature + ".equipment");
-//            if (equipmentSection == null) {
-//                plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content." + creature + ".equipment");
-//                continue;
-//            }
-//            for (String equipmentType : equipmentSection.getKeys(false)) {
-//                String item = equipmentSection.getString(equipmentType + ".item", null);
-//                if (item == null) {
-//                    continue;
-//                }
-//                ItemStack itemStack = XMaterial.matchXMaterial(item).orElse(XMaterial.BEDROCK).parseItem();
-//                int dropChance = equipmentSection.getInt(equipmentType + ".drop_chance", 0);
-//                Equipment.EquipmentType equipmentTypeValue = Equipment.EquipmentType.valueOf(equipmentType.toUpperCase());
-//                equipments.add(new Equipment(itemStack, dropChance, equipmentTypeValue));
-//            }
-//
-//            String item = content.getString(creature + ".drop_item", null);
-//            ItemStack dropItem = null;
-//            if (item != null) {
-//                dropItem = XMaterial.matchXMaterial(item).orElse(XMaterial.BEDROCK).parseItem();
-//            }
-//            plugin.getDebugger().debug("Registered CustomCreature named {0}", key);
-//            enemySpawnerSet.add(new CustomCreature(plugin, waveMin, waveMax, priorityTarget, explodeTarget, key, entityType, baby, breed, age, ageLook, expDrop, holidayEffects, rates, attributes, equipments, dropItem));
-//        }
-//
-//    }
+    @Override
+    public void registerCreatures() {
+        super.registerCreatures();
+        new CustomCreatureEvents(plugin);
+        if (plugin.getServer().getPluginManager().getPlugin("ProtocolLib") != null) {
+            new RideableCreatureEvents(plugin);
+        }
+        FileConfiguration config = ConfigUtils.getConfig(plugin, "creatures");
+
+        ConfigurationSection content = config.getConfigurationSection("Creatures.Content");
+        if (content == null) {
+            plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content");
+            return;
+        }
+        for (String creature : content.getKeys(false)) {
+            boolean enabled = content.getBoolean(creature + ".enabled", false);
+            if (!enabled) {
+                continue;
+            }
+
+            int waveMin = content.getInt(creature + ".wave.min", 0);
+            int waveMax = content.getInt(creature + ".wave.max", 0);
+
+            CustomCreature.PriorityTarget priorityTarget = CustomCreature.PriorityTarget.valueOf(content.getString(creature + ".priority_type", "ANY"));
+
+            boolean explodeTarget = content.getBoolean(creature + ".explosive_hit", false);
+
+            String key = creature.toUpperCase();
+
+            EntityType entityType = XEntityType.of(content.getString(creature + ".entity_type", "ZOMBIE").toUpperCase()).orElse(XEntityType.ZOMBIE).get();
+
+            boolean baby = content.getBoolean(creature + ".baby", false);
+            boolean breed = content.getBoolean(creature + ".breed", false);
+            int age = content.getInt(creature + ".age", 0);
+            boolean ageLook = content.getBoolean(creature + ".age_lock", false);
+            boolean holidayEffects = content.getBoolean(creature + ".holiday_effects", true);
+            int expDrop = content.getInt(creature + ".exp", 0);
+
+            List<Rate> rates = new ArrayList<>();
+            ConfigurationSection rate = content.getConfigurationSection(creature + ".rates");
+            if (rate == null) {
+                plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content." + creature + ".rates");
+                continue;
+            }
+            for (String rateType : rate.getKeys(false)) {
+                int phase = rate.getInt(rateType + ".phase", 0);
+                int waveHigher = rate.getInt(rateType + ".wave_higher", 0);
+                int waveLower = rate.getInt(rateType + ".wave_lower", 0);
+                int spawnLower = rate.getInt(rateType + ".spawn_lower", 0);
+                int rateInt = rate.getInt(rateType + ".rate", 0);
+                int division = rate.getInt(rateType + ".division", 0);
+                int reduce = rate.getInt(rateType + ".reduce", 0);
+                Rate.RateType rateTypeValue = Rate.RateType.valueOf(rateType.toUpperCase());
+                rates.add(new Rate(phase, waveHigher, waveLower, spawnLower, rateInt, division, reduce, rateTypeValue));
+            }
+
+            Map<XAttribute, Double> attributes = new HashMap<>();
+            ConfigurationSection attributeSection = content.getConfigurationSection(creature + ".attributes");
+            if (attributeSection == null) {
+                plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content." + creature + ".attributes");
+                continue;
+            }
+            for (String attribute : attributeSection.getKeys(false)) {
+                try {
+                    attributes.put(XAttribute.of(attribute.toUpperCase()).get(), attributeSection.getDouble(attribute));
+                } catch (IllegalArgumentException exception) {
+                    plugin.getDebugger().debug(Level.WARNING, "Creatures attribute {0} not found! Check JavaDocs?", "Creatures.Content." + creature + ".attributes" + attribute);
+                }
+            }
+
+            List<Equipment> equipments = new ArrayList<>();
+            ConfigurationSection equipmentSection = content.getConfigurationSection(creature + ".equipment");
+            if (equipmentSection == null) {
+                plugin.getDebugger().debug(Level.WARNING, CREATURES_MISSING_SECTION, "Creatures.Content." + creature + ".equipment");
+                continue;
+            }
+            for (String equipmentType : equipmentSection.getKeys(false)) {
+                String item = equipmentSection.getString(equipmentType + ".item", null);
+                if (item == null) {
+                    continue;
+                }
+                ItemStack itemStack = XMaterial.matchXMaterial(item).orElse(XMaterial.BEDROCK).parseItem();
+                int dropChance = equipmentSection.getInt(equipmentType + ".drop_chance", 0);
+                Equipment.EquipmentType equipmentTypeValue = Equipment.EquipmentType.valueOf(equipmentType.toUpperCase());
+                equipments.add(new Equipment(itemStack, dropChance, equipmentTypeValue));
+            }
+
+            String item = content.getString(creature + ".drop_item", null);
+            ItemStack dropItem = null;
+            if (item != null) {
+                dropItem = XMaterial.matchXMaterial(item).orElse(XMaterial.BEDROCK).parseItem();
+            }
+            plugin.getDebugger().debug("Registered CustomCreature named {0}", key);
+            enemySpawnerSet.add(new CustomCreature(plugin, waveMin, waveMax, priorityTarget, explodeTarget, key, entityType, baby, breed, age, ageLook, expDrop, holidayEffects, rates, attributes, equipments, dropItem));
+        }
+
+    }
 
 
 }

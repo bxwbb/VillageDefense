@@ -81,6 +81,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/spigot/1.8.8-R0.1.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>BaseAPI</groupId>
+            <artifactId>BaseAPI</artifactId>
+            <version>1.0.4</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/BaseAPI-1.0.4.jar</systemPath>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
         <dependency>
             <groupId>org.jetbrains</groupId>

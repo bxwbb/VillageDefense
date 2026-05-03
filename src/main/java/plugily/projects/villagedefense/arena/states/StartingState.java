@@ -49,12 +49,14 @@ public class StartingState extends PluginStartingState {
             pluginArena.clearVillagers();
             pluginArena.spawnVillagers();
 
+            pluginArena.getShopManager().resetPlayerData();
+
             // 设置村民血量为200并给恢复一
             pluginArena.getVillagers().forEach(villager -> {
                 VersionUtils.setMaxHealth(villager, 200);
                 villager.setHealth(200);
 //                villager.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 10000, 43, true, false, false));
-                villager.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 10000, 1, true, false, false));
+                villager.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 10000, 0, true, false, false));
 //                villager.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, 3, 255, true, false, false));
             });
 

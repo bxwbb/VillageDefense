@@ -19,6 +19,7 @@
 
 package plugily.projects.villagedefense.creatures.v1_9_UP;
 
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftZombie;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,6 +32,7 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.arena.managers.spawner.EnemySpawner;
+import plugily.projects.villagedefense.arena.managers.spawner.SimpleEnemySpawner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +72,24 @@ public class CustomCreatureEvents implements Listener {
             } else if (arena.getEnemies().contains(entity)) {
                 CustomCreature customCreature = arena.getCreatureTargetManager().getCustomCreatureFromCreature((Creature) entity);
                 if (customCreature == null) {
+                    Optional<EnemySpawner> simpleEnemySpawner = arena.getPlugin().getEnemySpawnerRegistry().getSpawnerByName(String.valueOf(entity.getMetadata("PlugilyProjects-VillageDefense-Name")));
+                    if (simpleEnemySpawner.isPresent()) {
+                        ItemStack itemStack = simpleEnemySpawner.get().getDropItem();
+                        event.getDrops().add(itemStack);
+                    }
+                    event.getDrops().add(new ItemStack(XMaterial.ROTTEN_FLESH.get(), 5));
+                    event.setDroppedExp(5);
+
+                    arena.removeEnemy((Creature) entity);
+                    arena.changeArenaOptionBy("TOTAL_KILLED_ZOMBIES", 1);
+
+                    Player killer = entity.getKiller();
+                    if (killer != null) {
+                        plugin.getUserManager().addStat(killer, plugin.getStatsStorage().getStatisticType("KILLS"));
+                        plugin.getUserManager().addExperience(killer, 2 * arena.getArenaOption("CREATURE_DIFFICULTY_MULTIPLIER"));
+                        plugin.getRewardsHandler().performReward(killer, plugin.getRewardsHandler().getRewardType("ZOMBIE_KILL"));
+                        plugin.getPowerupRegistry().spawnPowerup(entity.getLocation(), arena);
+                    }
                     continue;
                 }
                 ItemStack itemStack = customCreature.getDropItem();

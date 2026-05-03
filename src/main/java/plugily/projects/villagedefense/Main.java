@@ -37,6 +37,7 @@ import plugily.projects.villagedefense.boot.PlaceholderInitializer;
 import plugily.projects.villagedefense.commands.arguments.ArgumentsRegistry;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
 import plugily.projects.villagedefense.creatures.v1_9_UP.CustomCreatureEvents;
+import plugily.projects.villagedefense.creatures.v1_9_UP.NetherMobSummoner;
 import plugily.projects.villagedefense.events.PluginEvents;
 import plugily.projects.villagedefense.handlers.LanguageMigrator;
 import plugily.projects.villagedefense.handlers.powerup.PowerupHandler;
@@ -68,6 +69,7 @@ public class Main extends PluginMain {
     private ArenaManager arenaManager;
     private ArgumentsRegistry argumentsRegistry;
     private EntityUpgradeMenu entityUpgradeMenu;
+    private NetherMobSummoner netherMobSummoner;
 
     @TestOnly
     public Main() {
@@ -112,11 +114,7 @@ public class Main extends PluginMain {
         argumentsRegistry = new ArgumentsRegistry(this);
 
         // 1.8 使用 NMS 自定义实体；高版本使用 Bukkit/兼容层实现，外部统一通过 Legacy 基类访问。
-        if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_8)) {
-            enemySpawnerRegistry = new EnemySpawnerRegistryLegacy(this);
-        } else {
-            enemySpawnerRegistry = new EnemySpawnerRegistry(this);
-        }
+        enemySpawnerRegistry = new EnemySpawnerRegistry(this);
 
         // 升级系统是可选功能，关闭时避免加载额外配置和事件菜单。
         if (getConfigPreferences().getOption("UPGRADES")) {
@@ -129,7 +127,7 @@ public class Main extends PluginMain {
         CreatureUtils.init(this);
         new PowerupHandler(this);
         new PluginEvents(this);
-        new CustomCreatureEvents(this);
+        netherMobSummoner = new NetherMobSummoner(this);
         addPluginMetrics();
     }
 
@@ -215,6 +213,10 @@ public class Main extends PluginMain {
 
     public EntityUpgradeMenu getEntityUpgradeMenu() {
         return entityUpgradeMenu;
+    }
+
+    public NetherMobSummoner getNetherMobSummoner() {
+        return netherMobSummoner;
     }
 
     @Override

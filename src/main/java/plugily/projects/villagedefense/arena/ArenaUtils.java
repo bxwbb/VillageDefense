@@ -21,6 +21,7 @@ package plugily.projects.villagedefense.arena;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Creature;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import plugily.projects.minigamesbox.api.user.IUser;
@@ -88,7 +89,7 @@ public class ArenaUtils extends PluginArenaUtils {
     }
 
     public static void removeSpawnedEnemies(Arena arena, int amount, double maxHealthToRemove) {
-        List<Creature> toRemove = new ArrayList<>(arena.getEnemies());
+        List<LivingEntity> toRemove = new ArrayList<>(arena.getEnemies());
         toRemove.removeIf(creature -> creature.getHealth() > maxHealthToRemove);
         if (toRemove.size() > amount) {
             Collections.shuffle(toRemove, ThreadLocalRandom.current());
@@ -100,11 +101,11 @@ public class ArenaUtils extends PluginArenaUtils {
 
         boolean eachThree = toRemove.size() > 70;
         for (int i = 0; i < toRemove.size(); i++) {
-            Creature creature = toRemove.get(i);
+            LivingEntity livingEntity = toRemove.get(i);
             if (!eachThree || (i % 3) == 0) {
-                VersionUtils.sendParticles("LAVA", arena.getPlayers(), creature.getLocation(), 20);
+                VersionUtils.sendParticles("LAVA", arena.getPlayers(), livingEntity.getLocation(), 20);
             }
-            creature.remove();
+            livingEntity.remove();
         }
     }
 

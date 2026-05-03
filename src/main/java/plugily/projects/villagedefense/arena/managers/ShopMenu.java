@@ -1,0 +1,22 @@
+package plugily.projects.villagedefense.arena.managers;
+
+import org.bukkit.entity.Player;
+
+public abstract class ShopMenu {
+
+    private final ShopManager shopManager;
+
+    public ShopMenu(ShopManager shopManager) {
+        this.shopManager = shopManager;
+    }
+
+    public ShopManager getShopManager() {
+        return shopManager;
+    }
+
+    public abstract void registerShop();
+
+    public abstract boolean isReady();
+
+    public abstract void open(Player player);
+}

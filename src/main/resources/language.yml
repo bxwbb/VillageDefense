@@ -281,6 +281,22 @@ In-Game:
         Not-Enough-Currency: "%color_chat_issue%%plugin_prefix% You need more orbs to buy this item!"
         Currency: "orbs"
         Not-Defined: "%color_chat_issue%%plugin_prefix% Shop wasn't set up! Contact staff!"
+        Leather: "&l&6皮革"
+        Stone: "&l&6石头"
+        Iron: "&l&f铁质"
+        Diamond: "&l&b钻石"
+        Netherite: "&l&7下界合金"
+        Trident: "&l&d三叉戟"
+        Enchanted-Trident: "&l&5附魔三叉戟"
+        ULeather: "&l&6<皮革>"
+        UStone: "&l&6<石头>"
+        UIron: "&l&f<铁质>"
+        UDiamond: "&l&b<钻石>"
+        UNetherite: "&l&7<下界合金>"
+        UTrident: "&l&d<三叉戟>"
+        UEnchanted-Trident: "&l&5<附魔三叉戟>"
+        Separator: "&n&e/"
+        Item-Ctrl-Lore: "&l&6左键点击 &r购买 &n&7| &l&6右键点击 &r切换"
 
 #
 # Sign messages

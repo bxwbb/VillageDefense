@@ -23,10 +23,17 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
+import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.arena.managers.spawner.SimpleEnemySpawner;
+
+import java.util.Objects;
+import java.util.Random;
 
 /**
  * @author Tigerpanzer_02
@@ -35,7 +42,11 @@ import plugily.projects.villagedefense.arena.managers.spawner.SimpleEnemySpawner
  */
 public class NormalZombie implements SimpleEnemySpawner {
 
-    public NormalZombie() {
+    private int wave = -1;
+    private final Main plugin;
+
+    public NormalZombie(Main plugin) {
+        this.plugin = plugin;
     }
 
     @Override
@@ -54,11 +65,7 @@ public class NormalZombie implements SimpleEnemySpawner {
      */
     @Override
     public double getSpawnRate(Arena arena, int wave, int phase, int spawnAmount) {
-        if (wave <= 8) {
-            return 1;
-        } else {
-            return 1d / 3;
-        }
+        return 1;
     }
 
     /**
@@ -72,11 +79,7 @@ public class NormalZombie implements SimpleEnemySpawner {
      */
     @Override
     public int getFinalAmount(Arena arena, int wave, int phase, int spawnAmount) {
-        if (wave <= 3) {
-            return wave * 2;
-        } else {
-            return spawnAmount;
-        }
+        return spawnAmount;
     }
 
     /**
@@ -90,26 +93,121 @@ public class NormalZombie implements SimpleEnemySpawner {
      */
     @Override
     public boolean checkPhase(Arena arena, int wave, int phase, int spawnAmount) {
+        this.wave = wave;
         return true;
     }
 
     public Creature spawn(Location location) {
+        Random random = new Random();
+
         Zombie zombie = (Zombie) VersionUtils.spawnEntity(location, EntityType.ZOMBIE);
+        if (wave > 5 && random.nextInt(100) < 30) {
+            zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10000, wave > 20 ? 2 : 1, true, true));
+        }
         zombie.getEquipment().setHelmet(new ItemStack(Material.AIR));
+        if (wave > 5 && random.nextInt(100) < 30) {
+            if (wave > 50) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
+                } else {
+                    zombie.getEquipment().setHelmet(new ItemStack(Material.NETHERITE_HELMET));
+                }
+            } else if (wave > 20) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setHelmet(new ItemStack(Material.IRON_HELMET));
+                } else {
+                    zombie.getEquipment().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
+                }
+            } else {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setHelmet(new ItemStack(Material.LEATHER_HELMET));
+                } else {
+                    zombie.getEquipment().setHelmet(new ItemStack(Material.CHAINMAIL_HELMET));
+                }
+            }
+        }
         zombie.getEquipment().setHelmetDropChance(0f);
         zombie.getEquipment().setChestplate(new ItemStack(Material.AIR));
+        if (wave > 5 && random.nextInt(100) < 15) {
+            if (wave > 50) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
+                } else {
+                    zombie.getEquipment().setChestplate(new ItemStack(Material.NETHERITE_CHESTPLATE));
+                }
+            } else if (wave > 20) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
+                } else {
+                    zombie.getEquipment().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
+                }
+            } else {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE));
+                } else {
+                    zombie.getEquipment().setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
+                }
+            }
+        }
         zombie.getEquipment().setChestplateDropChance(0f);
         zombie.getEquipment().setLeggings(new ItemStack(Material.AIR));
+        if (wave > 5 && random.nextInt(100) < 15) {
+            if (wave > 50) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
+                } else {
+                    zombie.getEquipment().setLeggings(new ItemStack(Material.NETHERITE_LEGGINGS));
+                }
+            } else if (wave > 20) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
+                } else {
+                    zombie.getEquipment().setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
+                }
+            } else {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setLeggings(new ItemStack(Material.LEATHER_LEGGINGS));
+                } else {
+                    zombie.getEquipment().setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
+                }
+            }
+        }
         zombie.getEquipment().setLeggingsDropChance(0f);
         zombie.getEquipment().setBoots(new ItemStack(Material.AIR));
+        if (wave > 5 && random.nextInt(100) < 30) {
+            if (wave > 50) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setBoots(new ItemStack(Material.DIAMOND_BOOTS));
+                } else {
+                    zombie.getEquipment().setBoots(new ItemStack(Material.NETHERITE_BOOTS));
+                }
+            } else if (wave > 20) {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setBoots(new ItemStack(Material.IRON_BOOTS));
+                } else {
+                    zombie.getEquipment().setBoots(new ItemStack(Material.DIAMOND_BOOTS));
+                }
+            } else {
+                if (random.nextInt(10) < 7) {
+                    zombie.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));
+                } else {
+                    zombie.getEquipment().setBoots(new ItemStack(Material.CHAINMAIL_BOOTS));
+                }
+            }
+        }
         zombie.getEquipment().setBootsDropChance(0f);
         zombie.getEquipment().setItemInMainHand(new ItemStack(Material.STICK));
         zombie.getEquipment().setItemInMainHandDropChance(0F);
         assert XAttribute.FOLLOW_RANGE.get() != null;
-//        VersionUtils.setMaxHealth(zombie, 70);
-//        zombie.setHealth(70);
+        Objects.requireNonNull(zombie.getAttribute(XAttribute.FOLLOW_RANGE.get())).setBaseValue(200D);
+        zombie.setAdult();
+        if (wave > 20) {
+            if (random.nextInt(10) > 4) {
+                zombie.setBaby();
+            }
+        }
         zombie.setRemoveWhenFarAway(false);
-//        zombie.setMetadata("PlugilyProjects-VillageDefense-Name", new FixedMetadataValue(plugin, key));
+        zombie.setMetadata("PlugilyProjects-VillageDefense-Name", new FixedMetadataValue(plugin, "NormalZombie"));
         return zombie;
     }
 
@@ -120,6 +218,6 @@ public class NormalZombie implements SimpleEnemySpawner {
      */
     @Override
     public String getName() {
-        return "普通僵尸";
+        return "NormalZombie";
     }
 }

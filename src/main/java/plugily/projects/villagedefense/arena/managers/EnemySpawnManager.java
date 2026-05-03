@@ -20,6 +20,7 @@ package plugily.projects.villagedefense.arena.managers;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Creature;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Villager;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 import plugily.projects.villagedefense.arena.Arena;
@@ -39,8 +40,8 @@ import java.util.*;
 public class EnemySpawnManager {
     private final Arena arena;
     private int localIdleProcess = 0;
-    private final List<Creature> glitchedEnemies = new ArrayList<>();
-    private final Map<Creature, Location> enemyCheckerLocations = new HashMap<>();
+    private final List<LivingEntity> glitchedEnemies = new ArrayList<>();
+    private final Map<LivingEntity, Location> enemyCheckerLocations = new HashMap<>();
 
     public EnemySpawnManager(Arena arena) {
         this.arena = arena;
@@ -71,38 +72,39 @@ public class EnemySpawnManager {
             }
             arena.setArenaOption("ZOMBIE_GLITCH_CHECKER", 0);
 
-            Iterator<Creature> creatureIterator = arena.getEnemies().iterator();
-            while (creatureIterator.hasNext()) {
-                Creature creature = creatureIterator.next();
-                if (creature.isDead()) {
+            Iterator<LivingEntity> livingEntityIterator = arena.getEnemies().iterator();
+            Random random = new Random();
+            while (livingEntityIterator.hasNext()) {
+                LivingEntity livingEntity = livingEntityIterator.next();
+                if (livingEntity.isDead()) {
                     // Bukkit 实体已死亡时同步 Arena 集合。
-                    creatureIterator.remove();
-                    arena.removeEnemy(creature);
+                    livingEntityIterator.remove();
+                    arena.removeEnemy(livingEntity);
                     continue;
                 }
-                if (glitchedEnemies.contains(creature) && creature.getLocation().distance(enemyCheckerLocations.get(creature)) <= 1) {
+                if (glitchedEnemies.contains(livingEntity) && livingEntity.getLocation().distance(enemyCheckerLocations.get(livingEntity)) <= 1) {
                     // 第二次仍未移动，认为卡死，直接移除以避免波次无法结束。
-                    creatureIterator.remove();
-                    arena.removeEnemy(creature);
-                    enemyCheckerLocations.remove(creature);
-                    creature.remove();
+                    livingEntityIterator.remove();
+                    arena.removeEnemy(livingEntity);
+                    enemyCheckerLocations.remove(livingEntity);
+                    livingEntity.remove();
                 }
 
-                Location checkerLoc = enemyCheckerLocations.get(creature);
+                Location checkerLoc = enemyCheckerLocations.get(livingEntity);
                 if (checkerLoc == null) {
                     // 第一次记录位置，下一次检测再判断是否移动。
-                    enemyCheckerLocations.put(creature, creature.getLocation());
-                } else if (creature.getLocation().distance(checkerLoc) <= 1) {
+                    enemyCheckerLocations.put(livingEntity, livingEntity.getLocation());
+                } else if (livingEntity.getLocation().distance(checkerLoc) <= 1) {
                     // 第一次疑似卡住时先传回随机刷怪点，给 AI 一次恢复机会。
-                    VersionUtils.teleport(creature, arena.getRandomZombieSpawnLocation(arena.getPlugin().getRandom()));
-                    enemyCheckerLocations.put(creature, creature.getLocation());
-                    glitchedEnemies.add(creature);
+                    VersionUtils.teleport(livingEntity, arena.getRandomZombieSpawnLocation(arena.getPlugin().getRandom()));
+                    enemyCheckerLocations.put(livingEntity, livingEntity.getLocation());
+                    glitchedEnemies.add(livingEntity);
                 }
             }
         }
     }
 
-    public Map<Creature, Location> getEnemyCheckerLocations() {
+    public Map<LivingEntity, Location> getEnemyCheckerLocations() {
         return enemyCheckerLocations;
     }
 

@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class Arena extends PluginArena {
 
     private static Main plugin;
-    private final List<Creature> enemies = new ArrayList<>();
+    private final List<LivingEntity> enemies = new ArrayList<>();
     private final List<Wolf> wolves = new ArrayList<>();
     private final List<Villager> villagers = new ArrayList<>();
     private final List<IronGolem> ironGolems = new ArrayList<>();
@@ -162,11 +162,11 @@ public class Arena extends PluginArena {
      * @return list of spawned enemies in arena
      */
     @NotNull
-    public List<Creature> getEnemies() {
+    public List<LivingEntity> getEnemies() {
         return enemies;
     }
 
-    public void removeEnemy(Creature enemy) {
+    public void removeEnemy(LivingEntity enemy) {
         enemies.remove(enemy);
     }
 

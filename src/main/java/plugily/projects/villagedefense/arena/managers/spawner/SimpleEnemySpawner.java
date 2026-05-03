@@ -21,6 +21,7 @@ package plugily.projects.villagedefense.arena.managers.spawner;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Creature;
+import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
@@ -107,7 +108,7 @@ public interface SimpleEnemySpawner extends EnemySpawner {
      * @return the spawned enemy
      */
     @Nullable
-    Creature spawn(Location location);
+    LivingEntity spawn(Location location);
 
     /**
      * Get the weight of the enemy in the arena.
@@ -130,18 +131,20 @@ public interface SimpleEnemySpawner extends EnemySpawner {
      * @param arena    the arena
      */
     default void spawn(Location location, Arena arena) {
-        Creature creature = spawn(location);
-        if (creature == null) {
+        LivingEntity livingEntity = spawn(location);
+        if (livingEntity == null) {
             return;
         }
-        if (canApplyAttributes()) {
-            CreatureUtils.applyAttributes(creature, arena);
+        if (livingEntity instanceof Creature) {
+            Creature creature = (Creature) livingEntity;
+            if (canApplyAttributes()) {
+                CreatureUtils.applyAttributes(creature, arena);
+            }
+            if (canApplyHolidayEffect()) {
+                arena.getPlugin().getHolidayManager().applyHolidayCreatureEffects(creature);
+            }
         }
-        if (canApplyHolidayEffect()) {
-            arena.getPlugin().getHolidayManager().applyHolidayCreatureEffects(creature);
-        }
-        System.out.println("添加了新的小怪 : " + creature.getClass());
-        arena.getEnemies().add(creature);
+        arena.getEnemies().add(livingEntity);
     }
 
     //TODO Simplify creature spawn reduce to one method e.g. spawn; add weight to creatures configurable!

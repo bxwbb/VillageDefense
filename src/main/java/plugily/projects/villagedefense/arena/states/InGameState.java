@@ -18,12 +18,17 @@
 
 package plugily.projects.villagedefense.arena.states;
 
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.arena.states.PluginInGameState;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.villagedefense.arena.Arena;
+
+import java.util.Iterator;
+import java.util.Random;
 
 /**
  * IN_GAME 状态的村庄守卫主循环。
@@ -39,6 +44,7 @@ public class InGameState extends PluginInGameState {
 
     /**
      * 每tick执行，游戏循环
+     *
      * @param arena 区域
      */
     @Override
@@ -82,7 +88,7 @@ public class InGameState extends PluginInGameState {
                 if (zombiesLeftFrom > 0 && zombiesLeft <= zombiesLeftFrom
                         && (startingWave = getPlugin().getConfig().getInt("Glowing-Status.Starting-Wave")) > 0
                         && pluginArena.getWave() >= startingWave) {
-                    for (org.bukkit.entity.Creature remaining : pluginArena.getEnemies()) {
+                    for (org.bukkit.entity.LivingEntity remaining : pluginArena.getEnemies()) {
                         if (!remaining.isGlowing()) { // To avoid setting glowing property every time
                             remaining.setGlowing(true);
                         }
@@ -100,6 +106,18 @@ public class InGameState extends PluginInGameState {
             if (arena.getArenaOption("ZOMBIES_TO_SPAWN") < 0) {
                 // 加权刷怪器可能一次扣多个权重，防止显示和判断出现负数。
                 arena.setArenaOption("ZOMBIES_TO_SPAWN", 0);
+            }
+            Iterator<LivingEntity> livingEntityIterator = pluginArena.getEnemies().iterator();
+            if (pluginArena.getWave() > 50) {
+                Random random = new Random();
+                while (livingEntityIterator.hasNext()) {
+                    LivingEntity livingEntity = livingEntityIterator.next();
+                    if (livingEntity.getType().equals(EntityType.GHAST) || livingEntity.getType().equals(EntityType.BLAZE) || livingEntity.getType().equals(EntityType.ENDERMAN))
+                        return;
+                    if (random.nextInt(100) <= 3) {
+                        pluginArena.getPlugin().getNetherMobSummoner().startSummon(livingEntity, pluginArena,pluginArena.getWave());
+                    }
+                }
             }
         } else if (arena.getTimer() <= 0) {
             // 非战斗阶段倒计时结束后进入下一波。

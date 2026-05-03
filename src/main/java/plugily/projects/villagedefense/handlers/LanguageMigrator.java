@@ -42,106 +42,106 @@ import java.nio.file.Paths;
 @SuppressWarnings("deprecation")
 public class LanguageMigrator {
 
-  public enum PluginFileVersion {
-    /*ARENA_SELECTOR(0),*/ BUNGEE(1), CONFIG(1), LANGUAGE(2),
-    /*LEADERBOARDS(0),*/ MYSQL(1), PERMISSIONS(1), POWERUPS(1),
-    /*SIGNS(0),*/ SPECIAL_ITEMS(1), SPECTATOR(1)/*, STATS(0)*/;
+    public enum PluginFileVersion {
+        /*ARENA_SELECTOR(0),*/ BUNGEE(1), CONFIG(1), LANGUAGE(2),
+        /*LEADERBOARDS(0),*/ MYSQL(1), PERMISSIONS(1), POWERUPS(1),
+        /*SIGNS(0),*/ SPECIAL_ITEMS(1), SPECTATOR(1)/*, STATS(0)*/;
 
-    private final int version;
+        private final int version;
 
-    PluginFileVersion(int version) {
-      this.version = version;
+        PluginFileVersion(int version) {
+            this.version = version;
+        }
+
+        public int getVersion() {
+            return version;
+        }
     }
 
-    public int getVersion() {
-      return version;
+    private final Main plugin;
+
+    public LanguageMigrator(Main plugin) {
+        this.plugin = plugin;
+        updatePluginFiles();
     }
-  }
 
-  private final Main plugin;
+    private void updatePluginFiles() {
+        for (PluginFileVersion pluginFileVersion : PluginFileVersion.values()) {
+            String fileName = pluginFileVersion.name().toLowerCase();
+            int newVersion = pluginFileVersion.getVersion();
+            File file = new File(plugin.getDataFolder() + "/" + fileName + ".yml");
+            FileConfiguration configuration = ConfigUtils.getConfig(plugin, fileName, false);
+            if (configuration == null) {
+                continue;
+            }
+            int oldVersion = configuration.getInt("Do-Not-Edit.File-Version", 0);
+            if (oldVersion == newVersion) {
+                continue;
+            }
+            if (fileName.equalsIgnoreCase(PluginFileVersion.LANGUAGE.name()) && oldVersion == 1) {
+                try {
+                    Files.createDirectory(Paths.get(plugin.getDataFolder() + "/" + "OLD_FILES_VD_4_7_1"));
+                } catch (IOException e) {
+                    Bukkit.getLogger().info("[System notify] &cCouldn't create subfolder " + "OLD_FILES_VD_4_7_1" + ". Problems might occur!");
+                }
+                if (!file.exists()) {
+                    Bukkit.getLogger().info("[System notify] &cFile " + file + ".yml does not exits!");
+                    return;
+                }
+                try {
+                    Files.move(Paths.get(file.getPath()), Paths.get(plugin.getDataFolder().getPath() + "/" + "OLD_FILES_VD_4_7_1" + "/" + file.getName()));
+                    File kitsFile = new File(plugin.getDataFolder() + "/" + "kits" + ".yml");
+                    Files.move(Paths.get(kitsFile.getPath()), Paths.get(plugin.getDataFolder().getPath() + "/" + "OLD_FILES_VD_4_7_1" + "/" + kitsFile.getName()));
+                    Bukkit.getLogger().info("[System notify] &aRenamed file " + file + "");
+                } catch (IOException e) {
+                    Bukkit.getLogger().info("[System notify] &cCouldn't rename file " + file + ". Problems might occur!");
+                }
+                break;
+            }
+            Bukkit.getLogger().info("[System notify] The " + fileName + "  file is outdated! Updating...");
+            for (int i = oldVersion; i < newVersion; i++) {
+                executeUpdate(file, pluginFileVersion, i);
+            }
 
-  public LanguageMigrator(Main plugin) {
-    this.plugin = plugin;
-    updatePluginFiles();
-  }
-
-  private void updatePluginFiles() {
-    for(PluginFileVersion pluginFileVersion : PluginFileVersion.values()) {
-      String fileName = pluginFileVersion.name().toLowerCase();
-      int newVersion = pluginFileVersion.getVersion();
-      File file = new File(plugin.getDataFolder() + "/" + fileName + ".yml");
-      FileConfiguration configuration = ConfigUtils.getConfig(plugin, fileName, false);
-      if(configuration == null) {
-        continue;
-      }
-      int oldVersion = configuration.getInt("Do-Not-Edit.File-Version", 0);
-      if(oldVersion == newVersion) {
-        continue;
-      }
-      if(fileName.equalsIgnoreCase(PluginFileVersion.LANGUAGE.name()) && oldVersion == 1) {
-        try {
-          Files.createDirectory(Paths.get(plugin.getDataFolder() + "/" + "OLD_FILES_VD_4_7_1"));
-        } catch(IOException e) {
-          Bukkit.getLogger().info("[System notify] &cCouldn't create subfolder " + "OLD_FILES_VD_4_7_1" + ". Problems might occur!");
+            updatePluginFileVersion(file, configuration, oldVersion, newVersion);
+            Bukkit.getLogger().info("[System notify] " + fileName + " updated, no comments were removed :)");
+            Bukkit.getLogger().info("[System notify] You're using latest " + fileName + " file now! Nice!");
         }
-        if(!file.exists()) {
-          Bukkit.getLogger().info("[System notify] &cFile " + file + ".yml does not exits!");
-          return;
-        }
-        try {
-          Files.move(Paths.get(file.getPath()), Paths.get(plugin.getDataFolder().getPath() + "/" + "OLD_FILES_VD_4_7_1" + "/" + file.getName()));
-          File kitsFile = new File(plugin.getDataFolder() + "/" + "kits" + ".yml");
-          Files.move(Paths.get(kitsFile.getPath()), Paths.get(plugin.getDataFolder().getPath() + "/" + "OLD_FILES_VD_4_7_1" + "/" + kitsFile.getName()));
-          Bukkit.getLogger().info("[System notify] &aRenamed file " + file + "");
-        } catch(IOException e) {
-          Bukkit.getLogger().info("[System notify] &cCouldn't rename file " + file + ". Problems might occur!");
-        }
-        break;
-      }
-      Bukkit.getLogger().info("[System notify] The " + fileName + "  file is outdated! Updating...");
-      for(int i = oldVersion; i < newVersion; i++) {
-        executeUpdate(file, pluginFileVersion, i);
-      }
-
-      updatePluginFileVersion(file, configuration, oldVersion, newVersion);
-      Bukkit.getLogger().info("[System notify] " + fileName + " updated, no comments were removed :)");
-      Bukkit.getLogger().info("[System notify] You're using latest " + fileName + " file now! Nice!");
     }
-  }
 
-  private void executeUpdate(File file, PluginFileVersion pluginFileVersion, int version) {
-    switch(pluginFileVersion) {
-      case LANGUAGE:
-        switch(version) {
-          case 1:
-            //gets replaced
-            break;
-          default:
-            break;
+    private void executeUpdate(File file, PluginFileVersion pluginFileVersion, int version) {
+        switch (pluginFileVersion) {
+            case LANGUAGE:
+                switch (version) {
+                    case 1:
+                        //gets replaced
+                        break;
+                    default:
+                        break;
+                }
+            default:
+                break;
         }
-      default:
-        break;
     }
-  }
 
-  public void updatePluginFileVersion(File file, FileConfiguration fileConfiguration, int oldVersion, int newVersion) {
-    int coreVersion = fileConfiguration.getInt("Do-Not-Edit.Core-Version", 0);
-    updateFileVersion(file, coreVersion, coreVersion, newVersion, oldVersion);
-  }
+    public void updatePluginFileVersion(File file, FileConfiguration fileConfiguration, int oldVersion, int newVersion) {
+        int coreVersion = fileConfiguration.getInt("Do-Not-Edit.Core-Version", 0);
+        updateFileVersion(file, coreVersion, coreVersion, newVersion, oldVersion);
+    }
 
-  private void updateFileVersion(File file, int coreVersion, int oldCoreVersion, int fileVersion, int oldFileVersion) {
-    MigratorUtils.removeLineFromFile(file, "# Don't edit it. But who's stopping you? It's your server!");
-    MigratorUtils.removeLineFromFile(file, "# Really, don't edit ;p");
-    MigratorUtils.removeLineFromFile(file, "# You edited it, huh? Next time hurt yourself!");
-    MigratorUtils.removeLineFromFile(file, "Do-Not-Edit:");
-    MigratorUtils.removeLineFromFile(file, "  File-Version: " + oldFileVersion + "");
-    MigratorUtils.removeLineFromFile(file, "  Core-Version: " + oldCoreVersion + "");
-    MigratorUtils.addNewLines(file, "# Don't edit it. But who's stopping you? It's your server!\r\n" +
-        "# Really, don't edit ;p\r\n" +
-        "# You edited it, huh? Next time hurt yourself!\r\n" +
-        "Do-Not-Edit:\r\n" +
-        "  File-Version: " + fileVersion + "\r\n" +
-        "  Core-Version: " + coreVersion + "\r\n");
-  }
+    private void updateFileVersion(File file, int coreVersion, int oldCoreVersion, int fileVersion, int oldFileVersion) {
+        MigratorUtils.removeLineFromFile(file, "# Don't edit it. But who's stopping you? It's your server!");
+        MigratorUtils.removeLineFromFile(file, "# Really, don't edit ;p");
+        MigratorUtils.removeLineFromFile(file, "# You edited it, huh? Next time hurt yourself!");
+        MigratorUtils.removeLineFromFile(file, "Do-Not-Edit:");
+        MigratorUtils.removeLineFromFile(file, "  File-Version: " + oldFileVersion + "");
+        MigratorUtils.removeLineFromFile(file, "  Core-Version: " + oldCoreVersion + "");
+        MigratorUtils.addNewLines(file, "# Don't edit it. But who's stopping you? It's your server!\r\n" +
+                "# Really, don't edit ;p\r\n" +
+                "# You edited it, huh? Next time hurt yourself!\r\n" +
+                "Do-Not-Edit:\r\n" +
+                "  File-Version: " + fileVersion + "\r\n" +
+                "  Core-Version: " + coreVersion + "\r\n");
+    }
 
 }

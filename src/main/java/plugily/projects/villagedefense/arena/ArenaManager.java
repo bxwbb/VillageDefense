@@ -19,7 +19,9 @@
 package plugily.projects.villagedefense.arena;
 
 import org.bukkit.Bukkit;
+import org.bukkit.block.Biome;
 import org.bukkit.entity.*;
+import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import plugily.projects.minigamesbox.api.arena.IPluginArena;
 import plugily.projects.minigamesbox.api.user.IUser;
@@ -34,6 +36,7 @@ import plugily.projects.villagedefense.api.event.wave.VillageWaveEndEvent;
 import plugily.projects.villagedefense.api.event.wave.VillageWaveStartEvent;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
 import plugily.projects.villagedefense.kits.KitUtils;
+import plugily.projects.villagedefense.utils.BiomeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,7 +176,12 @@ public class ArenaManager extends PluginArenaManager {
 
         for (Player player : arena.getPlayersLeft()) {
             plugin.getUserManager().addExperience(player, 5);
+            player.removePotionEffect(PotionEffectType.SLOWNESS);
+            player.removePotionEffect(PotionEffectType.HUNGER);
         }
+        arena.getVillagerSpawns().getFirst().getWorld().setStorm(false);
+        arena.getVillagerSpawns().getFirst().getWorld().setWeatherDuration(0);
+        BiomeUtil.setBiome5ChunkRadius(arena.getStartLocation(), Biome.PLAINS);
     }
 
     private void refreshAllPlayers(Arena arena) {
