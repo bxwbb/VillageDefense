@@ -1,6 +1,5 @@
-package plugily.projects.villagedefense.arena.managers;
+package plugily.projects.villagedefense.arena.managers.Shop;
 
-import com.xigua.baseAPI.api.events.NeteasePythonEvent;
 import org.bukkit.entity.Player;
 
 public class ShopMenuBedrock extends ShopMenu {

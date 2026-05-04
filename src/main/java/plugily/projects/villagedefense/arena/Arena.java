@@ -30,6 +30,7 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XEntityType;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.managers.*;
+import plugily.projects.villagedefense.arena.managers.Shop.ShopManager;
 import plugily.projects.villagedefense.arena.states.EndingState;
 import plugily.projects.villagedefense.arena.states.InGameState;
 import plugily.projects.villagedefense.arena.states.RestartingState;

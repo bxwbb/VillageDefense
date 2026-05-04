@@ -18,7 +18,7 @@ locale: default
 Bossbar:
   Display: true
   # 血条轮换消息间隔（秒）
-  Interval: 10
+  Interval: 5
 
 
 # 是否在游戏内显示右侧计分板
@@ -88,7 +88,7 @@ Block:
     # 是否禁止在竞技场中使用退出指令
     Leave: false
     # 禁止将物品移入合成台、附魔台、铁砧等容器
-    Item-Move: true
+    Item-Move: false
     ArmorStand:
       # 是否禁止双击盔甲架破坏
       Destroy: true

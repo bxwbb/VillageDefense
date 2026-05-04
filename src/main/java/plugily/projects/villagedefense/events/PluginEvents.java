@@ -34,6 +34,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.inventory.ItemStack;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.api.user.IUser;
@@ -334,5 +335,8 @@ public class PluginEvents implements Listener {
         }
     }
 
-
+    @EventHandler
+    public void onRaidTrigger(RaidTriggerEvent event) {
+        event.setCancelled(true);
+    }
 }

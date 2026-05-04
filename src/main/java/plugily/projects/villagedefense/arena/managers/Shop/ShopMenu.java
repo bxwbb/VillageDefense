@@ -1,8 +1,9 @@
-package plugily.projects.villagedefense.arena.managers;
+package plugily.projects.villagedefense.arena.managers.Shop;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 
-public abstract class ShopMenu {
+public abstract class ShopMenu implements Listener {
 
     private final ShopManager shopManager;
 

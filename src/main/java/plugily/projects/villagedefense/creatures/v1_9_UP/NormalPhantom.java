@@ -94,7 +94,7 @@ public class NormalPhantom implements SimpleEnemySpawner {
      */
     @Override
     public boolean checkPhase(Arena arena, int wave, int phase, int spawnAmount) {
-        return phase == 5 || phase == 15;
+        return true;
     }
 
     public LivingEntity spawn(Location location) {

@@ -202,7 +202,7 @@ public class NormalZombie implements SimpleEnemySpawner {
         Objects.requireNonNull(zombie.getAttribute(XAttribute.FOLLOW_RANGE.get())).setBaseValue(200D);
         zombie.setAdult();
         if (wave > 20) {
-            if (random.nextInt(10) > 4) {
+            if (random.nextInt(10) > 3) {
                 zombie.setBaby();
             }
         }

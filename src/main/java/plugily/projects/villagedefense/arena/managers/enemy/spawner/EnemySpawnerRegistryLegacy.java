@@ -134,7 +134,7 @@ public class EnemySpawnerRegistryLegacy {
                     case 0:
                         // 寒潮波
                         world.setStorm(true);
-                        world.setWeatherDuration(2400);
+                        world.setWeatherDuration(999999);
                         world.setThundering(false);
                         world.setThunderDuration(0);
                         BiomeUtil.setBiome5ChunkRadius(arena.getStartLocation(), Biome.SNOWY_PLAINS);
@@ -160,6 +160,9 @@ public class EnemySpawnerRegistryLegacy {
                     case 2:
                         // 劫掠波
                         enemySpawners.add(new NormalRaidCaptain(plugin));
+                        for (Player player : arena.getPlayers()) {
+                            player.sendMessage(Component.text("劫掠队长来袭"));
+                        }
                         break;
                 }
             }
@@ -216,39 +219,45 @@ public class EnemySpawnerRegistryLegacy {
     }
 
     /**
-     * 丝滑渐变到指定时间
-     *
-     * @param world      目标世界
+     * 丝滑渐变到指定游戏时间
+     * @param world 目标世界
      * @param targetTime 目标时间 0~24000
+     * @param dayLength 过渡占用的游戏时间段长度(0~24000)
      */
-    public void smoothSetTime(World world, long targetTime) {
-        if (world == null) return;
+    public void smoothSetTime(World world, long targetTime, long dayLength) {
+        if (world == null || dayLength <= 0) return;
+
+        long startTime = world.getTime();
+        long diff = targetTime - startTime;
+        if (diff == 0) return;
+
+        // 按20tick/s，MC 1游戏刻 = 1真实tick
+        long totalRunTicks = dayLength;
+        double perTickAdd = (double) diff / totalRunTicks;
+        final long[] tickCount = {0};
 
         new BukkitRunnable() {
             @Override
             public void run() {
-                long current = world.getTime();
-                // 已经到达目标，停止
-                if (current == targetTime) {
+                tickCount[0]++;
+                if (tickCount[0] >= totalRunTicks) {
+                    world.setTime(targetTime);
                     this.cancel();
                     return;
                 }
-
-                // 正向靠近 / 反向靠近
-                if (current < targetTime) {
-                    world.setTime(current + TIME_STEP);
-                } else {
-                    world.setTime(current - TIME_STEP);
-                }
+                long nowTime = Math.round(startTime + perTickAdd * tickCount[0]);
+                nowTime = Math.max(0, Math.min(24000, nowTime));
+                world.setTime(nowTime);
             }
         }.runTaskTimer(plugin, 0, 1);
     }
 
     /**
      * 丝滑切换到黄昏 12500
+     * 默认占用 3000 游戏时长过渡
      */
     public void smoothToDusk(World world) {
-        smoothSetTime(world, 12500);
+        smoothSetTime(world, 12500, 3000);
     }
 
     public void giveRandomEliteBuff(Arena arena) {
