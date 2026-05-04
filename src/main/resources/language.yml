@@ -295,7 +295,7 @@ In-Game:
         UTrident: "&l&d<三叉戟>"
         UEnchanted-Trident: "&l&5<附魔三叉戟>"
         Separator: "&n&e/"
-        Item-Ctrl-Lore: "&l&6左键点击 &r购买 &n&7| &l&6右键点击 &r切换 &n&7| &l&6Shift+右键点击 &r反向切换"
+        Item-Ctrl-Lore: "&l&6左键点击 &r购买 &n&7| &l&6右键点击 &r正向切换 &n&7| &l&6Shift+右键点击 &r反向切换&n&7| &l&6滚轮&r或&l&6上下方向键 &r切换"
 
 #
 # 告示牌消息

@@ -19,12 +19,10 @@
 package plugily.projects.villagedefense.creatures.v1_9_UP;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Creature;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Pillager;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -39,6 +37,7 @@ import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.arena.managers.spawner.SimpleEnemySpawner;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -115,12 +114,26 @@ public class NormalRaidCaptain implements SimpleEnemySpawner, Listener {
     public void onEntityDeath(EntityDeathEvent e) {
         if (!e.getEntity().hasMetadata("NormalRaidCaptain")) return;
 
-        Player killer = e.getEntity().getKiller();
-        if (killer == null) return;
+        LivingEntity entity = e.getEntity();
+        Player targetPlayer;
 
-        // 给予 灾厄 Bad Omen
-        killer.addPotionEffect(new PotionEffect(PotionEffectType.BAD_OMEN, 20 * 60, 0, false, false));
-        killer.sendMessage("§4§l你杀死了灾厄队长，获得了灾厄效果！");
+        // 1. 先看有没有玩家击杀
+        Player killer = entity.getKiller();
+        if (killer != null) {
+            targetPlayer = killer;
+        } else {
+            targetPlayer = entity.getWorld().getPlayers().stream()
+                    .filter(p -> p.getGameMode() != GameMode.SPECTATOR) // 过滤旁观
+                    .min(Comparator.comparingDouble(p -> p.getLocation().distanceSquared(entity.getLocation())))
+                    .orElse(null);
+        }
+
+        // 找不到玩家就退出
+        if (targetPlayer == null) return;
+
+        // 给予效果
+        targetPlayer.addPotionEffect(new PotionEffect(PotionEffectType.BAD_OMEN, 20 * 60, 0, false, false));
+        targetPlayer.sendMessage("§4§l你杀死了灾厄队长，获得了灾厄效果！");
     }
 
     @Override

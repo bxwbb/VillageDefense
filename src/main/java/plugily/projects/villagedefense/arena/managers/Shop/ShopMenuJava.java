@@ -30,7 +30,6 @@ import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.misc.complement.ComplementAccessor;
 import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
-import plugily.projects.villagedefense.arena.Arena;
 
 import java.util.HashMap;
 import java.util.List;
@@ -51,26 +50,30 @@ public class ShopMenuJava extends ShopMenu {
         ItemStack itemStack = merchandise.getLevelItem(level);
         ItemMeta itemMeta = itemStack.getItemMeta();
         List<String> lore = ComplementAccessor.getComplement().getLore(itemMeta);
-        int maxWidth = merchandise.getLevelName(1).length();
-        for (int i = 1; i <= merchandise.MAX_LEVEL; i++) {
-            maxWidth = Math.max(merchandise.getLevelName(i).length(), maxWidth);
-        }
-        maxWidth += 4;
-        for (int i = -2; i < 3; i++) {
-            StringBuilder stringBuilder = new StringBuilder();
-            String color = "";
-            if (Math.abs(i) == 2) color = String.valueOf((ChatColor.DARK_GRAY));
-            if (Math.abs(i) == 1) color = String.valueOf((ChatColor.GRAY));
-            if (Math.abs(i) == 0) color = String.valueOf((ChatColor.GREEN));
-            if (i == 0) {
-                stringBuilder.append(color).append("> ").append(color).append(centerString(maxWidth - 4, merchandise.getLevelName(loopIndex(playerInfo.level + i, playerInfo.maxLevel)))).append(color).append(" <");
+        int maxLevel = merchandise.MAX_LEVEL;
+        int current = playerInfo.level;
+        int playerMaxUnlock = playerInfo.maxLevel;
+        for (int i = 1; i <= maxLevel; i++) {
+            StringBuilder line = new StringBuilder();
+            ChatColor color;
+            if (i == current) {
+                color = ChatColor.GREEN;
+            } else if (i <= playerMaxUnlock) {
+                color = ChatColor.GRAY;
             } else {
-                stringBuilder.append(color).append(centerString(maxWidth, merchandise.getLevelName(loopIndex(playerInfo.level + i, playerInfo.maxLevel))));
+                color = ChatColor.DARK_GRAY;
             }
-            lore.add(stringBuilder.toString());
+            String name = merchandise.getLevelName(i);
+            if (i == current) {
+                line.append(color).append("> ").append(name);
+            } else {
+                line.append(color).append("  ").append(name);
+            }
+            lore.add(line.toString());
         }
         lore.add("");
         lore.add(ChatColor.GOLD + String.valueOf(merchandise.getLevelPrice(level)) + " " + new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_CURRENCY").asKey().build());
+        lore.add(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_ITEM_CTRL_LORE").asKey().build());
         ComplementAccessor.getComplement().setLore(itemMeta, lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;
@@ -297,7 +300,6 @@ public class ShopMenuJava extends ShopMenu {
                     Merchandise merchandise = ShopManager.getMerchandiseWithSlot(slot);
                     ShopManager.PlayerInfo playerInfo = getShopManager().playerData.get(player).get(merchandise);
                     if (merchandise != null && merchandise.isEnabled(player)) {
-                        System.out.println("找到商品" + slot + " " + merchandise.getLevelName(playerInfo.level));
                         player.playSound(
                                 player.getLocation(),
                                 Sound.UI_BUTTON_CLICK,
@@ -306,8 +308,6 @@ public class ShopMenuJava extends ShopMenu {
                         );
                         getShopManager().changePlayerData(merchandise, player, (byte) (eventName.equals("MouseWheelDown") ? 1 : -1));
                         guis.get(player).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
-                    } else {
-                        System.out.println("没找到商品" + slot);
                     }
                     break;
                 default:
