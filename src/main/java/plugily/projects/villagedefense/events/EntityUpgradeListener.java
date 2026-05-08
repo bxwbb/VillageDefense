@@ -65,6 +65,14 @@ public class EntityUpgradeListener implements Listener {
                     event.setDamage(event.getDamage() + upgradeMenu.getTier(event.getDamager(), upgradeMenu.getUpgrade("Damage")) * 2);
                 }
                 break;
+            case PILLAGER:
+                for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+                    if (!arena.getPillagers().contains(event.getDamager())) {
+                        continue;
+                    }
+                    event.setDamage(event.getDamage() + upgradeMenu.getTier(event.getDamager(), upgradeMenu.getUpgrade("Damage")));
+                }
+                break;
             case WOLF:
                 for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
                     if (!arena.getWolves().contains(event.getDamager())) {
@@ -97,7 +105,7 @@ public class EntityUpgradeListener implements Listener {
         LivingEntity livingEntity = event.getEntity();
 
         for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-            if (!arena.getIronGolems().contains(livingEntity)) {
+            if (!arena.getIronGolems().contains(livingEntity) || !arena.getPillagers().contains(livingEntity)) {
                 continue;
             }
             int tier = upgradeMenu.getTier(livingEntity, upgradeMenu.getUpgrade("Final-Defense"));

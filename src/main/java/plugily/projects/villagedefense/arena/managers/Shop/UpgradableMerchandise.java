@@ -18,7 +18,17 @@ public class UpgradableMerchandise extends Merchandise {
 
         public AUpgradableMerchandise(ItemStack itemStack, int price, String name) {
             this.itemStack = itemStack;
-            this.price = price;
+            if (ShopManager.fileConfiguration.contains("Item." + name)) {
+                this.price = ShopManager.fileConfiguration.getInt("Item." + name);
+            } else {
+                this.price = price;
+            }
+            this.name = name;
+        }
+
+        public AUpgradableMerchandise(ItemStack itemStack, String name) {
+            this.itemStack = itemStack;
+            this.price = ShopManager.fileConfiguration.getInt("Item." + name);
             this.name = name;
         }
     }

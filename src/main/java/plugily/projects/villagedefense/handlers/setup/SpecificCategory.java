@@ -34,24 +34,30 @@ import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
  * Created at 01.07.2022
  */
 public class SpecificCategory extends PluginSpecificCategory {
-  @Override
-  public void addItems(NormalFastInv gui) {
-    super.addItems(gui);
+    @Override
+    public void addItems(NormalFastInv gui) {
+        super.addItems(gui);
 
-    MultiLocationItem zombieSpawn = new MultiLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.ROTTEN_FLESH.parseMaterial()), "Zombie Spawn", "Click add new zombie spawn\non the place you're standing at.", "zombiespawns", 2);
-    gui.setItem((getInventoryLine() * 9) + 1, zombieSpawn);
-    getItemList().add(zombieSpawn);
+        MultiLocationItem zombieSpawn = new MultiLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.ROTTEN_FLESH.parseMaterial()), "Zombie Spawn", "Click add new zombie spawn\non the place you're standing at.", "zombiespawns", 2);
+        gui.setItem((getInventoryLine() * 9) + 1, zombieSpawn);
+        getItemList().add(zombieSpawn);
 
-    MultiLocationItem villagerSpawns = new MultiLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.ROTTEN_FLESH.parseMaterial()), "Villager Spawn", "Click add new villager spawn\non the place you're standing at.", "villagerspawns", 2);
-    gui.setItem((getInventoryLine() * 9) + 2, villagerSpawns);
-    getItemList().add(villagerSpawns);
+        MultiLocationItem villagerSpawns = new MultiLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.ROTTEN_FLESH.parseMaterial()), "Villager Spawn", "Click add new villager spawn\non the place you're standing at.", "villagerspawns", 2);
+        gui.setItem((getInventoryLine() * 9) + 2, villagerSpawns);
+        getItemList().add(villagerSpawns);
 
-    SimpleClickableItem door = new SimpleClickableItem(new ItemBuilder(XMaterial.OAK_DOOR.parseMaterial()).name("&7(&7aAutomatically recognized&7) Game Door").lore("&7Doors will be regenerated\n each game, villagers will\n hide in houses so you can put\n doors to keep zombies away!\n No explicit setup needed anymore!").colorizeItem().build(), event -> { event.getWhoClicked().sendMessage(new MessageBuilder("&aDoors on the map will be automatically added. No extra step needed!").build());});
-    gui.setItem((getInventoryLine() * 9) + 3, door);
+        SimpleClickableItem door = new SimpleClickableItem(new ItemBuilder(XMaterial.OAK_DOOR.parseMaterial()).name("&7(&7aAutomatically recognized&7) Game Door").lore("&7Doors will be regenerated\n each game, villagers will\n hide in houses so you can put\n doors to keep zombies away!\n No explicit setup needed anymore!").colorizeItem().build(), event -> {
+            event.getWhoClicked().sendMessage(new MessageBuilder("&aDoors on the map will be automatically added. No extra step needed!").build());
+        });
+        gui.setItem((getInventoryLine() * 9) + 3, door);
 
-    MaterialLocationItem chest = new MaterialLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.CHEST.parseMaterial()), "Game Shop", "Look at (double-) chest with items\nand click it to set it as game shop.\n(it allows to click villagers to buy game items)\nRemember to set item prices for the game\nusing /vda setprice command!", "shop", XMaterial.CHEST.parseMaterial());
-    gui.setItem((getInventoryLine() * 9) + 4, chest);
-    getItemList().add(chest);
-  }
+        MaterialLocationItem chest = new MaterialLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.CHEST.parseMaterial()), "Game Shop", "Look at (double-) chest with items\nand click it to set it as game shop.\n(it allows to click villagers to buy game items)\nRemember to set item prices for the game\nusing /vda setprice command!", "shop", XMaterial.CHEST.parseMaterial());
+        gui.setItem((getInventoryLine() * 9) + 4, chest);
+        getItemList().add(chest);
+
+        MultiLocationItem bonus = new MultiLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.DIAMOND.parseMaterial()), "掠夺奖励箱", "站在奖励箱要生成的位置\n点击来设置奖励箱", "bonus", 1);
+        gui.setItem((getInventoryLine() * 9) + 5, bonus);
+        getItemList().add(bonus);
+    }
 
 }

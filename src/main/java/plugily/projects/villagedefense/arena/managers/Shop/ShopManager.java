@@ -19,15 +19,18 @@
 package plugily.projects.villagedefense.arena.managers.Shop;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
@@ -35,6 +38,7 @@ import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -46,51 +50,57 @@ public class ShopManager {
     public final Main plugin;
     final Arena arena;
     private Consumer<Player> openMenuConsumer;
-    private final ShopMenu shopMenu;
+    private final Consumer<Player> openPotionMenuConsumer;
+    private final Map<Player, ShopMenu> openMenus = new HashMap<>();
 
     public static final List<Merchandise> merchandises = new ArrayList<>();
-    public final Map<Player, Map<Merchandise, PlayerInfo>> playerData = new HashMap<>();
+    public static final Map<PotionEffectType, List<Integer>> potionEffectPrices = new HashMap<>();
+    public final Map<Player, Map<Merchandise, DataInfo>> playerData = new HashMap<>();
+    public final Map<PotionEffectType, DataInfo> potionEffectData = new HashMap<>();
+    public static FileConfiguration fileConfiguration;
+    private final Map<PotionEffectType, Object> effectLocks = new HashMap<>();
 
-    public static class PlayerInfo {
+    public static class DataInfo {
         public int level;
         public int maxLevel;
 
-        public PlayerInfo(int level, int maxLevel) {
+        public DataInfo(int level, int maxLevel) {
             this.level = level;
             this.maxLevel = maxLevel;
         }
     }
 
-    static {
+    public void setPrices() {
+        fileConfiguration = ConfigUtils.getConfig(plugin, "prices", true);
         merchandises.add(new UpgradableMerchandise(4, 0, Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_HELMET), 80, "皮革"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_HELMET), 180, "铁质"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_HELMET), 380, "钻石"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_HELMET), 750, "下界合金")
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_HELMET), "皮革头盔"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_HELMET), 180, "铁质头盔"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_HELMET), 380, "钻石头盔"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_HELMET), 750, "下界合金头盔")
         )));
         merchandises.add(new UpgradableMerchandise(4, 1, Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_CHESTPLATE), 100, "皮革"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_CHESTPLATE), 220, "铁质"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_CHESTPLATE), 450, "钻石"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_CHESTPLATE), 850, "下界合金")
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_CHESTPLATE), 100, "皮革胸甲"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_CHESTPLATE), 220, "铁质胸甲"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_CHESTPLATE), 450, "钻石胸甲"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_CHESTPLATE), 850, "下界合金胸甲")
         )));
         merchandises.add(new UpgradableMerchandise(4, 2, Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_LEGGINGS), 90, "皮革"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_LEGGINGS), 200, "铁质"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_LEGGINGS), 420, "钻石"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_LEGGINGS), 800, "下界合金")
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_LEGGINGS), 90, "皮革护腿"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_LEGGINGS), 200, "铁质护腿"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_LEGGINGS), 420, "钻石护腿"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_LEGGINGS), 800, "下界合金护腿")
         )));
         merchandises.add(new UpgradableMerchandise(4, 3, Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_BOOTS), 70, "皮革"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_BOOTS), 160, "铁质"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_BOOTS), 350, "钻石"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_BOOTS), 700, "下界合金")
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_BOOTS), 70, "皮革靴子"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_BOOTS), 160, "铁质靴子"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_BOOTS), 350, "钻石靴子"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_BOOTS), 700, "下界合金靴子")
         )));
         merchandises.add(new UpgradableMerchandise(4, 4, Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.STONE_SWORD), 60, "石质"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_SWORD), 150, "铁质"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_SWORD), 360, "钻石"),
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_SWORD), 720, "下界合金")
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.STONE_SWORD), 60, "石质剑"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_SWORD), 150, "铁质剑"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_SWORD), 360, "钻石剑"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_SWORD), 720, "下界合金剑")
         )));
         ItemStack tridentEnchanted = new ItemStack(Material.TRIDENT);
         ItemMeta tridentMeta = tridentEnchanted.getItemMeta();
@@ -188,39 +198,44 @@ public class ShopManager {
         ItemStack enderPearl = new ItemStack(Material.ENDER_PEARL);
         ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
 
-        merchandises.add(new UpgradableMerchandise(3,19,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(fishingRod,120,"钓鱼竿"),
-                new UpgradableMerchandise.AUpgradableMerchandise(enderPearl,350,"末影珍珠"),
-                new UpgradableMerchandise.AUpgradableMerchandise(totem,680,"不死图腾")
+        merchandises.add(new UpgradableMerchandise(3, 19, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(fishingRod, 120, "钓鱼竿"),
+                new UpgradableMerchandise.AUpgradableMerchandise(enderPearl, 350, "末影珍珠"),
+                new UpgradableMerchandise.AUpgradableMerchandise(totem, 680, "不死图腾")
         )));
         ItemStack normalShield = new ItemStack(Material.SHIELD);
 
         ItemStack coloredShield = new ItemStack(Material.SHIELD);
         ItemMeta meta1 = coloredShield.getItemMeta();
-        if(meta1 != null){
-            meta1.addEnchant(Enchantment.UNBREAKING,1,true);
+        if (meta1 != null) {
+            meta1.addEnchant(Enchantment.UNBREAKING, 1, true);
             coloredShield.setItemMeta(meta1);
         }
 
         ItemStack advancedShield = new ItemStack(Material.SHIELD);
         ItemMeta meta2 = advancedShield.getItemMeta();
-        if(meta2 != null){
-            meta2.addEnchant(Enchantment.UNBREAKING,2,true);
-            meta2.addEnchant(Enchantment.MENDING,1,true);
+        if (meta2 != null) {
+            meta2.addEnchant(Enchantment.UNBREAKING, 2, true);
+            meta2.addEnchant(Enchantment.MENDING, 1, true);
             advancedShield.setItemMeta(meta2);
         }
 
-        merchandises.add(new UpgradableMerchandise(3,20,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(normalShield,140,"普通盾牌"),
-                new UpgradableMerchandise.AUpgradableMerchandise(coloredShield,260,"精致装饰盾牌"),
-                new UpgradableMerchandise.AUpgradableMerchandise(advancedShield,480,"满级附魔盾牌")
+        merchandises.add(new UpgradableMerchandise(3, 20, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(normalShield, 140, "普通盾牌"),
+                new UpgradableMerchandise.AUpgradableMerchandise(coloredShield, 260, "精致装饰盾牌"),
+                new UpgradableMerchandise.AUpgradableMerchandise(advancedShield, 480, "满级附魔盾牌")
         )));
         ItemStack book = new ItemStack(Material.BOOK);
         ItemStack lapis = new ItemStack(Material.LAPIS_LAZULI);
-
-        merchandises.add(new UpgradableMerchandise(2,21,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(book,40,"普通书本"),
-                new UpgradableMerchandise.AUpgradableMerchandise(lapis,90,"青金石")
+        merchandises.add(new UpgradableMerchandise(2, 21, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(book, 40, "普通书本"),
+                new UpgradableMerchandise.AUpgradableMerchandise(lapis, 90, "青金石")
+        )));
+        ItemStack pillagerEgg = new ItemStack(Material.PILLAGER_SPAWN_EGG);
+        ItemStack ironGolemEgg = new ItemStack(Material.IRON_GOLEM_SPAWN_EGG);
+        merchandises.add(new UpgradableMerchandise(2, 22, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(pillagerEgg, 600, "生成弩手"),
+                new UpgradableMerchandise.AUpgradableMerchandise(ironGolemEgg, 1800, "生成机械傀儡")
         )));
         ItemStack apple = new ItemStack(Material.APPLE);
         ItemStack bakedPotato = new ItemStack(Material.BAKED_POTATO);
@@ -266,67 +281,87 @@ public class ShopManager {
         ItemStack beetrootSoup = new ItemStack(Material.BEETROOT_SOUP);
         ItemStack cake = new ItemStack(Material.CAKE);
 
-        merchandises.add(new UpgradableMerchandise(3,27,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(apple,60,"苹果"),
-                new UpgradableMerchandise.AUpgradableMerchandise(bakedPotato,120,"烤土豆"),
-                new UpgradableMerchandise.AUpgradableMerchandise(goldenApple,450,"金苹果")
+        merchandises.add(new UpgradableMerchandise(3, 27, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(apple, 60, "苹果"),
+                new UpgradableMerchandise.AUpgradableMerchandise(bakedPotato, 120, "烤土豆"),
+                new UpgradableMerchandise.AUpgradableMerchandise(goldenApple, 450, "金苹果")
         )));
-        merchandises.add(new UpgradableMerchandise(3,28,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(beef,50,"生牛肉"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cookedBeef,130,"熟牛排"),
-                new UpgradableMerchandise.AUpgradableMerchandise(enchGoldenApple,680,"附魔金苹果")
+        merchandises.add(new UpgradableMerchandise(3, 28, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(beef, 50, "生牛肉"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cookedBeef, 130, "熟牛排"),
+                new UpgradableMerchandise.AUpgradableMerchandise(enchGoldenApple, 680, "附魔金苹果")
         )));
-        merchandises.add(new UpgradableMerchandise(3,29,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(chicken,45,"生鸡肉"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cookedChicken,110,"熟鸡肉"),
-                new UpgradableMerchandise.AUpgradableMerchandise(pumpkinPie,280,"南瓜派")
+        merchandises.add(new UpgradableMerchandise(3, 29, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(chicken, 45, "生鸡肉"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cookedChicken, 110, "熟鸡肉"),
+                new UpgradableMerchandise.AUpgradableMerchandise(pumpkinPie, 280, "南瓜派")
         )));
-        merchandises.add(new UpgradableMerchandise(3,30,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(bread,70,"面包"),
-                new UpgradableMerchandise.AUpgradableMerchandise(carrot,55,"胡萝卜"),
-                new UpgradableMerchandise.AUpgradableMerchandise(goldenCarrot,320,"金胡萝卜")
+        merchandises.add(new UpgradableMerchandise(3, 30, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(bread, 70, "面包"),
+                new UpgradableMerchandise.AUpgradableMerchandise(carrot, 55, "胡萝卜"),
+                new UpgradableMerchandise.AUpgradableMerchandise(goldenCarrot, 320, "金胡萝卜")
         )));
-        merchandises.add(new UpgradableMerchandise(3,31,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(porkchop,48,"生猪排"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cookedPorkchop,125,"熟猪排"),
-                new UpgradableMerchandise.AUpgradableMerchandise(mushroomStew,240,"蘑菇煲")
+        merchandises.add(new UpgradableMerchandise(3, 31, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(porkchop, 48, "生猪排"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cookedPorkchop, 125, "熟猪排"),
+                new UpgradableMerchandise.AUpgradableMerchandise(mushroomStew, 240, "蘑菇煲")
         )));
-        merchandises.add(new UpgradableMerchandise(3,32,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(potato,40,"土豆"),
-                new UpgradableMerchandise.AUpgradableMerchandise(sweetBerries,65,"甜浆果"),
-                new UpgradableMerchandise.AUpgradableMerchandise(rabbitStew,260,"兔肉煲")
+        merchandises.add(new UpgradableMerchandise(3, 32, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(potato, 40, "土豆"),
+                new UpgradableMerchandise.AUpgradableMerchandise(sweetBerries, 65, "甜浆果"),
+                new UpgradableMerchandise.AUpgradableMerchandise(rabbitStew, 260, "兔肉煲")
         )));
-        merchandises.add(new UpgradableMerchandise(3,33,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(rabbit,42,"生兔肉"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cookedRabbit,115,"熟兔肉"),
-                new UpgradableMerchandise.AUpgradableMerchandise(honeyBottle,220,"蜂蜜瓶")
+        merchandises.add(new UpgradableMerchandise(3, 33, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(rabbit, 42, "生兔肉"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cookedRabbit, 115, "熟兔肉"),
+                new UpgradableMerchandise.AUpgradableMerchandise(honeyBottle, 220, "蜂蜜瓶")
         )));
-        merchandises.add(new UpgradableMerchandise(3,34,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(cod,44,"生鳕鱼"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cookedCod,105,"熟鳕鱼"),
-                new UpgradableMerchandise.AUpgradableMerchandise(pufferfish,180,"河豚")
+        merchandises.add(new UpgradableMerchandise(3, 34, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(cod, 44, "生鳕鱼"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cookedCod, 105, "熟鳕鱼"),
+                new UpgradableMerchandise.AUpgradableMerchandise(pufferfish, 180, "河豚")
         )));
-        merchandises.add(new UpgradableMerchandise(3,35,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(salmon,46,"生三文鱼"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cookedSalmon,118,"熟三文鱼"),
-                new UpgradableMerchandise.AUpgradableMerchandise(tropicalFish,160,"热带鱼")
+        merchandises.add(new UpgradableMerchandise(3, 35, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(salmon, 46, "生三文鱼"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cookedSalmon, 118, "熟三文鱼"),
+                new UpgradableMerchandise.AUpgradableMerchandise(tropicalFish, 160, "热带鱼")
         )));
-        merchandises.add(new UpgradableMerchandise(3,36,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(melonSlice,52,"西瓜片"),
-                new UpgradableMerchandise.AUpgradableMerchandise(driedKelp,58,"干海带"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cookie,95,"曲奇")
+        merchandises.add(new UpgradableMerchandise(3, 36, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(melonSlice, 52, "西瓜片"),
+                new UpgradableMerchandise.AUpgradableMerchandise(driedKelp, 58, "干海带"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cookie, 95, "曲奇")
         )));
-        merchandises.add(new UpgradableMerchandise(3,37,Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(beetroot,38,"甜菜根"),
-                new UpgradableMerchandise.AUpgradableMerchandise(beetrootSoup,210,"甜菜汤"),
-                new UpgradableMerchandise.AUpgradableMerchandise(cake,350,"蛋糕")
+        merchandises.add(new UpgradableMerchandise(3, 37, Arrays.asList(
+                new UpgradableMerchandise.AUpgradableMerchandise(beetroot, 38, "甜菜根"),
+                new UpgradableMerchandise.AUpgradableMerchandise(beetrootSoup, 210, "甜菜汤"),
+                new UpgradableMerchandise.AUpgradableMerchandise(cake, 350, "蛋糕")
         )));
+        if (ShopManager.fileConfiguration.contains("Buff.HEALTH_BOOST")) {
+            potionEffectPrices.put(PotionEffectType.HEALTH_BOOST, ShopManager.fileConfiguration.getIntegerList("Buff.HEALTH_BOOST"));
+        } else {
+            potionEffectPrices.put(PotionEffectType.HEALTH_BOOST, List.of(32, 64, 128, 256, 320, 384, 384, 384, 512));
+        }
+        if (ShopManager.fileConfiguration.contains("Buff.SPEED")) {
+            potionEffectPrices.put(PotionEffectType.SPEED, ShopManager.fileConfiguration.getIntegerList("Buff.SPEED"));
+        } else {
+            potionEffectPrices.put(PotionEffectType.SPEED, List.of(128, 256));
+        }
+        if (ShopManager.fileConfiguration.contains("Buff.RESISTANCE")) {
+            potionEffectPrices.put(PotionEffectType.RESISTANCE, ShopManager.fileConfiguration.getIntegerList("Buff.RESISTANCE"));
+        } else {
+            potionEffectPrices.put(PotionEffectType.RESISTANCE, List.of(128, 256));
+        }
+        if (ShopManager.fileConfiguration.contains("Buff.STRENGTH")) {
+            potionEffectPrices.put(PotionEffectType.STRENGTH, ShopManager.fileConfiguration.getIntegerList("Buff.STRENGTH"));
+        } else {
+            potionEffectPrices.put(PotionEffectType.STRENGTH, List.of(512, 512));
+        }
     }
 
     public ShopManager(Arena arena) {
         this.arena = arena;
-        shopMenu = new ShopMenuJava(this);
         plugin = arena.getPlugin();
+        setPrices();
         FileConfiguration config = ConfigUtils.getConfig(plugin, "arenas");
 
 //        defaultGolemItemName = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GOLEM_ITEM", false).asKey().build();
@@ -339,11 +374,21 @@ public class ShopManager {
             if (plugin.getArenaRegistry().getArena(player) == null) {
                 return;
             }
-            if (!shopMenu.isReady()) {
+            if (!openMenus.get(player).isReady()) {
                 new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_DEFINED").asKey().player(player).sendPlayer();
                 return;
             }
-            shopMenu.open(player);
+            openMenus.get(player).open(player);
+        };
+        openPotionMenuConsumer = player -> {
+            if (plugin.getArenaRegistry().getArena(player) == null) {
+                return;
+            }
+            if (!openMenus.get(player).isReady()) {
+                new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_DEFINED").asKey().player(player).sendPlayer();
+                return;
+            }
+            openMenus.get(player).openBuffMenu(player);
         };
     }
 
@@ -351,6 +396,11 @@ public class ShopManager {
         for (Player player : arena.getPlayers()) {
             playerData.put(player, new HashMap<>());
         }
+        this.potionEffectData.clear();
+        potionEffectPrices.forEach((potionEffectType, integers) -> {
+            // level是当前腐肉数量,maxLevel是当前等级
+            this.potionEffectData.put(potionEffectType, new DataInfo(0, 0));
+        });
     }
 
     public void setOpenMenuConsumer(@NotNull Consumer<Player> openMenuConsumer) {
@@ -359,7 +409,31 @@ public class ShopManager {
 
     public void openShop(Player player) {
         if (openMenuConsumer != null) {
+            if (!openMenus.containsKey(player)) {
+                if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())) {
+                    openMenus.put(player, new ShopMenuBedrock(this));
+                } else {
+                    openMenus.put(player, new ShopMenuJava(this));
+                }
+                plugin.getServer().getPluginManager().registerEvents(openMenus.get(player), plugin);
+                openMenus.get(player).registerShop();
+            }
             openMenuConsumer.accept(player);
+        }
+    }
+
+    public void openPotionShop(Player player) {
+        if (openPotionMenuConsumer != null) {
+            if (!openMenus.containsKey(player)) {
+                if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())) {
+                    openMenus.put(player, new ShopMenuBedrock(this));
+                } else {
+                    openMenus.put(player, new ShopMenuJava(this));
+                }
+                plugin.getServer().getPluginManager().registerEvents(openMenus.get(player), plugin);
+                openMenus.get(player).registerShop();
+            }
+            openPotionMenuConsumer.accept(player);
         }
     }
 
@@ -373,8 +447,15 @@ public class ShopManager {
     }
 
     private void registerShop() {
-        plugin.getServer().getPluginManager().registerEvents(shopMenu, plugin);
-        shopMenu.registerShop();
+        for (Player player : arena.getPlayers()) {
+            if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())) {
+                openMenus.put(player, new ShopMenuBedrock(this));
+            } else {
+                openMenus.put(player, new ShopMenuJava(this));
+            }
+            plugin.getServer().getPluginManager().registerEvents(openMenus.get(player), plugin);
+            openMenus.get(player).registerShop();
+        }
     }
 
     public void giveItem(Player player, ItemStack itemStack) {
@@ -425,9 +506,10 @@ public class ShopManager {
 
     private static ItemStack createEnchBook(Enchantment ench, int level) {
         ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
-        ItemMeta meta = book.getItemMeta();
+        EnchantmentStorageMeta meta = (EnchantmentStorageMeta) book.getItemMeta();
+
         if (meta != null) {
-            meta.addEnchant(ench, level, true);
+            meta.addStoredEnchant(ench, level, true);
             book.setItemMeta(meta);
         }
         return book;
@@ -435,11 +517,146 @@ public class ShopManager {
 
     public static Merchandise getMerchandiseWithSlot(int slot) {
         for (Merchandise merchandise : merchandises) {
-            if(merchandise.SLOT == slot) {
+            if (merchandise.SLOT == slot) {
                 return merchandise;
             }
         }
         return null;
+    }
+
+    /**
+     * 升级增益药水等级
+     *
+     * @param potionEffectType 药水效果
+     * @param player           点击玩家
+     */
+    public void updateBuff(PotionEffectType potionEffectType, Player player) {
+        // 初始化当前药水的锁
+        Object lock = effectLocks.computeIfAbsent(potionEffectType, k -> new Object());
+
+        // 加锁：同一药水多玩家并发排队执行
+        synchronized (lock) {
+            // 1. 获取配置和共享数据
+            List<Integer> levelCostMap = potionEffectPrices.get(potionEffectType);
+            DataInfo dataInfo = potionEffectData.get(potionEffectType);
+
+            // 配置不存在直接返回
+            if (levelCostMap == null || dataInfo == null) {
+                player.sendMessage("§c该增益效果暂无配置！");
+                return;
+            }
+
+            int maxGrade = levelCostMap.size();
+            int nowLevel = dataInfo.maxLevel;
+
+            // 2. 判断是否已达最大等级
+            if (nowLevel >= maxGrade) {
+                player.sendMessage("§c该增益已达到最大等级，无法继续升级！");
+                return;
+            }
+
+            // 3. 获取玩家背包腐肉总数
+            int playerFlesh = getRottenFleshCount(player);
+            if (playerFlesh <= 0) {
+                player.sendMessage("§c你背包里没有腐肉！");
+                return;
+            }
+
+            // 4. 获取升级下一等级需要的腐肉
+            int needCost = levelCostMap.get(nowLevel);
+            // 本等级已投入数量
+            int alreadyPut = dataInfo.level;
+            // 还缺多少能升级
+            int needLeft = needCost - alreadyPut;
+
+            // 5. 扣腐肉 + 更新共享数据
+            if (playerFlesh >= needLeft) {
+                // 够升级：扣除所需数量
+                takeRottenFlesh(player, needLeft);
+                // 等级提升，清空本等级累计
+                dataInfo.maxLevel++;
+                dataInfo.level = 0;
+                player.sendMessage("§a升级成功！当前等级：" + dataInfo.maxLevel);
+            } else {
+                // 不够升级：把玩家所有腐肉全部投入
+                takeRottenFlesh(player, playerFlesh);
+                // 累加进本等级进度
+                dataInfo.level += playerFlesh;
+                player.sendMessage("§e腐肉不足，已全部投入进度！当前本等级进度："
+                        + dataInfo.level + "/" + needCost);
+            }
+            for (Player arenaPlayer : arena.getPlayers()) {
+                openMenus.get(arenaPlayer).refreshBuffMenu(arenaPlayer);
+            }
+        }
+    }
+
+    private int getRottenFleshCount(Player player) {
+        int count = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType() == Material.ROTTEN_FLESH) {
+                count += item.getAmount();
+            }
+        }
+        return count;
+    }
+
+    private void takeRottenFlesh(Player player, int amount) {
+        int remain = amount;
+        ItemStack[] contents = player.getInventory().getContents();
+        for (int i = 0; i < contents.length && remain > 0; i++) {
+            ItemStack item = contents[i];
+            if (item == null || item.getType() != Material.ROTTEN_FLESH) continue;
+
+            if (item.getAmount() <= remain) {
+                remain -= item.getAmount();
+                player.getInventory().setItem(i, null);
+            } else {
+                item.setAmount(item.getAmount() - remain);
+                remain = 0;
+            }
+        }
+    }
+
+    public void playerBuy(Player player, Merchandise merchandise, int level) {
+        if (!this.playerData.containsKey(player)) {
+            this.playerData.put(player, new HashMap<>());
+        }
+        if (!this.playerData.get(player).containsKey(merchandise)) {
+            this.playerData.get(player).put(merchandise, new ShopManager.DataInfo(1, 1));
+        }
+        ShopManager.DataInfo dataInfo = this.playerData.get(player).get(merchandise);
+        int cost = merchandise.getLevelPrice(level);
+        IUser user = this.plugin.getUserManager().getUser(player);
+        int orbs = user.getStatistic("ORBS");
+        if (cost > orbs) {
+            new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_ENOUGH_CURRENCY").asKey().player(player).sendPlayer();
+            player.playSound(
+                    player.getLocation(),
+                    Sound.ENTITY_VILLAGER_NO,
+                    1.0F,
+                    0.8F
+            );
+            return;
+        }
+        player.playSound(
+                player.getLocation(),
+                Sound.ENTITY_EXPERIENCE_ORB_PICKUP,
+                1.0F,
+                1.2F
+        );
+        if (merchandise.getLevelName(level).equals("生成机械傀儡")) {
+            this.arena.spawnGolem(player.getLocation(), player);
+        } else if (merchandise.getLevelName(level).equals("生成弩手")) {
+            this.arena.spawnPillager(player.getLocation(), player);
+        } else {
+            player.getInventory().addItem(merchandise.getLevelItem(level));
+        }
+        if (level == dataInfo.maxLevel) {
+            this.doubleAddPlayerData(merchandise, player);
+        }
+        this.adjustOrbs(user, cost);
+        openMenus.get(player).refreshOpen(player);
     }
 
 }

@@ -79,7 +79,7 @@ public class InGameState extends PluginInGameState {
             } else if (arena.getArenaOption("ZOMBIES_TO_SPAWN") > 0) {
                 // 还有待生成敌人时继续刷，并把波次超时清理计时器拉长。
                 pluginArena.getEnemySpawnManager().spawnEnemies();
-                setArenaTimer(500);
+                setArenaTimer(1000);
             }
             if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_9)) {
                 // 高版本提供 glowing，用于提示最后几只怪的位置。

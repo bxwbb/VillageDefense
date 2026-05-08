@@ -38,82 +38,92 @@ import java.util.List;
  */
 public class ArenaRegistry extends PluginArenaRegistry {
 
-  private final Main plugin;
+    private final Main plugin;
 
-  public ArenaRegistry(Main plugin) {
-    super(plugin);
-    this.plugin = plugin;
-  }
-
-
-  @Override
-  public PluginArena getNewArena(String id) {
-    return new Arena(id);
-  }
-
-  @Override
-  public boolean additionalValidatorChecks(ConfigurationSection section, PluginArena arena, String id) {
-    boolean checks = super.additionalValidatorChecks(section, arena, id);
-    if(!checks) return false;
-
-    if(!section.getBoolean(id + ".isdone")) {
-      plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("NOT VALIDATED").arena(arena).build());
-      return false;
+    public ArenaRegistry(Main plugin) {
+        super(plugin);
+        this.plugin = plugin;
     }
 
-    List<String> zombieSection = section.getStringList(id + ".zombiespawns");
-    if(zombieSection.isEmpty()) {
-      plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("ZOMBIE SPAWNS").arena(arena).build());
-      return false;
-    } else {
-      for(String string : zombieSection) {
-        ((Arena) arena).addZombieSpawn(LocationSerializer.getLocation(string));
-      }
+
+    @Override
+    public PluginArena getNewArena(String id) {
+        return new Arena(id);
     }
 
-    List<String> villagerSection = section.getStringList(id + ".villagerspawns");
-    if(villagerSection.isEmpty()) {
-      plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("VILLAGER SPAWNS").arena(arena).build());
-      return false;
-    } else {
-      for(String string : villagerSection) {
-        ((Arena) arena).addVillagerSpawn(LocationSerializer.getLocation(string));
-      }
+    @Override
+    public boolean additionalValidatorChecks(ConfigurationSection section, PluginArena arena, String id) {
+        boolean checks = super.additionalValidatorChecks(section, arena, id);
+        if (!checks) return false;
+
+        if (!section.getBoolean(id + ".isdone")) {
+            plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("NOT VALIDATED").arena(arena).build());
+            return false;
+        }
+
+        List<String> zombieSection = section.getStringList(id + ".zombiespawns");
+        if (zombieSection.isEmpty()) {
+            plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("ZOMBIE SPAWNS").arena(arena).build());
+            return false;
+        } else {
+            for (String string : zombieSection) {
+                ((Arena) arena).addZombieSpawn(LocationSerializer.getLocation(string));
+            }
+        }
+
+        List<String> villagerSection = section.getStringList(id + ".villagerspawns");
+        if (villagerSection.isEmpty()) {
+            plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("VILLAGER SPAWNS").arena(arena).build());
+            return false;
+        } else {
+            for (String string : villagerSection) {
+                ((Arena) arena).addVillagerSpawn(LocationSerializer.getLocation(string));
+            }
+        }
+
+        List<String> bonusSection = section.getStringList(id + ".bonus");
+        if (bonusSection.isEmpty()) {
+            plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("VILLAGER SPAWNS").arena(arena).build());
+            return false;
+        } else {
+            for (String string : bonusSection) {
+                ((Arena) arena).addVillagerSpawn(LocationSerializer.getLocation(string));
+            }
+        }
+
+        if (arena.getStartLocation().getWorld().getDifficulty() == Difficulty.PEACEFUL) {
+            plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("THERE IS A WRONG " +
+                    "DIFFICULTY -> SET IT TO ANOTHER ONE THAN PEACEFUL - WE SET IT TO EASY").arena(arena).build());
+            arena.getStartLocation().getWorld().setDifficulty(Difficulty.EASY);
+        }
+        return true;
     }
 
-    if(arena.getStartLocation().getWorld().getDifficulty() == Difficulty.PEACEFUL) {
-      plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("THERE IS A WRONG " +
-          "DIFFICULTY -> SET IT TO ANOTHER ONE THAN PEACEFUL - WE SET IT TO EASY").arena(arena).build());
-      arena.getStartLocation().getWorld().setDifficulty(Difficulty.EASY);
+    @Override
+    public @Nullable Arena getArena(Player player) {
+        IPluginArena pluginArena = super.getArena(player);
+        if (pluginArena instanceof Arena) {
+            return (Arena) pluginArena;
+        }
+        return null;
     }
-    return true;
-  }
 
-  @Override
-  public @Nullable Arena getArena(Player player) {
-    IPluginArena pluginArena = super.getArena(player);
-    if(pluginArena instanceof Arena) {
-      return (Arena) pluginArena;
+    @Override
+    public @Nullable Arena getArena(String id) {
+        IPluginArena pluginArena = super.getArena(id);
+        if (pluginArena instanceof Arena) {
+            return (Arena) pluginArena;
+        }
+        return null;
     }
-    return null;
-  }
 
-  @Override
-  public @Nullable Arena getArena(String id) {
-    IPluginArena pluginArena = super.getArena(id);
-    if(pluginArena instanceof Arena) {
-      return (Arena) pluginArena;
+    public @NotNull List<Arena> getPluginArenas() {
+        List<Arena> arenas = new ArrayList<>();
+        for (IPluginArena pluginArena : super.getArenas()) {
+            if (pluginArena instanceof Arena) {
+                arenas.add((Arena) pluginArena);
+            }
+        }
+        return arenas;
     }
-    return null;
-  }
-
-  public @NotNull List<Arena> getPluginArenas() {
-    List<Arena> arenas = new ArrayList<>();
-    for(IPluginArena pluginArena : super.getArenas()) {
-      if(pluginArena instanceof Arena) {
-        arenas.add((Arena) pluginArena);
-      }
-    }
-    return arenas;
-  }
 }

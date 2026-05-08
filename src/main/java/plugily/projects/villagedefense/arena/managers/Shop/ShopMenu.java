@@ -20,4 +20,10 @@ public abstract class ShopMenu implements Listener {
     public abstract boolean isReady();
 
     public abstract void open(Player player);
+
+    public abstract void refreshOpen(Player player);
+
+    public abstract void openBuffMenu(Player player);
+
+    public abstract void refreshBuffMenu(Player player);
 }

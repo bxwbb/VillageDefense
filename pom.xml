@@ -68,6 +68,13 @@
     </repositories>
 
     <dependencies>
+        <!-- GSON - 自带于 Paper/Spigot -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
@@ -87,6 +94,13 @@
             <version>1.0.4</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/BaseAPI-1.0.4.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>FloodGate</groupId>
+            <artifactId>FloodGate</artifactId>
+            <version>2.2.3</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/floodgate-spigot.jar</systemPath>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
         <dependency>

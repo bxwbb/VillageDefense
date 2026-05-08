@@ -40,6 +40,8 @@ public interface BaseCreatureInitializer {
 
     IronGolem spawnGolem(Location location);
 
+    Pillager spawnPillager(Location location);
+
     default void applyFollowRange(Creature zombie) {
         MiscUtils.getEntityAttribute(zombie, XAttribute.FOLLOW_RANGE.get()).ifPresent(ai -> ai.setBaseValue(200.0D));
     }

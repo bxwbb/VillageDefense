@@ -69,6 +69,8 @@ public class MessageInitializer {
         getMessageManager().registerMessage("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_WOLF_DEATH", new Message("In-Game.Messages.Village.Entities.Wolf.Death", ""));
         getMessageManager().registerMessage("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_GOLEM_SPAWN", new Message("In-Game.Messages.Village.Entities.Golem.Spawn", ""));
         getMessageManager().registerMessage("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_GOLEM_NAME", new Message("In-Game.Messages.Village.Entities.Golem.Name", ""));
+        getMessageManager().registerMessage("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_PILLAGER_SPAWN", new Message("In-Game.Messages.Village.Entities.Pillager.Spawn", ""));
+        getMessageManager().registerMessage("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_PILLAGER_NAME", new Message("In-Game.Messages.Village.Entities.Pillager.Name", ""));
         getMessageManager().registerMessage("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_CANT_RIDE_OTHER", new Message("In-Game.Messages.Village.Entities.Cant.Ride-Other", ""));
 
         getMessageManager().registerMessage("IN_GAME_MESSAGES_VILLAGE_SHOP_GUI", new Message("In-Game.Messages.Village.Shop.GUI", ""));

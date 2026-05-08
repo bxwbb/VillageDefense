@@ -158,6 +158,19 @@ public class ArenaEvents extends PluginArenaEvents {
                         arena.removeIronGolem(ironGolem);
                     }
                     return;
+                case PILLAGER:
+                    if (!arena.getPillagers().contains(event.getEntity())) {
+                        continue;
+                    }
+
+                    Pillager pillager = (Pillager) event.getEntity();
+
+                    if (pillager.getHealth() <= event.getDamage()) {
+                        event.setCancelled(true);
+                        event.setDamage(0);
+                        arena.removePillager(pillager);
+                    }
+                    return;
                 case WOLF:
                     if (!arena.getWolves().contains(event.getEntity())) {
                         continue;

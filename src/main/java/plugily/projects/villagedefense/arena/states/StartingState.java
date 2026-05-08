@@ -18,8 +18,10 @@
 
 package plugily.projects.villagedefense.arena.states;
 
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import plugily.projects.minigamesbox.api.user.IUser;
@@ -56,9 +58,10 @@ public class StartingState extends PluginStartingState {
                 VersionUtils.setMaxHealth(villager, 200);
                 villager.setHealth(200);
 //                villager.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 10000, 43, true, false, false));
-                villager.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 10000, 0, true, false, false));
-//                villager.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, 3, 255, true, false, false));
+//                villager.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 10000, 0, true, false, false));
+                villager.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, 0, 255, true, false, false));
             });
+            pluginArena.getVillagers().getFirst().setProfession(Villager.Profession.CLERIC);
 
             for (Villager villager : pluginArena.getVillagers()) {
                 villager.setCustomName(CreatureUtils.getHealthNameTag(villager));

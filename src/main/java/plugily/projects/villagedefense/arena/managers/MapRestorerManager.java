@@ -20,6 +20,7 @@ package plugily.projects.villagedefense.arena.managers;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.IronGolem;
+import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Wolf;
 import plugily.projects.minigamesbox.classic.arena.managers.PluginMapRestorerManager;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
@@ -39,65 +40,71 @@ import java.util.List;
  */
 public class MapRestorerManager extends PluginMapRestorerManager {
 
-  public final Arena arena;
+    public final Arena arena;
 
-  IDoorManager doorManager;
+    IDoorManager doorManager;
 
-  public MapRestorerManager(Arena arena) {
-    super(arena);
-    this.arena = arena;
-    if(ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_13)) {
-      doorManager = new DoorManager(arena);
-    } else {
-      doorManager = new DoorManagerLegacy(arena);
+    public MapRestorerManager(Arena arena) {
+        super(arena);
+        this.arena = arena;
+        if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_13)) {
+            doorManager = new DoorManager(arena);
+        } else {
+            doorManager = new DoorManagerLegacy(arena);
+        }
     }
-  }
 
-  @Override
-  public void fullyRestoreArena() {
-    super.fullyRestoreArena();
-    arena.setWave(1);
-    arena.getSpawnedEntities().clear();
-    arena.getDroppedFleshes().clear();
+    @Override
+    public void fullyRestoreArena() {
+        super.fullyRestoreArena();
+        arena.setWave(1);
+        arena.getSpawnedEntities().clear();
+        arena.getDroppedFleshes().clear();
 
-    doorManager.rebuildDoors();
-    clearEnemiesFromArena();
-    clearGolemsFromArena();
-    clearVillagersFromArena();
-    clearWolvesFromArena();
-    clearDroppedEntities();
-  }
-
-  public final void clearEnemiesFromArena() {
-    arena.getEnemySpawnManager().applyIdle(0);
-    arena.getEnemies().forEach(Entity::remove);
-    arena.getEnemies().clear();
-  }
-
-  public final void clearDroppedEntities() {
-    for(Entity entity : arena.getPlugin().getBukkitHelper().getNearbyEntities(arena.getStartLocation(), 200)) {
-      if(entity.getType() == XEntityType.EXPERIENCE_ORB.get() || entity.getType() == XEntityType.ITEM.get()) {
-        entity.remove();
-      }
+        doorManager.rebuildDoors();
+        clearEnemiesFromArena();
+        clearGolemsFromArena();
+        clearPillagerFromArena();
+        clearVillagersFromArena();
+        clearWolvesFromArena();
+        clearDroppedEntities();
     }
-  }
 
-  public final void clearGolemsFromArena() {
-    List<IronGolem> ironGolems = new ArrayList<>(arena.getIronGolems());
-    ironGolems.forEach(arena::removeIronGolem);
-  }
+    public final void clearEnemiesFromArena() {
+        arena.getEnemySpawnManager().applyIdle(0);
+        arena.getEnemies().forEach(Entity::remove);
+        arena.getEnemies().clear();
+    }
 
-  public final void clearVillagersFromArena() {
-    arena.getVillagers().forEach(Entity::remove);
-    arena.getVillagers().clear();
-  }
+    public final void clearDroppedEntities() {
+        for (Entity entity : arena.getPlugin().getBukkitHelper().getNearbyEntities(arena.getStartLocation(), 200)) {
+            if (entity.getType() == XEntityType.EXPERIENCE_ORB.get() || entity.getType() == XEntityType.ITEM.get()) {
+                entity.remove();
+            }
+        }
+    }
 
-  public final void clearWolvesFromArena() {
-    List<Wolf> wolves = new ArrayList<>(arena.getWolves());
-    wolves.forEach(arena::removeWolf);
-  }
+    public final void clearGolemsFromArena() {
+        List<IronGolem> ironGolems = new ArrayList<>(arena.getIronGolems());
+        ironGolems.forEach(arena::removeIronGolem);
+    }
 
-  public IDoorManager getDoorManager() {
-    return doorManager;
-  }
+    public final void clearPillagerFromArena() {
+        List<Pillager> pillagers = new ArrayList<>(arena.getPillagers());
+        pillagers.forEach(arena::removePillager);
+    }
+
+    public final void clearVillagersFromArena() {
+        arena.getVillagers().forEach(Entity::remove);
+        arena.getVillagers().clear();
+    }
+
+    public final void clearWolvesFromArena() {
+        List<Wolf> wolves = new ArrayList<>(arena.getWolves());
+        wolves.forEach(arena::removeWolf);
+    }
+
+    public IDoorManager getDoorManager() {
+        return doorManager;
+    }
 }

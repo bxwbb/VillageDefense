@@ -21,11 +21,15 @@ package plugily.projects.villagedefense.arena.managers.Shop;
 
 import com.xigua.baseAPI.api.events.NeteasePythonEvent;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.misc.complement.ComplementAccessor;
@@ -40,19 +44,20 @@ import java.util.Map;
  */
 public class ShopMenuJava extends ShopMenu {
 
-    private Map<Player, NormalFastInv> guis = new HashMap<>();
+    private NormalFastInv gui;
+    private static NormalFastInv buffGui;
 
     public ShopMenuJava(ShopManager shopManager) {
         super(shopManager);
     }
 
-    public ItemStack getLevelItemWithLore(Merchandise merchandise, int level, ShopManager.PlayerInfo playerInfo) {
+    public ItemStack getLevelItemWithLore(Merchandise merchandise, int level, ShopManager.DataInfo dataInfo) {
         ItemStack itemStack = merchandise.getLevelItem(level);
         ItemMeta itemMeta = itemStack.getItemMeta();
         List<String> lore = ComplementAccessor.getComplement().getLore(itemMeta);
         int maxLevel = merchandise.MAX_LEVEL;
-        int current = playerInfo.level;
-        int playerMaxUnlock = playerInfo.maxLevel;
+        int current = dataInfo.level;
+        int playerMaxUnlock = dataInfo.maxLevel;
         for (int i = 1; i <= maxLevel; i++) {
             StringBuilder line = new StringBuilder();
             ChatColor color;
@@ -80,76 +85,77 @@ public class ShopMenuJava extends ShopMenu {
     }
 
     public void registerShop() {
-        for (Player p : getShopManager().arena.getPlayers()) {
-            guis.put(p, new NormalFastInv(54, new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GUI").asKey().build()));
-            guis.get(p).addOpenHandler(inventoryOpenEvent -> {
-                Player player = (Player) inventoryOpenEvent.getPlayer();
-                for (Merchandise merchandise : ShopManager.merchandises) {
-                    if (!getShopManager().playerData.containsKey(player)) {
-                        getShopManager().playerData.put(player, new HashMap<>());
-                    }
-                    if (!getShopManager().playerData.get(player).containsKey(merchandise)) {
-                        boolean allShow = false;
-                        if (merchandise instanceof UpgradableMerchandise upgradableMerchandise)
-                            allShow = upgradableMerchandise.isAllShow();
-                        getShopManager().playerData.get(player).put(merchandise, new ShopManager.PlayerInfo(allShow ? merchandise.MAX_LEVEL : 1, allShow ? merchandise.MAX_LEVEL : 1));
-                    }
-                    ShopManager.PlayerInfo playerInfo = getShopManager().playerData.get(player).get(merchandise);
-                    guis.get(p).setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo), inventoryClickEvent -> {
-                        Player clickPlayer = (Player) inventoryClickEvent.getWhoClicked();
-                        if (inventoryClickEvent.getClick().isShiftClick()) {
-                            if (inventoryClickEvent.getClick().isRightClick()) {
-                                clickPlayer.playSound(
-                                        clickPlayer.getLocation(),
-                                        Sound.UI_BUTTON_CLICK,
-                                        1.0F,
-                                        1.2F
-                                );
-                                getShopManager().changePlayerData(merchandise, clickPlayer, (byte) -1);
-                                guis.get(p).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
-                            }
-                        } else {
-                            if (inventoryClickEvent.getClick().isLeftClick()) {
-                                int cost = merchandise.getLevelPrice(playerInfo.level);
-                                IUser user = getShopManager().plugin.getUserManager().getUser(clickPlayer);
-                                int orbs = user.getStatistic("ORBS");
-                                if (cost > orbs) {
-                                    new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_ENOUGH_CURRENCY").asKey().player(clickPlayer).sendPlayer();
-                                    clickPlayer.playSound(
-                                            clickPlayer.getLocation(),
-                                            Sound.ENTITY_VILLAGER_NO,
-                                            1.0F,
-                                            0.8F
-                                    );
-                                    return;
-                                }
-                                clickPlayer.playSound(
-                                        clickPlayer.getLocation(),
-                                        Sound.ENTITY_EXPERIENCE_ORB_PICKUP,
-                                        1.0F,
-                                        1.2F
-                                );
-                                clickPlayer.getInventory().addItem(merchandise.getLevelItem(playerInfo.level));
-                                if (playerInfo.level == playerInfo.maxLevel) {
-                                    getShopManager().doubleAddPlayerData(merchandise, clickPlayer);
-                                    guis.get(p).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
-                                }
-                                getShopManager().adjustOrbs(user, cost);
-                            } else if (inventoryClickEvent.getClick().isRightClick()) {
-                                clickPlayer.playSound(
-                                        clickPlayer.getLocation(),
-                                        Sound.UI_BUTTON_CLICK,
-                                        1.0F,
-                                        1.2F
-                                );
-                                getShopManager().changePlayerData(merchandise, clickPlayer, (byte) 1);
-                                guis.get(p).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
-                            }
-                        }
-                    });
+        gui = new NormalFastInv(54, new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GUI").asKey().build());
+        gui.addOpenHandler(inventoryOpenEvent -> {
+            Player player = (Player) inventoryOpenEvent.getPlayer();
+            for (Merchandise merchandise : ShopManager.merchandises) {
+                if (!getShopManager().playerData.containsKey(player)) {
+                    getShopManager().playerData.put(player, new HashMap<>());
                 }
-            });
-        }
+                if (!getShopManager().playerData.get(player).containsKey(merchandise)) {
+                    boolean allShow = false;
+                    if (merchandise instanceof UpgradableMerchandise upgradableMerchandise)
+                        allShow = upgradableMerchandise.isAllShow();
+                    getShopManager().playerData.get(player).put(merchandise, new ShopManager.DataInfo(allShow ? merchandise.MAX_LEVEL : 1, allShow ? merchandise.MAX_LEVEL : 1));
+                }
+                ShopManager.DataInfo dataInfo = getShopManager().playerData.get(player).get(merchandise);
+                gui.setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo), inventoryClickEvent -> {
+                    Player clickPlayer = (Player) inventoryClickEvent.getWhoClicked();
+                    if (inventoryClickEvent.getClick().isShiftClick()) {
+                        if (inventoryClickEvent.getClick().isRightClick()) {
+                            clickPlayer.playSound(
+                                    clickPlayer.getLocation(),
+                                    Sound.UI_BUTTON_CLICK,
+                                    1.0F,
+                                    1.2F
+                            );
+                            getShopManager().changePlayerData(merchandise, clickPlayer, (byte) -1);
+                            gui.getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo));
+                        }
+                    } else {
+                        if (inventoryClickEvent.getClick().isLeftClick()) {
+                            getShopManager().playerBuy(player, merchandise, dataInfo.level);
+                            gui.getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo));
+                        } else if (inventoryClickEvent.getClick().isRightClick()) {
+                            clickPlayer.playSound(
+                                    clickPlayer.getLocation(),
+                                    Sound.UI_BUTTON_CLICK,
+                                    1.0F,
+                                    1.2F
+                            );
+                            getShopManager().changePlayerData(merchandise, clickPlayer, (byte) 1);
+                            gui.getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo));
+                        }
+                    }
+                });
+            }
+        });
+        buffGui = new NormalFastInv(9, new MessageBuilder("&7&l增益商店").build());
+        buffGui.addOpenHandler(inventoryOpenEvent -> {
+            int slot = 0;
+            for (PotionEffectType potionEffectType : ShopManager.potionEffectPrices.keySet()) {
+                int finalSlot = slot;
+                buffGui.setItem(slot, getPotionItem(potionEffectType), inventoryClickEvent -> {
+                    Player player = (Player) inventoryClickEvent.getWhoClicked();
+                    getShopManager().updateBuff(potionEffectType, player);
+                    buffGui.getInventory().setItem(finalSlot, getPotionItem(potionEffectType));
+                });
+                slot++;
+            }
+        });
+    }
+
+    private ItemStack getPotionItem(PotionEffectType potionEffectType) {
+        ItemStack itemStack = new ItemStack(Material.POTION);
+        PotionMeta potionMeta = (PotionMeta) itemStack.getItemMeta();
+        potionMeta.addCustomEffect(new PotionEffect(potionEffectType, 99999, getShopManager().potionEffectData.get(potionEffectType).maxLevel), true);
+        ComplementAccessor.getComplement().setDisplayName(potionMeta, new MessageBuilder("&5&l点击升级该增益").build());
+        List<String> lore = ComplementAccessor.getComplement().getLore(potionMeta);
+        ShopManager.DataInfo dataInfo = getShopManager().potionEffectData.get(potionEffectType);
+        lore.add(getProgressBar(ShopManager.potionEffectPrices.get(potionEffectType).get(dataInfo.maxLevel - 1), dataInfo.level));
+        ComplementAccessor.getComplement().setLore(potionMeta, lore);
+        itemStack.setItemMeta(potionMeta);
+        return itemStack;
     }
 
     @Override
@@ -159,9 +165,9 @@ public class ShopMenuJava extends ShopMenu {
 
     @Override
     public void open(Player player) {
-        if (!guis.containsKey(player)) {
-            guis.put(player, new NormalFastInv(54, new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GUI").asKey().build()));
-            guis.get(player).addOpenHandler(inventoryOpenEvent -> {
+        if (gui == null) {
+            gui = new NormalFastInv(54, new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_GUI").asKey().build());
+            gui.addOpenHandler(inventoryOpenEvent -> {
                 Player inventoryOpenEventPlayer = (Player) inventoryOpenEvent.getPlayer();
                 for (Merchandise merchandise : ShopManager.merchandises) {
                     if (!getShopManager().playerData.containsKey(inventoryOpenEventPlayer)) {
@@ -171,10 +177,10 @@ public class ShopMenuJava extends ShopMenu {
                         boolean allShow = false;
                         if (merchandise instanceof UpgradableMerchandise upgradableMerchandise)
                             allShow = upgradableMerchandise.isAllShow();
-                        getShopManager().playerData.get(inventoryOpenEventPlayer).put(merchandise, new ShopManager.PlayerInfo(allShow ? merchandise.MAX_LEVEL : 1, allShow ? merchandise.MAX_LEVEL : 1));
+                        getShopManager().playerData.get(inventoryOpenEventPlayer).put(merchandise, new ShopManager.DataInfo(allShow ? merchandise.MAX_LEVEL : 1, allShow ? merchandise.MAX_LEVEL : 1));
                     }
-                    ShopManager.PlayerInfo playerInfo = getShopManager().playerData.get(inventoryOpenEventPlayer).get(merchandise);
-                    guis.get(player).setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo), inventoryClickEvent -> {
+                    ShopManager.DataInfo dataInfo = getShopManager().playerData.get(inventoryOpenEventPlayer).get(merchandise);
+                    gui.setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo), inventoryClickEvent -> {
                         Player clickPlayer = (Player) inventoryClickEvent.getWhoClicked();
                         if (inventoryClickEvent.getClick().isShiftClick()) {
                             if (inventoryClickEvent.getClick().isRightClick()) {
@@ -185,35 +191,12 @@ public class ShopMenuJava extends ShopMenu {
                                         1.2F
                                 );
                                 getShopManager().changePlayerData(merchandise, clickPlayer, (byte) -1);
-                                guis.get(player).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
+                                gui.getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo));
                             }
                         } else {
                             if (inventoryClickEvent.getClick().isLeftClick()) {
-                                int cost = merchandise.getLevelPrice(playerInfo.level);
-                                IUser user = getShopManager().plugin.getUserManager().getUser(clickPlayer);
-                                int orbs = user.getStatistic("ORBS");
-                                if (cost > orbs) {
-                                    new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_SHOP_NOT_ENOUGH_CURRENCY").asKey().player(clickPlayer).sendPlayer();
-                                    clickPlayer.playSound(
-                                            clickPlayer.getLocation(),
-                                            Sound.ENTITY_VILLAGER_NO,
-                                            1.0F,
-                                            0.8F
-                                    );
-                                    return;
-                                }
-                                clickPlayer.playSound(
-                                        clickPlayer.getLocation(),
-                                        Sound.ENTITY_EXPERIENCE_ORB_PICKUP,
-                                        1.0F,
-                                        1.2F
-                                );
-                                clickPlayer.getInventory().addItem(merchandise.getLevelItem(playerInfo.level));
-                                if (playerInfo.level == playerInfo.maxLevel) {
-                                    getShopManager().doubleAddPlayerData(merchandise, clickPlayer);
-                                    guis.get(player).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
-                                }
-                                getShopManager().adjustOrbs(user, cost);
+                                getShopManager().playerBuy(player, merchandise, dataInfo.level);
+                                gui.getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo));
                             } else if (inventoryClickEvent.getClick().isRightClick()) {
                                 clickPlayer.playSound(
                                         clickPlayer.getLocation(),
@@ -222,14 +205,19 @@ public class ShopMenuJava extends ShopMenu {
                                         1.2F
                                 );
                                 getShopManager().changePlayerData(merchandise, clickPlayer, (byte) 1);
-                                guis.get(player).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
+                                gui.getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo));
                             }
                         }
                     });
                 }
             });
         }
-        guis.get(player).open(player);
+        gui.open(player);
+    }
+
+    @Override
+    public void openBuffMenu(Player player) {
+        buffGui.open(player);
     }
 
     /**
@@ -298,7 +286,7 @@ public class ShopMenuJava extends ShopMenu {
                     if (data.size() == 1) return;
                     int slot = (int) data.get("slot");
                     Merchandise merchandise = ShopManager.getMerchandiseWithSlot(slot);
-                    ShopManager.PlayerInfo playerInfo = getShopManager().playerData.get(player).get(merchandise);
+                    ShopManager.DataInfo dataInfo = getShopManager().playerData.get(player).get(merchandise);
                     if (merchandise != null && merchandise.isEnabled(player)) {
                         player.playSound(
                                 player.getLocation(),
@@ -307,7 +295,7 @@ public class ShopMenuJava extends ShopMenu {
                                 1.2F
                         );
                         getShopManager().changePlayerData(merchandise, player, (byte) (eventName.equals("MouseWheelDown") ? 1 : -1));
-                        guis.get(player).getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, playerInfo.level, playerInfo));
+                        gui.getInventory().setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo));
                     }
                     break;
                 default:
@@ -316,4 +304,44 @@ public class ShopMenuJava extends ShopMenu {
         }
     }
 
+    /**
+     * 彩色动态进度条
+     * 0%~30% 红色 | 31%~60% 黄色 | 61%~100% 绿色
+     *
+     * @param max     最大值
+     * @param current 当前值
+     * @return 彩色进度条 + (当前/最大值)
+     */
+    public static String getProgressBar(int max, int current) {
+        int barLength = 20;
+        current = Math.max(0, Math.min(current, max));
+        if (max <= 0) max = 1;
+        double percent = (double) current / max;
+        int filled = (int) Math.round(percent * barLength);
+        StringBuilder bar = new StringBuilder();
+        String color;
+        if (percent <= 0.3) {
+            color = "§c"; // 红色
+        } else if (percent <= 0.6) {
+            color = "§e"; // 黄色
+        } else {
+            color = "§a"; // 绿色
+        }
+        for (int i = 0; i < filled; i++) {
+            bar.append(color).append("█");
+        }
+        bar.append("§7█".repeat(Math.max(0, barLength - filled)));
+        bar.append(" §f(").append(current).append("/").append(max).append(")");
+        return bar.toString();
+    }
+
+    @Override
+    public void refreshBuffMenu(Player player) {
+
+    }
+
+    @Override
+    public void refreshOpen(Player player) {
+
+    }
 }

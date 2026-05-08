@@ -18,8 +18,13 @@
 
 package plugily.projects.villagedefense.arena;
 
+import com.destroystokyo.paper.entity.ai.GoalType;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
@@ -58,9 +63,11 @@ public class Arena extends PluginArena {
     private final List<Wolf> wolves = new ArrayList<>();
     private final List<Villager> villagers = new ArrayList<>();
     private final List<IronGolem> ironGolems = new ArrayList<>();
+    private final List<Pillager> pillagers = new ArrayList<>();
     private final List<Item> droppedFleshes = new ArrayList<>();
     private final List<Entity> spawnedEntities = new ArrayList<>();
     private MapRestorerManager mapRestorerManager;
+    private WaveType waveType;
 
     private final Map<SpawnPoint, List<Location>> spawnPoints = new EnumMap<>(SpawnPoint.class);
 
@@ -176,6 +183,20 @@ public class Arena extends PluginArena {
         return spawnPoints.getOrDefault(SpawnPoint.VILLAGER, new ArrayList<>());
     }
 
+    @NotNull
+    public List<Location> getBonusPoints() {
+        return spawnPoints.getOrDefault(SpawnPoint.BONUS, new ArrayList<>());
+    }
+
+    public void addBonusPoint(Location location) {
+        plugin.getDebugger().debug("Arena {0} Adding bonus point on location {1}", getId(), location.toString());
+        List<Location> bonus = getZombieSpawns();
+        bonus.add(location);
+        spawnPoints.put(SpawnPoint.ZOMBIE, bonus);
+        plugin.getDebugger().debug("Arena {0} bonus {1}", getId(), getBonusPoints());
+    }
+
+
     public void addVillagerSpawn(Location location) {
         plugin.getDebugger().debug("Arena {0} Adding villager spawn on location {1}", getId(), location.toString());
         List<Location> villagerSpawns = getVillagerSpawns();
@@ -266,9 +287,49 @@ public class Arena extends PluginArena {
         ironGolem.setMetadata("VD_OWNER_UUID", new FixedMetadataValue(getPlugin(), player.getUniqueId().toString()));
         ironGolem.setCustomNameVisible(getPlugin().getConfigPreferences().getOption("NAME_VISIBILITY_GOLEM"));
         ironGolem.setCustomName(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_GOLEM_NAME").asKey().integer(0).player(player).build());
+        plugin.getServer().getMobGoals().removeAllGoals(ironGolem, GoalType.TARGET);
         new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_GOLEM_SPAWN").asKey().player(player).sendPlayer();
         addIronGolem(ironGolem);
         MiscUtils.getEntityAttribute(ironGolem, XAttribute.MOVEMENT_SPEED.get()).ifPresent(ai -> ai.setBaseValue(0.25));
+    }
+
+    public void spawnPillager(Location location, Player player) {
+        spawnPillager(location, player, false);
+    }
+
+    public void spawnPillager(Location location, Player player, boolean force) {
+        if (!force && !canSpawnMobForPlayer(player, XEntityType.PILLAGER.get())) {
+            return;
+        }
+        Pillager pillager = CreatureUtils.getCreatureInitializer().spawnPillager(location);
+        pillager.setMetadata("VD_OWNER_UUID", new FixedMetadataValue(getPlugin(), player.getUniqueId().toString()));
+        pillager.setMetadata("IS_PLAYER", new FixedMetadataValue(getPlugin(), true));
+        pillager.setCustomNameVisible(true);
+        pillager.setCustomName(new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_PILLAGER_NAME").asKey().integer(0).player(player).build());
+        pillager.getEquipment().setHelmet(new ItemStack(Material.AIR));
+        pillager.getEquipment().setChestplate(new ItemStack(Material.AIR));
+        pillager.getEquipment().setLeggings(new ItemStack(Material.AIR));
+        pillager.getEquipment().setBoots(new ItemStack(Material.AIR));
+        pillager.getEquipment().setItemInMainHand(new ItemStack(Material.AIR));
+        pillager.getEquipment().setItemInOffHand(new ItemStack(Material.AIR));
+        pillager.getEquipment().setHelmetDropChance(0.0f);
+        pillager.getEquipment().setChestplateDropChance(0.0f);
+        pillager.getEquipment().setLeggingsDropChance(0.0f);
+        pillager.getEquipment().setBootsDropChance(0.0f);
+        pillager.getEquipment().setItemInMainHandDropChance(0.0f);
+        pillager.getEquipment().setItemInOffHandDropChance(0.0f);
+        plugin.getServer().getMobGoals().removeAllGoals(pillager, GoalType.TARGET);
+        ItemStack crossbow = new ItemStack(Material.CROSSBOW);
+        ItemMeta meta = crossbow.getItemMeta();
+        if (meta != null) {
+            meta.setUnbreakable(true);          // 不可破坏
+            meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE); // 隐藏不可破坏标识
+            crossbow.setItemMeta(meta);
+        }
+        pillager.getEquipment().setItemInMainHand(crossbow);
+        new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_PILLAGER_SPAWN").asKey().player(player).sendPlayer();
+        addPillager(pillager);
+        MiscUtils.getEntityAttribute(pillager, XAttribute.MOVEMENT_SPEED.get()).ifPresent(ai -> ai.setBaseValue(0.25));
     }
 
     protected void addWolf(Wolf wolf) {
@@ -277,7 +338,7 @@ public class Arena extends PluginArena {
     }
 
     public boolean canSpawnMobForPlayer(Player player, EntityType type) {
-        if (type != XEntityType.IRON_GOLEM.get() && type != XEntityType.WOLF.get()) {
+        if (type != XEntityType.IRON_GOLEM.get() && type != XEntityType.WOLF.get() && type != XEntityType.PILLAGER.get()) {
             return false;
         }
         int globalEntityLimit = 0;
@@ -293,6 +354,11 @@ public class Arena extends PluginArena {
                 entityLimit = plugin.getPermissionsManager().getPermissionCategoryValue("PLAYER_SPAWN_LIMIT_GOLEMS", player);
                 spawnedName = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_GOLEM_NAME").asKey().player(player).build();
                 globalEntityLimit = plugin.getConfig().getInt("Limit.Spawn.Golems", 15);
+                break;
+            case PILLAGER:
+                entityLimit = plugin.getPermissionsManager().getPermissionCategoryValue("PLAYER_SPAWN_LIMIT_GOLEMS", player);
+                spawnedName = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_GOLEM_NAME").asKey().player(player).build();
+                globalEntityLimit = plugin.getConfig().getInt("Limit.Spawn.Pillager", 25);
                 break;
             default:
                 break;
@@ -325,6 +391,9 @@ public class Arena extends PluginArena {
             case IRON_GOLEM:
                 finalReturn = entityLimit > 0 && ironGolems.size() < entityLimit;
                 break;
+            case PILLAGER:
+                finalReturn = entityLimit > 0 && pillagers.size() < entityLimit;
+                break;
             default:
                 break;
         }
@@ -356,6 +425,10 @@ public class Arena extends PluginArena {
     @NotNull
     public List<IronGolem> getIronGolems() {
         return ironGolems;
+    }
+
+    public List<Pillager> getPillagers() {
+        return pillagers;
     }
 
     /**
@@ -416,6 +489,7 @@ public class Arena extends PluginArena {
         // “宠物”只指玩家购买或职业生成的友方实体，不包括村民。
         List<LivingEntity> entities = new ArrayList<>();
         entities.addAll(ironGolems);
+        entities.addAll(pillagers);
         entities.addAll(wolves);
         return entities;
     }
@@ -423,6 +497,7 @@ public class Arena extends PluginArena {
     public List<LivingEntity> getAliveEntitiesList() {
         List<LivingEntity> entities = new ArrayList<>();
         entities.addAll(ironGolems);
+        entities.addAll(pillagers);
         entities.addAll(wolves);
         entities.addAll(villagers);
         return entities;
@@ -433,9 +508,19 @@ public class Arena extends PluginArena {
         spawnedEntities.add(ironGolem);
     }
 
+    protected void addPillager(Pillager pillager) {
+        pillagers.add(pillager);
+        spawnedEntities.add(pillager);
+    }
+
     public void removeIronGolem(IronGolem ironGolem) {
         ironGolem.remove();
         ironGolems.remove(ironGolem);
+    }
+
+    public void removePillager(Pillager pillager) {
+        pillager.remove();
+        pillagers.remove(pillager);
     }
 
     public void removeWolf(Wolf wolf) {
@@ -447,8 +532,27 @@ public class Arena extends PluginArena {
         return spawnedEntities;
     }
 
+    public WaveType getWaveType() {
+        return waveType;
+    }
+
+    public void setWaveType(WaveType waveType) {
+        this.waveType = waveType;
+    }
+
     public enum SpawnPoint {
-        ZOMBIE, VILLAGER
+        ZOMBIE, VILLAGER, BONUS
+    }
+
+    public enum WaveType {
+        // 默认
+        DEFAULT,
+        // 沙尘
+        SAND,
+        // 寒潮
+        STORM,
+        // 劫掠
+        THEFT
     }
 
 }

@@ -23,6 +23,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
+import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
+import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
 import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
 
@@ -135,8 +137,10 @@ public interface SimpleEnemySpawner extends EnemySpawner {
         if (livingEntity == null) {
             return;
         }
-        if (livingEntity instanceof Creature) {
-            Creature creature = (Creature) livingEntity;
+        VersionUtils.setMaxHealth(livingEntity, 10.0d + (arena.getWave() * 4));
+        livingEntity.setHealth(10.0d + (arena.getWave() * 4));
+        livingEntity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).setBaseValue(5.0d + arena.getWave() * 2);
+        if (livingEntity instanceof Creature creature) {
             if (canApplyAttributes()) {
                 CreatureUtils.applyAttributes(creature, arena);
             }

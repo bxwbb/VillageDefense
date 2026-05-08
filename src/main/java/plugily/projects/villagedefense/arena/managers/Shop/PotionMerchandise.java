@@ -16,7 +16,11 @@ public class PotionMerchandise extends UpgradableMerchandise {
             PotionEffect poison = new PotionEffect(potionEffectType, 1200, i);
             potionMeta.addCustomEffect(poison, true);
             itemStack.setItemMeta(potionMeta);
-            this.getMerchandiseList().add(new AUpgradableMerchandise(itemStack, basePrice * (i + 1) * (i + 1), intToRoman(i + 1)));
+            int bp = basePrice;
+            if (ShopManager.fileConfiguration.contains("Potion." + potionEffectType.getName())) {
+                bp = ShopManager.fileConfiguration.getInt("Potion." + potionEffectType.getName());
+            }
+            this.getMerchandiseList().add(new AUpgradableMerchandise(itemStack, bp * (i + 1) * (i + 1), intToRoman(i + 1)));
         }
     }
 

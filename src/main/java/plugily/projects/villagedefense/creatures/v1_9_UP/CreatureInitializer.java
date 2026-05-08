@@ -32,28 +32,37 @@ public class CreatureInitializer implements BaseCreatureInitializer {
 
     @Override
     public Villager spawnVillager(Location location) {
-        Creature creature = CreatureUtils.getPlugin().getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.VILLAGER).get().spawn(location);
-        if (creature instanceof Villager) {
-            return (Villager) creature;
+        LivingEntity livingEntity = CreatureUtils.getPlugin().getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.VILLAGER).get().spawn(location);
+        if (livingEntity instanceof Villager) {
+            return (Villager) livingEntity;
         }
-        throw new ClassCastException("Villager creature isn't a villager");
+        throw new ClassCastException("Villager livingEntity isn't a villager");
     }
 
     @Override
     public Wolf spawnWolf(Location location) {
-        Creature creature = CreatureUtils.getPlugin().getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.WOLF).get().spawn(location);
-        if (creature instanceof Wolf) {
-            return (Wolf) creature;
+        LivingEntity livingEntity = CreatureUtils.getPlugin().getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.WOLF).get().spawn(location);
+        if (livingEntity instanceof Wolf) {
+            return (Wolf) livingEntity;
         }
-        throw new ClassCastException("Wolf creature isn't a wolf");
+        throw new ClassCastException("Wolf livingEntity isn't a wolf");
     }
 
     @Override
     public IronGolem spawnGolem(Location location) {
-        Creature creature = CreatureUtils.getPlugin().getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.IRON_GOLEM).get().spawn(location);
-        if (creature instanceof IronGolem) {
-            return (IronGolem) creature;
+        LivingEntity livingEntity = CreatureUtils.getPlugin().getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.IRON_GOLEM).get().spawn(location);
+        if (livingEntity instanceof IronGolem) {
+            return (IronGolem) livingEntity;
         }
-        throw new ClassCastException("IronGolem creature isn't a iron golem");
+        throw new ClassCastException("IronGolem livingEntity isn't a iron golem");
+    }
+
+    @Override
+    public Pillager spawnPillager(Location location) {
+        LivingEntity livingEntity = CreatureUtils.getPlugin().getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.PILLAGER).get().spawn(location);
+        if (livingEntity instanceof Pillager) {
+            return (Pillager) livingEntity;
+        }
+        throw new ClassCastException("Pillager livingEntity isn't a pillager");
     }
 }

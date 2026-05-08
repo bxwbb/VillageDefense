@@ -20,10 +20,7 @@ package plugily.projects.villagedefense.commands.arguments.admin;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.IronGolem;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
-import org.bukkit.entity.Wolf;
+import org.bukkit.entity.*;
 import plugily.projects.minigamesbox.classic.commands.arguments.data.CommandArgument;
 import plugily.projects.minigamesbox.classic.commands.arguments.data.LabelData;
 import plugily.projects.minigamesbox.classic.commands.arguments.data.LabeledCommandArgument;
@@ -94,6 +91,19 @@ public class ClearEntitiesArgument {
                             golem.remove();
                         }
                         arena.getIronGolems().clear();
+                        VersionUtils.playSound(((Player) sender).getLocation(), "ENTITY_IRONGOLEM_DEATH");
+                        clearMessage = new MessageBuilder("IN_GAME_MESSAGES_ADMIN_REMOVED_GOLEMS").asKey().build();
+                        break;
+                    case "pillager":
+                        if (arena.getPillagers().isEmpty()) {
+                            new MessageBuilder("KIT_CONTENT_CLEANER_CLEANED_NOTHING").asKey().send(sender);
+                            return;
+                        }
+                        for (Pillager golem : arena.getPillagers()) {
+                            VersionUtils.sendParticles("LAVA", arena.getPlayers(), golem.getLocation(), 20);
+                            golem.remove();
+                        }
+                        arena.getPillagers().clear();
                         VersionUtils.playSound(((Player) sender).getLocation(), "ENTITY_IRONGOLEM_DEATH");
                         clearMessage = new MessageBuilder("IN_GAME_MESSAGES_ADMIN_REMOVED_GOLEMS").asKey().build();
                         break;

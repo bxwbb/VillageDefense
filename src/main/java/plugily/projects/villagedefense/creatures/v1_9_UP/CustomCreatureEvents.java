@@ -60,8 +60,8 @@ public class CustomCreatureEvents implements Listener {
             return;
         }
         for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-            if (entity instanceof IronGolem || entity instanceof Wolf || entity instanceof Villager) {
-                if (arena.getIronGolems().contains(entity) || arena.getWolves().contains(entity) || arena.getVillagers().contains(entity)) {
+            if (entity instanceof IronGolem || (entity instanceof Pillager pillager && pillager.hasMetadata("IS_PLAYER")) || entity instanceof Wolf || entity instanceof Villager) {
+                if (arena.getIronGolems().contains(entity) || arena.getPillagers().contains(entity) || arena.getWolves().contains(entity) || arena.getVillagers().contains(entity)) {
                     Optional<CustomRideableCreature> customRideableCreatureOptional = plugin.getEnemySpawnerRegistry().getRideableCreatureByName(CustomRideableCreature.RideableType.valueOf(entity.getType().name().toUpperCase()));
                     if (!customRideableCreatureOptional.isPresent()) {
                         continue;

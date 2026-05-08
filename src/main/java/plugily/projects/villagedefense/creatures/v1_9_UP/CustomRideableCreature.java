@@ -19,10 +19,13 @@
 
 package plugily.projects.villagedefense.creatures.v1_9_UP;
 
+import com.destroystokyo.paper.entity.ai.*;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
@@ -51,38 +54,27 @@ public class CustomRideableCreature {
     }
 
     public Creature spawn(Location location) {
-        EntityType entityType = XEntityType.VILLAGER.get();
-        switch (rideableType) {
-            case VILLAGER:
-                entityType = XEntityType.VILLAGER.get();
-                break;
-            case WOLF:
-                entityType = XEntityType.WOLF.get();
-                break;
-            case IRON_GOLEM:
-                entityType = XEntityType.IRON_GOLEM.get();
-                break;
-        }
+        EntityType entityType = switch (rideableType) {
+            case VILLAGER -> XEntityType.VILLAGER.get();
+            case WOLF -> XEntityType.WOLF.get();
+            case IRON_GOLEM -> XEntityType.IRON_GOLEM.get();
+            case PILLAGER -> XEntityType.PILLAGER.get();
+        };
         Entity entity = VersionUtils.spawnEntity(location, entityType);
-        if (entity instanceof Creature) {
-            Creature creature = (Creature) entity;
-            creature.getAttribute(XAttribute.FOLLOW_RANGE.get()).setBaseValue(200D);
-            for (Map.Entry<XAttribute, Double> attribute : attributes.entrySet()) {
-                creature.getAttribute(attribute.getKey().get()).setBaseValue(attribute.getValue());
-                if (attribute.getKey().get() == XAttribute.MAX_HEALTH.get()) {
-                    VersionUtils.setMaxHealth(creature, attribute.getValue());
-                    creature.setHealth(attribute.getValue());
-                }
+        Creature creature = (Creature) entity;
+        creature.getAttribute(XAttribute.FOLLOW_RANGE.get()).setBaseValue(200D);
+        for (Map.Entry<XAttribute, Double> attribute : attributes.entrySet()) {
+            creature.getAttribute(attribute.getKey().get()).setBaseValue(attribute.getValue());
+            if (attribute.getKey().get() == XAttribute.MAX_HEALTH.get()) {
+                VersionUtils.setMaxHealth(creature, attribute.getValue());
+                creature.setHealth(attribute.getValue());
             }
-            creature.setRemoveWhenFarAway(false);
-            if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_16)) {
-                creature.setInvisible(false);
-            }
-            return creature;
-        } else {
-            entity.remove();
-            throw new IllegalStateException("Couldn't spawn Creature " + entityType + " as its not instance of creature");
         }
+        creature.setRemoveWhenFarAway(false);
+        if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_16)) {
+            creature.setInvisible(false);
+        }
+        return creature;
     }
 
     public RideableType getRideableType() {
@@ -102,6 +94,6 @@ public class CustomRideableCreature {
     }
 
     public enum RideableType {
-        VILLAGER, IRON_GOLEM, WOLF
+        VILLAGER, IRON_GOLEM, WOLF, PILLAGER
     }
 }

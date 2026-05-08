@@ -120,6 +120,7 @@ public class EnemySpawnerRegistryLegacy {
          */
         int wave = arena.getWave();
 
+        arena.setWaveType(Arena.WaveType.DEFAULT);
         if (wave % 10 != 0 && wave > 15) {
             if (random.nextInt(100) <= 20) {
                 // 触发特殊波次
@@ -144,6 +145,7 @@ public class EnemySpawnerRegistryLegacy {
                             player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 10000, 0));
                             player.sendMessage(Component.text("寒潮来袭"));
                         }
+                        arena.setWaveType(Arena.WaveType.STORM);
                         break;
                     case 1:
                         // 沙尘波
@@ -156,6 +158,7 @@ public class EnemySpawnerRegistryLegacy {
                             player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 10000, 0));
                             player.sendMessage(Component.text("沙尘来袭"));
                         }
+                        arena.setWaveType(Arena.WaveType.SAND);
                         break;
                     case 2:
                         // 劫掠波
@@ -179,19 +182,22 @@ public class EnemySpawnerRegistryLegacy {
                 for (Player arenaPlayer : arena.getPlayers()) {
                     arenaPlayer.sendMessage(Component.text("劫掠来袭!!"));
                 }
+                arena.setWaveType(Arena.WaveType.THEFT);
                 playRaidHorn(arena);
                 player.removePotionEffect(PotionEffectType.BAD_OMEN);
                 break;
-                // TODO : 劫掠结束后的奖励宝箱
             }
         }
 
         // 打乱生成顺序
         Collections.shuffle(enemySpawners);
+        int spawned = 0;
         for (EnemySpawner enemySpawner : enemySpawners) {
             // spawner 内部会按波次、权重和剩余数量决定是否真正生成。
             plugin.getDebugger().debug("Trying enemy spawn for " + enemySpawner.getName());
             enemySpawner.spawn(random, arena, spawn);
+            spawned++;
+            if (spawned == arena.getZombieSpawns().size() * 2) break;
         }
 
         if (wave % 10 == 0) {

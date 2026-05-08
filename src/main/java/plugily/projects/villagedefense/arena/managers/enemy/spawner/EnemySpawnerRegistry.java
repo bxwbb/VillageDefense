@@ -17,6 +17,7 @@
  */
 package plugily.projects.villagedefense.arena.managers.enemy.spawner;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
@@ -80,6 +81,9 @@ public class EnemySpawnerRegistry extends EnemySpawnerRegistryLegacy {
             plugin.getDebugger().debug("Registered CustomRideableCreature of type {0}", rideableType);
             rideableCreatures.add(new CustomRideableCreature(rideableType, holidayEffects, attributes, dropItem));
         }
+        Map<XAttribute, Double> attributes = new HashMap<>();
+        attributes.put(XAttribute.MAX_HEALTH, 100d);
+        rideableCreatures.add(new CustomRideableCreature(CustomRideableCreature.RideableType.PILLAGER, true, attributes, new ItemStack(Material.AIR)));
     }
 
     @Override

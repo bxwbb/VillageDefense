@@ -19,6 +19,8 @@
 
 package plugily.projects.villagedefense.arena.managers;
 
+import com.destroystokyo.paper.entity.ai.GoalType;
+import com.destroystokyo.paper.entity.ai.MobGoals;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.MetadataValue;
@@ -28,6 +30,7 @@ import plugily.projects.villagedefense.arena.managers.spawner.EnemySpawner;
 import plugily.projects.villagedefense.creatures.v1_9_UP.CustomCreature;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,8 +50,7 @@ public class CreatureTargetManager {
 
     public void targetCreatures() {
         for (LivingEntity livingEntity : arena.getEnemies()) {
-            if (livingEntity instanceof Creature) {
-                Creature creature = (Creature) livingEntity;
+            if (livingEntity instanceof Creature creature) {
                 LivingEntity creatureTarget = creature.getTarget();
                 if (creatureTarget == null) {
                     setTarget(creature);
@@ -59,24 +61,37 @@ public class CreatureTargetManager {
                 }
             }
         }
+        for (Pillager pillager : arena.getPillagers()) {
+            List<LivingEntity> enemies = arena.getEnemies();
+            if (enemies.isEmpty()) pillager.setTarget(null);
+            enemies.stream()
+                    .filter(enemy -> enemy != null && !enemy.isDead())
+                    .min(Comparator.comparingDouble(
+                            e -> e.getLocation().distanceSquared(pillager.getLocation())
+                    )).ifPresent(pillager::setTarget);
+        }
     }
 
     public void targetRideableCreatures() {
         List<Creature> creatures = new ArrayList<>();
         creatures.addAll(arena.getWolves());
         creatures.addAll(arena.getIronGolems());
+        creatures.addAll(arena.getPillagers());
         for (Creature creature : creatures) {
+            plugin.getServer().getMobGoals().removeAllGoals(creature, GoalType.TARGET);
             if (arena.getEnemies().isEmpty() || !arena.isFighting()) {
+                creature.setTarget(null);
                 return;
             }
-            LivingEntity creatureTarget = creature.getTarget();
-            if (creatureTarget == null) {
-                creature.setTarget(arena.getEnemies().get(arena.getEnemies().size() > 1 ? plugin.getRandom().nextInt(arena.getEnemies().size() - 1) : 0));
-                continue;
-            }
-            if (creatureTarget instanceof Player) {
-                creature.setTarget(arena.getEnemies().get(arena.getEnemies().size() > 1 ? plugin.getRandom().nextInt(arena.getEnemies().size() - 1) : 0));
-            }
+//            LivingEntity creatureTarget = creature.getTarget();
+//            if (creatureTarget == null) {
+//                creature.setTarget(arena.getEnemies().get(arena.getEnemies().size() > 1 ? plugin.getRandom().nextInt(arena.getEnemies().size() - 1) : 0));
+//                continue;
+//            }
+//            if (creatureTarget instanceof Player) {
+//                creature.setTarget(arena.getEnemies().get(arena.getEnemies().size() > 1 ? plugin.getRandom().nextInt(arena.getEnemies().size() - 1) : 0));
+//            }
+            creature.setTarget(arena.getEnemies().get(arena.getEnemies().size() > 1 ? plugin.getRandom().nextInt(arena.getEnemies().size() - 1) : 0));
         }
     }
 
@@ -102,7 +117,7 @@ public class CreatureTargetManager {
         }
         for (MetadataValue metadataValue : metadataValueList) {
             Optional<EnemySpawner> spawnerByName = plugin.getEnemySpawnerRegistry().getSpawnerByName(metadataValue.asString());
-            if (!spawnerByName.isPresent()) {
+            if (spawnerByName.isEmpty()) {
                 continue;
             }
             EnemySpawner enemySpawner = spawnerByName.get();
@@ -132,6 +147,8 @@ public class CreatureTargetManager {
             List<Entity> entities = new ArrayList<>();
             entities.addAll(arena.getVillagers());
             entities.addAll(arena.getPlayers());
+            entities.addAll(arena.getPillagers());
+            entities.addAll(arena.getIronGolems());
             if (entities.isEmpty()) {
                 plugin.getDebugger().debug("Arena {0} found no entity to target", arena.getId());
                 return null;
@@ -210,8 +227,7 @@ public class CreatureTargetManager {
 
     public void unTargetPlayerFromZombies(Player player, Arena arena) {
         for (LivingEntity zombie : arena.getEnemies()) {
-            if (zombie instanceof Creature) {
-                Creature creature = (Creature) zombie;
+            if (zombie instanceof Creature creature) {
                 LivingEntity target = creature.getTarget();
 
                 if (!player.equals(target)) {

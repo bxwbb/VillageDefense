@@ -18,9 +18,13 @@
 
 package plugily.projects.villagedefense.arena;
 
-import org.bukkit.Bukkit;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import plugily.projects.minigamesbox.api.arena.IPluginArena;
@@ -38,10 +42,7 @@ import plugily.projects.villagedefense.creatures.CreatureUtils;
 import plugily.projects.villagedefense.kits.KitUtils;
 import plugily.projects.villagedefense.utils.BiomeUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Village Defense 的竞技场流程管理器。
@@ -83,6 +84,8 @@ public class ArenaManager extends PluginArenaManager {
                 .forEach(pet -> {
                     if (pet instanceof IronGolem) {
                         gameArena.removeIronGolem((IronGolem) pet);
+                    } else if (pet instanceof Pillager) {
+                        gameArena.removePillager((Pillager) pet);
                     } else {
                         gameArena.removeWolf((Wolf) pet);
                     }
@@ -182,6 +185,11 @@ public class ArenaManager extends PluginArenaManager {
         arena.getVillagerSpawns().getFirst().getWorld().setStorm(false);
         arena.getVillagerSpawns().getFirst().getWorld().setWeatherDuration(0);
         BiomeUtil.setBiome5ChunkRadius(arena.getStartLocation(), Biome.PLAINS);
+        if (arena.getWaveType().equals(Arena.WaveType.THEFT)) {
+            for (Location bonusPoint : arena.getBonusPoints()) {
+                spawnRewardChest(bonusPoint);
+            }
+        }
     }
 
     private void refreshAllPlayers(Arena arena) {
@@ -289,10 +297,92 @@ public class ArenaManager extends PluginArenaManager {
             Player player = user.getPlayer();
             plugin.getRewardsHandler().performReward(player, arena, plugin.getRewardsHandler().getRewardType("START_WAVE"));
 
+            for (PotionEffectType potionEffectType : arena.getShopManager().potionEffectData.keySet()) {
+                if (arena.getShopManager().potionEffectData.get(potionEffectType).maxLevel != 0) {
+                    player.addPotionEffect(new PotionEffect(potionEffectType, 10000, arena.getShopManager().potionEffectData.get(potionEffectType).maxLevel - 1, true, false, true));
+                }
+            }
+
             new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_STARTED").asKey().arena(arena).integer(wave).player(player).sendPlayer();
         }
 
         plugin.getDebugger().debug("[{0}] Wave start event finished took {1}ms", arena.getId(), System.currentTimeMillis() - start);
     }
+
+        private static final Random RANDOM = new Random();
+
+        /**
+         * 在指定坐标生成奖励宝箱 + 粒子音效 + 随机战利品
+         * @param loc 生成坐标
+         */
+        public static void spawnRewardChest(Location loc) {
+            // 1. 设置方块为宝箱
+            loc.getBlock().setType(Material.CHEST);
+
+            // 2. 播放粒子效果（环绕烟花粒子）
+            loc.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, loc.add(0.5, 0.5, 0.5),
+                    80, 0.5, 0.5, 0.5, 0.15);
+            loc.subtract(0.5, 0.5, 0.5);
+
+            // 3. 播放音效
+            loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.8f, 1.1f);
+
+            // 4. 获取宝箱库存
+            Inventory chestInv = ((org.bukkit.block.Chest) loc.getBlock().getState()).getInventory();
+            chestInv.clear();
+
+            // 5. 随机生成奖励物品
+            fillChestRandomLoot(chestInv);
+        }
+
+        // 填充随机战利品：药水、金苹果、附魔金苹果、稀有食物
+        private static void fillChestRandomLoot(Inventory inv) {
+            // 随机药水类型池
+            PotionEffectType[] potionTypes = {
+                    PotionEffectType.INSTANT_HEALTH,
+                    PotionEffectType.SPEED,
+                    PotionEffectType.STRENGTH,
+                    PotionEffectType.REGENERATION,
+                    PotionEffectType.INVISIBILITY,
+                    PotionEffectType.FIRE_RESISTANCE
+            };
+
+            // 随机往箱子塞 6~12 个物品
+            int itemCount = 6 + RANDOM.nextInt(7);
+
+            for (int i = 0; i < itemCount; i++) {
+                int rand = RANDOM.nextInt(100);
+                ItemStack item;
+
+                if (rand < 25) {
+                    // 金苹果
+                    item = new ItemStack(Material.GOLDEN_APPLE, 1 + RANDOM.nextInt(3));
+                } else if (rand < 40) {
+                    // 附魔金苹果
+                    item = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 1);
+                } else if (rand < 70) {
+                    // 随机药水
+                    item = new ItemStack(Material.POTION);
+                    PotionMeta meta = (PotionMeta) item.getItemMeta();
+                    if (meta != null) {
+                        PotionEffectType type = potionTypes[RANDOM.nextInt(potionTypes.length)];
+                        meta.addCustomEffect(new PotionEffect(type, 100 * RANDOM.nextInt(5), RANDOM.nextInt(3)), true);
+                        item.setItemMeta(meta);
+                    }
+                } else if (rand < 85) {
+                    // 腐肉、面包、胡萝卜等补给
+                    Material[] foods = {Material.BREAD, Material.CARROT, Material.GOLDEN_CARROT, Material.COOKED_BEEF};
+                    item = new ItemStack(foods[RANDOM.nextInt(foods.length)], 2 + RANDOM.nextInt(5));
+                } else {
+                    // 末影珍珠、不死图腾小概率
+                    Material[] rare = {Material.ENDER_PEARL, Material.TOTEM_OF_UNDYING};
+                    item = new ItemStack(rare[RANDOM.nextInt(rare.length)], 1);
+                }
+
+                // 随机格子放入
+                int slot = RANDOM.nextInt(inv.getSize());
+                inv.setItem(slot, item);
+            }
+        }
 
 }

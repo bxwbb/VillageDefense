@@ -270,8 +270,11 @@ In-Game:
           Name: "%player% 的狼  &8(&7等级 %number%&8)"
           Death: "%color_chat_issue%%plugin_prefix% 您的一只狼被杀死了！"
         Golem:
-          Spawn: "%plugin_prefix% 铁傀儡已在村庄中生成！"
-          Name: "%player% 的铁傀儡  &8(&7等级 %number%&8)"
+          Spawn: "%plugin_prefix% 机械傀儡已在村庄中生成！"
+          Name: "%player% 的机械傀儡  &8(&7等级 %number%&8)"
+        Pillager:
+          Spawn: "%plugin_prefix% 弩手已生成！"
+          Name: "%player% 的弩手  &8(&7等级 %number%&8)"
       Shop:
         GUI: "&l商店"
         Golem-Item-Name: "召唤铁傀儡"

@@ -18,6 +18,7 @@
 
 package plugily.projects.villagedefense.events;
 
+import io.papermc.paper.registry.keys.VillagerProfessionKeys;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -115,7 +116,12 @@ public class PluginEvents implements Listener {
         }
         if (event.getRightClicked().getType() == XEntityType.VILLAGER.get()) {
             event.setCancelled(true);
-            arena.getShopManager().openShop(event.getPlayer());
+            Villager villager = (Villager) event.getRightClicked();
+            if (villager.getProfession().equals(Villager.Profession.CLERIC)) {
+                arena.getShopManager().openPotionShop(event.getPlayer());
+            } else {
+                arena.getShopManager().openShop(event.getPlayer());
+            }
         } else if (event.getRightClicked().getType() == XEntityType.IRON_GOLEM.get()) {
             if (event.getPlayer().isSneaking()) {
                 return;
@@ -180,7 +186,7 @@ public class PluginEvents implements Listener {
             }
         } else if (event.getEntity() instanceof IronGolem || event.getEntity() instanceof Villager || event.getEntity() instanceof Wolf) {
             for (Arena a : plugin.getArenaRegistry().getPluginArenas()) {
-                if (a.getWolves().contains(event.getEntity()) || a.getVillagers().contains(event.getEntity()) || a.getIronGolems().contains(event.getEntity())) {
+                if (a.getWolves().contains(event.getEntity()) || a.getVillagers().contains(event.getEntity()) || a.getIronGolems().contains(event.getEntity()) || a.getPillagers().contains(event.getEntity())) {
                     event.setCancelled(true);
                     return;
                 }
