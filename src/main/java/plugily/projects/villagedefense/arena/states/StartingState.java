@@ -76,6 +76,10 @@ public class StartingState extends PluginStartingState {
             }
             setArenaTimer(getPlugin().getConfig().getInt("Time-Manager.Cooldown-Before-Next-Wave", 25));
             pluginArena.setFighting(false);
+
+            for (Player player : pluginArena.getPlayers()) {
+                pluginArena.playerPoints.put(player, 0);
+            }
         }
     }
 

@@ -167,19 +167,16 @@ public class ShopMenuBedrock extends ShopMenu {
         Map<String, Object> ret = new HashMap<>();
         IUser user = getShopManager().plugin.getUserManager().getUser(player);
         ret.put("player_coin", user.getStatistic("ORBS"));
-        List<Object> dataList = new ArrayList<>();
         int slot = 0;
         for (PotionEffectType potionEffectType : ShopManager.potionEffectPrices.keySet()) {
             Map<String, Object> potionData = new HashMap<>();
-            potionData.put("name", ShopMenuBedrock.getChineseName(potionEffectType) + "增益");
             potionData.put("rotten_flesh", getShopManager().potionEffectData.get(potionEffectType).level);
             potionData.put("max_rotten_flesh", ShopManager.potionEffectPrices.get(potionEffectType).get(getShopManager().potionEffectData.get(potionEffectType).maxLevel));
             potionData.put("level", getShopManager().potionEffectData.get(potionEffectType).maxLevel);
             potionData.put("slot", slot);
-            dataList.add(potionData);
+            ret.put(potionEffectType.getName(), potionData);
             slot++;
         }
-        ret.put("data", dataList);
         ((BaseAPI) Objects.requireNonNull(Bukkit.getServer().getPluginManager().getPlugin("BaseAPI"))).notifyToClient(player, "VillageDefense", "main", "openBuffShop", ret);
     }
 
@@ -188,19 +185,16 @@ public class ShopMenuBedrock extends ShopMenu {
         Map<String, Object> ret = new HashMap<>();
         IUser user = getShopManager().plugin.getUserManager().getUser(player);
         ret.put("player_coin", user.getStatistic("ORBS"));
-        List<Object> dataList = new ArrayList<>();
         int slot = 0;
         for (PotionEffectType potionEffectType : ShopManager.potionEffectPrices.keySet()) {
             Map<String, Object> potionData = new HashMap<>();
-            potionData.put("name", ShopMenuBedrock.getChineseName(potionEffectType) + "增益");
             potionData.put("rotten_flesh", getShopManager().potionEffectData.get(potionEffectType).level);
             potionData.put("max_rotten_flesh", ShopManager.potionEffectPrices.get(potionEffectType).get(getShopManager().potionEffectData.get(potionEffectType).maxLevel));
             potionData.put("level", getShopManager().potionEffectData.get(potionEffectType).maxLevel);
             potionData.put("slot", slot);
-            dataList.add(potionData);
+            ret.put(potionEffectType.getName(), potionData);
             slot++;
         }
-        ret.put("data", dataList);
         ((BaseAPI) Objects.requireNonNull(Bukkit.getServer().getPluginManager().getPlugin("BaseAPI"))).notifyToClient(player, "VillageDefense", "main", "refreshBuffShop", ret);
     }
 
@@ -220,6 +214,22 @@ public class ShopMenuBedrock extends ShopMenu {
                 }
                 Merchandise merchandise = ShopManager.getMerchandiseWithSlot(slot);
                 getShopManager().playerBuy(player, merchandise, level_slot + 1);
+            } else if (eventName.equals("buffButtonClick")) {
+                String buffName = (String) data.get("button");
+                switch (buffName) {
+                    case "HEALTH_BOOST":
+                        getShopManager().updateBuff(PotionEffectType.HEALTH_BOOST,player);
+                        break;
+                    case "SPEED":
+                        getShopManager().updateBuff(PotionEffectType.SPEED,player);
+                        break;
+                    case "RESISTANCE":
+                        getShopManager().updateBuff(PotionEffectType.RESISTANCE,player);
+                        break;
+                    case "INCREASE_DAMAGE":
+                        getShopManager().updateBuff(PotionEffectType.INSTANT_DAMAGE,player);
+                        break;
+                }
             }
         }
     }

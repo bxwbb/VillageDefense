@@ -27,6 +27,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
+import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XEntityType;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 import plugily.projects.villagedefense.Main;
@@ -89,6 +90,7 @@ public class CustomCreatureEvents implements Listener {
                         plugin.getUserManager().addExperience(killer, 2 * arena.getArenaOption("CREATURE_DIFFICULTY_MULTIPLIER"));
                         plugin.getRewardsHandler().performReward(killer, plugin.getRewardsHandler().getRewardType("ZOMBIE_KILL"));
                         plugin.getPowerupRegistry().spawnPowerup(entity.getLocation(), arena);
+                        arena.playerPoints.put(killer, (int) (arena.playerPoints.get(killer) + Math.round(entity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).getBaseValue() + entity.getAttribute(XAttribute.MAX_HEALTH.get()).getBaseValue())));
                     }
                     continue;
                 }

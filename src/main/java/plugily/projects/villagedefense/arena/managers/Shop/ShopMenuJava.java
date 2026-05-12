@@ -30,7 +30,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.misc.complement.ComplementAccessor;
 import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
@@ -152,7 +151,9 @@ public class ShopMenuJava extends ShopMenu {
         ComplementAccessor.getComplement().setDisplayName(potionMeta, new MessageBuilder("&5&l点击升级该增益").build());
         List<String> lore = ComplementAccessor.getComplement().getLore(potionMeta);
         ShopManager.DataInfo dataInfo = getShopManager().potionEffectData.get(potionEffectType);
-        lore.add(getProgressBar(ShopManager.potionEffectPrices.get(potionEffectType).get(dataInfo.maxLevel - 1), dataInfo.level));
+        List<Integer> priceList = ShopManager.potionEffectPrices.get(potionEffectType);
+        int price = priceList.get(Math.min(dataInfo.maxLevel, priceList.size() - 1));
+        lore.add(getProgressBar(price, dataInfo.level));
         ComplementAccessor.getComplement().setLore(potionMeta, lore);
         itemStack.setItemMeta(potionMeta);
         return itemStack;

@@ -71,9 +71,9 @@ public class ShopManager {
     }
 
     public void setPrices() {
-        fileConfiguration = ConfigUtils.getConfig(plugin, "prices", true);
+        fileConfiguration = ConfigUtils.getConfig(plugin, "prices");
         merchandises.add(new UpgradableMerchandise(4, 0, Arrays.asList(
-                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_HELMET), "皮革头盔"),
+                new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.LEATHER_HELMET),80,  "皮革头盔"),
                 new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.IRON_HELMET), 180, "铁质头盔"),
                 new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.DIAMOND_HELMET), 380, "钻石头盔"),
                 new UpgradableMerchandise.AUpgradableMerchandise(new ItemStack(Material.NETHERITE_HELMET), 750, "下界合金头盔")

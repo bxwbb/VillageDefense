@@ -18,10 +18,16 @@
 
 package plugily.projects.villagedefense.arena.states;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.arena.states.PluginEndingState;
+import plugily.projects.villagedefense.arena.Arena;
+import plugily.projects.villagedefense.arena.managers.Shop.ShopManager;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Plajer
@@ -30,14 +36,30 @@ import plugily.projects.minigamesbox.classic.arena.states.PluginEndingState;
  */
 public class EndingState extends PluginEndingState {
 
-  @Override
-  public void handleCall(PluginArena arena) {
-    super.handleCall(arena);
-    if(arena.getTimer() <= 0) {
-      for(Player player : arena.getPlayers()) {
-        IUser user = getPlugin().getUserManager().getUser(player);
-        user.setStatistic("ORBS", 0);
-      }
+    public static final String giftName = "xinghan1";
+
+    @Override
+    public void handleCall(PluginArena arena) {
+        super.handleCall(arena);
+        Arena pluginArena = (Arena) getPlugin().getArenaRegistry().getArena(arena.getId());
+        if (pluginArena == null) return;
+        if (arena.getTimer() <= 0) {
+            for (Player player : arena.getPlayers()) {
+                IUser user = getPlugin().getUserManager().getUser(player);
+                user.setStatistic("ORBS", 0);
+                int point = pluginArena.playerPoints.get(player);
+                int index = 1;
+                while (ShopManager.fileConfiguration.contains("rewards." + index)) {
+                    int score = ShopManager.fileConfiguration.getInt("rewards." + index + ".score");
+                    List<String> commands = ShopManager.fileConfiguration.getStringList("rewards." + index + ".commands");
+                    if (point >= score) {
+                        for (String command : commands) {
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replaceAll("%player%", player.getName()));
+                        }
+                    }
+                    index++;
+                }
+            }
+        }
     }
-  }
 }

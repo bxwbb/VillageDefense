@@ -19,12 +19,14 @@
 package plugily.projects.villagedefense.arena.managers;
 
 import org.bukkit.entity.Player;
+import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.arena.managers.PluginScoreboardManager;
 import plugily.projects.villagedefense.arena.Arena;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Tigerpanzer_02
@@ -33,26 +35,46 @@ import java.util.List;
  */
 public class ScoreboardManager extends PluginScoreboardManager {
 
-  private final PluginArena arena;
+    private final PluginArena arena;
 
-  public ScoreboardManager(PluginArena arena) {
-    super(arena);
-    this.arena = arena;
-  }
-
-  @Override
-  public List<String> getScoreboardLines(Player player) {
-    List<String> lines = new ArrayList<>();
-    switch(arena.getArenaState()) {
-      case IN_GAME: {
-        lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + (((Arena) arena).isFighting() ? "" : "-Waiting"));
-        break;
-      }
-      default: {
-        lines = super.getScoreboardLines(player);
-
-      }
+    public ScoreboardManager(PluginArena arena) {
+        super(arena);
+        this.arena = arena;
     }
-    return lines;
-  }
+
+    @Override
+    public List<String> getScoreboardLines(Player player) {
+        List<String> lines = new ArrayList<>();
+        if (arena.getArenaState() == IArenaState.IN_GAME) {
+            lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + (((Arena) arena).isFighting() ? "" : "-Waiting"));
+        } else {
+            lines = super.getScoreboardLines(player);
+        }
+
+        Arena pluginArena = (Arena) arena.getPlugin().getArenaRegistry().getArena(arena.getId());
+        if (pluginArena != null) {
+            List<Map.Entry<Player, Integer>> points = pluginArena.getSortedPlayers();
+
+            lines.add("§e§l积分 TOP 5 玩家");
+
+            int rank = 1;
+            for (int i = 0; i < Math.min(5, points.size()); i++) {
+                Map.Entry<Player, Integer> entry = points.get(i);
+                String name = entry.getKey().getName();
+                int score = entry.getValue();
+
+                String rankColor = switch (rank) {
+                    case 1 -> "§6§l";
+                    case 2 -> "§7§l";
+                    case 3 -> "§c§l";
+                    default -> "§f";
+                };
+
+                lines.add(rankColor + rank + ". §f" + name + " §7| §a" + score);
+                rank++;
+            }
+        }
+
+        return lines;
+    }
 }

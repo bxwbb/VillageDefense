@@ -197,6 +197,7 @@ public class EnemySpawnerRegistryLegacy {
             plugin.getDebugger().debug("Trying enemy spawn for " + enemySpawner.getName());
             enemySpawner.spawn(random, arena, spawn);
             spawned++;
+            if (wave <= 5 && spawned == 2) break;
             if (spawned == arena.getZombieSpawns().size() * 2) break;
         }
 

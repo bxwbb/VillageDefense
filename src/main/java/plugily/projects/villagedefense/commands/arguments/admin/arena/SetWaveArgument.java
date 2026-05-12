@@ -38,35 +38,35 @@ import plugily.projects.villagedefense.commands.arguments.ArgumentsRegistry;
  */
 public class SetWaveArgument {
 
-  public SetWaveArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("villagedefenseadmin", new LabeledCommandArgument("setwave", "villagedefense.admin.setwave", CommandArgument.ExecutorType.PLAYER,
-        new LabelData("/vda setwave &6<number>", "/vda setwave <number>",
-            "&7Set wave number in arena you're in\n&6Permission: &7villagedefense.admin.setwave")) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        if(!registry.getPlugin().getBukkitHelper().checkIsInGameInstance((Player) sender)) {
-          return;
-        }
-        if(args.length == 1) {
-          new MessageBuilder(ChatColor.RED + "Please type number of wave to set!").prefix().send(sender);
-          return;
-        }
-        java.util.Optional<Integer> opt = NumberUtils.parseInt(args[1]);
-        if(!opt.isPresent()) {
-          new MessageBuilder("COMMANDS_WRONG_USAGE").asKey().value("/vda setwave <number>").send(sender);
-          return;
-        }
-        Arena arena = (Arena) registry.getPlugin().getArenaRegistry().getArena((Player) sender);
-        if(arena == null) {
-          return;
-        }
-        arena.setWave(opt.get() - 1);
-        ((ArenaManager) registry.getPlugin().getArenaManager()).endWave(arena);
-        new MessageBuilder("IN_GAME_MESSAGES_ADMIN_CHANGED_WAVE").asKey().arena(arena).integer(arena.getWave()).sendArena();
-        ArenaUtils.removeSpawnedEnemies(arena);
-        arena.setArenaOption("ZOMBIES_TO_SPAWN", 0);
-      }
-    });
-  }
+    public SetWaveArgument(ArgumentsRegistry registry) {
+        registry.mapArgument("villagedefenseadmin", new LabeledCommandArgument("setwave", "villagedefense.admin.setwave", CommandArgument.ExecutorType.PLAYER,
+                new LabelData("/vda setwave &6<number>", "/vda setwave <number>",
+                        "&7Set wave number in arena you're in\n&6Permission: &7villagedefense.admin.setwave")) {
+            @Override
+            public void execute(CommandSender sender, String[] args) {
+                if (!registry.getPlugin().getBukkitHelper().checkIsInGameInstance((Player) sender)) {
+                    return;
+                }
+                if (args.length == 1) {
+                    new MessageBuilder(ChatColor.RED + "Please type number of wave to set!").prefix().send(sender);
+                    return;
+                }
+                java.util.Optional<Integer> opt = NumberUtils.parseInt(args[1]);
+                if (!opt.isPresent()) {
+                    new MessageBuilder("COMMANDS_WRONG_USAGE").asKey().value("/vda setwave <number>").send(sender);
+                    return;
+                }
+                Arena arena = (Arena) registry.getPlugin().getArenaRegistry().getArena((Player) sender);
+                if (arena == null) {
+                    return;
+                }
+                arena.setWave(opt.get() - 1);
+                ((ArenaManager) registry.getPlugin().getArenaManager()).endWave(arena);
+                new MessageBuilder("IN_GAME_MESSAGES_ADMIN_CHANGED_WAVE").asKey().arena(arena).integer(arena.getWave()).sendArena();
+                ArenaUtils.removeSpawnedEnemies(arena);
+                arena.setArenaOption("ZOMBIES_TO_SPAWN", 0);
+            }
+        });
+    }
 
 }

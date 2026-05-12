@@ -70,6 +70,7 @@ public class Arena extends PluginArena {
     private WaveType waveType;
 
     private final Map<SpawnPoint, List<Location>> spawnPoints = new EnumMap<>(SpawnPoint.class);
+    public final Map<Player, Integer> playerPoints  = new HashMap<>();
 
     private ShopManager shopManager;
     private EnemySpawnManager enemySpawnManager;
@@ -553,6 +554,12 @@ public class Arena extends PluginArena {
         STORM,
         // 劫掠
         THEFT
+    }
+
+    public List<Map.Entry<Player, Integer>> getSortedPlayers() {
+        List<Map.Entry<Player, Integer>> list = new ArrayList<>(playerPoints.entrySet());
+        list.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+        return list;
     }
 
 }
