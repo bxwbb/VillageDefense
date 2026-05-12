@@ -112,4 +112,57 @@ Item:
   甜菜根: 38
   甜菜汤: 210
   蛋糕: 350
+
 Potion:
+  INSTANT_HEALTH: 200
+  SPEED: 180
+  SLOWNESS: 170
+  STRENGTH: 220
+  WEAKNESS: 160
+  REGENERATION: 210
+  JUMP_BOOST: 175
+  INVISIBILITY: 260
+  FIRE_RESISTANCE: 240
+
+Buff:
+  HEALTH_BOOST:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 320
+    - 384
+    - 384
+    - 384
+    - 512
+  SPEED:
+    - 128
+    - 256
+  RESISTANCE:
+    - 128
+    - 256
+  STRENGTH:
+    - 512
+    - 512
+
+rewards:
+  1:
+    score: 200000
+    commands:
+      - gift give %player% 村守1传奇宝箱 2
+  2:
+    score: 150000
+    commands:
+      - gift give %player% 村守1史诗宝箱 2
+  3:
+    score: 100000
+    commands:
+      - gift give %player% 村守1珍惜宝箱 2
+  4:
+    score: 50000
+    commands:
+      - gift give %player% 村守1稀有宝箱 2
+  5:
+    score: 10000
+    commands:
+      - gift give %player% 村守1普通宝箱 2

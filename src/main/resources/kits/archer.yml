@@ -1,7 +1,7 @@
-name: "&6Archer"
+name: "&6弓箭手"
 description:
-  - "Start with a bow, leather armor and a wooden sword."
-  - "Archers are loved by the villagers, know that!"
+  - "开局获得一把弓、皮革套装以及一把木剑。"
+  - "弓箭手深受村民们的喜爱，记住这一点！"
 enabled: true
 display_item:
   material: BOW

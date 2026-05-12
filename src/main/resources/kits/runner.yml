@@ -1,8 +1,8 @@
-name: "&6Runner"
+name: "&6疾风行者"
 description:
-  - "Parkour is your passion!"
-  - "You are able to run faster than everybody else."
-  - "You have also the ability to jump higher."
+  - "跑酷是你的专长！"
+  - "你的移动速度远超其他人。"
+  - "同时还拥有更高的跳跃能力。"
 enabled: true
 display_item:
   material: FIREWORK_ROCKET

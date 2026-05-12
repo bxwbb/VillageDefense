@@ -1,8 +1,8 @@
-name: "&2Knight"
+name: "&2骑士"
 description:
-  - "This is the one and only knight kit!"
-  - "Many people think this is the worst kit!"
-  - "I must admit they are totally wrong!"
+  - "独一无二的骑士职业！"
+  - "很多人觉得这是最弱的职业！"
+  - "但我必须说他们大错特错！"
 enabled: true
 display_item:
   material: WOODEN_SWORD

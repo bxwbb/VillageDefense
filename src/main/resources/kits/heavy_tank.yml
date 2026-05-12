@@ -1,8 +1,8 @@
-name: "&bHeavy Tank"
+name: "&b重装坦克"
 description:
-  - "Start off with iron armor and a double"
-  - "amount of hearts! Yup, that's right,"
-  - "you'll be the last man standing!"
+  - "开局身穿铁甲并拥有双倍生命值！"
+  - "没错，就是这么强悍，"
+  - "你将会是最后屹立不倒的那个人！"
 enabled: true
 display_item:
   material: DIAMOND_CHESTPLATE

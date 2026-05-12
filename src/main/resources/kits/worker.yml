@@ -1,8 +1,8 @@
-name: "&6Worker"
+name: "&6工匠"
 description:
-  - "You have the superpower over the doors"
-  - "You can regenerate destroyed doors"
-  - "with your ability!"
+  - "你拥有操控木门的特殊能力。"
+  - "可以利用技能"
+  - "修复被摧毁的大门！"
 enabled: true
 display_item:
   material: OAK_DOOR
@@ -38,9 +38,9 @@ inventory:
     item:
       material: OAK_DOOR
       amount: 1
-      name: "Door Regenerator"
+      name: "大门修复器"
       lore:
-        - "Regenerate the destroyed doors on the map!"
+        - "修复地图上被破坏的大门！"
     slot: 4
 armour:
   helmet:

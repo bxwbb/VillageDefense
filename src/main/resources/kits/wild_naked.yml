@@ -1,8 +1,8 @@
-name: "&bWild Naked"
+name: "&b荒野狂战士"
 description:
-  - "You are the ultimate master!"
-  - "You start off with a iron Sharpness"
-  - "VI and Smite II sword!"
+  - "你是顶尖的强者！"
+  - "开局自带一把附有锋利Ⅵ、"
+  - "亡灵克星Ⅱ的铁剑！"
 enabled: true
 display_item:
   material: IRON_SWORD

@@ -1,7 +1,7 @@
-name: "&6Looter"
+name: "&6掠夺者"
 description:
-  - "Get one additional rotten flesh"
-  - "on every zombie kill!"
+  - "每击杀一只僵尸"
+  - "额外获得一块腐肉！"
 enabled: true
 display_item:
   material: ROTTEN_FLESH

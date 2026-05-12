@@ -1,7 +1,7 @@
-name: "&6Hardcore"
+name: "&6极限挑战者"
 description:
-  - "You'll see yourself"
-  - "why this is hardcore"
+  - "你会亲自体会到"
+  - "何为极限难度"
 enabled: true
 display_item:
   material: PLAYER_HEAD

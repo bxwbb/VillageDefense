@@ -1,8 +1,8 @@
-name: "&bBlocker"
+name: "&b屏障守卫"
 description:
-  - "Hold the zombies back with"
-  - "your special barriers. These"
-  - "barriers last for 10 seconds"
+  - "用专属屏障阻挡"
+  - "僵尸的进攻。这些"
+  - "屏障可持续10秒"
 enabled: true
 display_item:
   material: BARRIER
@@ -26,10 +26,10 @@ inventory:
       material: OAK_FENCE
       amount: 3
       damage: 0
-      name: "Fence"
+      name: "围栏屏障"
       lore:
-        - "Place this barrier to hold back"
-        - "zombies! These barriers last for 10 seconds"
+        - "放置此围栏来阻挡"
+        - "僵尸！屏障持续10秒"
     slot: 2
   '3':
     item:
@@ -64,10 +64,10 @@ restock:
       material: OAK_FENCE
       amount: 3
       damage: 0
-      name: "Fence"
+      name: "围栏屏障"
       lore:
-        - "Place this barrier to hold back"
-        - "zombies! These barriers last for 10 seconds"
+        - "放置此围栏来阻挡"
+        - "僵尸！屏障持续10秒"
 
 abilities:
   - "BARRIER"

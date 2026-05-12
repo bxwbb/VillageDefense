@@ -1,7 +1,7 @@
-name: "&6Terminator"
+name: "&6终结者"
 description:
-  - "Easily kill those zombies"
-  - "with your strength powers!"
+  - "凭借强悍的力量"
+  - "轻松斩杀所有僵尸！"
 enabled: true
 display_item:
   material: BONE

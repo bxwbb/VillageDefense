@@ -93,7 +93,7 @@ Scoreboard:
       - ""
       - "■ 最小玩家数 | %arena_min_players%"
       - ""
-      - "   www.plugily.xyz"
+      - "   千阙云庭 @ 2026"
     # 游戏进行中的计分板内容
     In-Game:
       - ""
@@ -104,7 +104,7 @@ Scoreboard:
       - "■ 腐肉数量 | %arena_rotten_flesh_amount%"
       - "■ 能量球数 | %user_statistic_orbs%"
       - ""
-      - "   www.plugily.xyz"
+      - "   千阙云庭 @ 2026"
     In-Game-Waiting:
       - ""
       - "■ 村民数 | %arena_villager_size%"
@@ -115,7 +115,7 @@ Scoreboard:
       - "■ 腐肉数量 | %arena_rotten_flesh_amount%"
       - "■ 能量球数 | %user_statistic_orbs%"
       - ""
-      - "   www.plugily.xyz"
+      - "   千阙云庭 @ 2026"
     # 游戏结束时的计分板内容
     Ending:
       - "&f"
@@ -125,7 +125,7 @@ Scoreboard:
       - "&f"
       - "&f"
       - ""
-      - "   www.plugily.xyz"
+      - "   千阙云庭 @ 2026"
     # 游戏重启时的计分板内容
     Restarting:
       - "&f"
@@ -135,22 +135,20 @@ Scoreboard:
       - "&f"
       - "&f"
       - ""
-      - "   www.plugily.xyz"
+      - "   千阙云庭 @ 2026"
 
 #
 # 头显示条消息
 #
 # 需要在 config.yml 中启用头显示条功能
 Bossbar:
-  Title: "&a&l%plugin_name% &6- www.plugily.xyz"
+  Title: "&a&l%plugin_name% &6- BXWBB"
   Content:
     Waiting:
       - "等待更多玩家加入..."
     Starting:
       - "游戏开始倒计时: %arena_time%"
     In-Game:
-      - "在 PLUGILY.XYZ 上玩 %plugin_name_uppercase%"
-      - "在 PLUGILY.XYZ 上查看插件作者"
       - "当前第 %arena_option_wave% 波"
     Ending:
       - "游戏已结束！您正在 PLUGILY.XYZ 上游戏"

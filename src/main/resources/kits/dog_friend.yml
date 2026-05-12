@@ -1,6 +1,6 @@
-name: "&bDog Friend"
+name: "&b狗狗伙伴"
 description:
-  - "Get one dog on every wave"
+  - "每一波都会生成一只狼协助你"
 enabled: true
 display_item:
   material: BONE

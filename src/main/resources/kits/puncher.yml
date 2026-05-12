@@ -1,7 +1,7 @@
-name: "&6Puncher"
+name: "&6击退者"
 description:
-  - "Punch those zombies back with your epic shovel!"
-  - "Knockback V is not unknown to you!"
+  - "用强力铲子将僵尸狠狠击退！"
+  - "拥有顶级击退效果可不是开玩笑的！"
 enabled: true
 display_item:
   material: DIAMOND_SHOVEL

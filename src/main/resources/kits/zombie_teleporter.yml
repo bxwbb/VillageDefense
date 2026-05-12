@@ -1,8 +1,8 @@
-name: "&2Zombie Teleporter"
+name: "&2僵尸牵引师"
 description:
-  - "Teleport those zombies to you!"
-  - "Many people think this is the worst kit!"
-  - "I must admit they are totally wrong!"
+  - "将远处的僵尸传送至身边！"
+  - "很多人觉得这是最弱的职业！"
+  - "但我必须说他们大错特错！"
 enabled: true
 display_item:
   material: FISHING_ROD
@@ -26,9 +26,9 @@ inventory:
     item:
       material: BOOK
       damage: 0
-      name: "Zombie Teleporter"
+      name: "僵尸牵引术"
       lore:
-      - "Teleport zombies to you!"
+        - "将僵尸传送至你的身边！"
       enchants:
         SHARPNESS: 1
     slot: 2

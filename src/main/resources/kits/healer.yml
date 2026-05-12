@@ -1,8 +1,8 @@
-name: "&6Healer"
+name: "&6治疗师"
 description:
-  - "Being a healer is the same as being loved."
-  - "You are able to heal your teammates and villagers!"
-  - "Gets a restock every wave!"
+  - "身为治疗师，深受大家爱戴。"
+  - "你可以治愈队友与村民！"
+  - "每一波都会补给药水！"
 enabled: true
 display_item:
   material: POPPY

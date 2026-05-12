@@ -1,6 +1,6 @@
-name: "&2Light Tank"
+name: "&2轻装坦克"
 description:
-  - "You are Junior tank!"
+  - "你是一名初级坦克！"
 enabled: true
 display_item:
   material: LEATHER_CHESTPLATE

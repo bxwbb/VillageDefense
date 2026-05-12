@@ -1,7 +1,7 @@
-name: "&6Golem Friend"
+name: "&6铁巨人伙伴"
 description:
-  - "Start with a golem and"
-  - "get new every 5 waves!"
+  - "开局拥有一只铁傀儡"
+  - "每5波可再获得一只！"
 enabled: true
 display_item:
   material: IRON_INGOT

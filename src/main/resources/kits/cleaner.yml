@@ -1,10 +1,10 @@
-name: "&bCleaner"
+name: "&b净化者"
 description:
-  - "The cleaner has a special ability."
-  - "With this ability, he can make all the"
-  - "zombies disappear. However, it takes"
-  - "a lot of effort to do this and the"
-  - "magic can be between half and all zombies!"
+  - "净化者拥有专属特殊能力。"
+  - "借助该能力，可以让所有"
+  - "僵尸瞬间消失。但施展此能力"
+  - "需要消耗大量魔力，效果会随机"
+  - "清除半数至全部的僵尸！"
 enabled: true
 display_item:
   material: BLAZE_POWDER
@@ -22,10 +22,10 @@ inventory:
     item:
       material: BLAZE_ROD
       damage: 0
-      name: "&6Cleaner Wand!"
+      name: "&6净化之杖！"
       lore:
-        - "Right click to kill most (min half) zombies!"
-        - "Cooldown: 60 seconds"
+        - "右键可清除半数以上僵尸！"
+        - "冷却：60秒"
     slot: 1
   '2':
     item:

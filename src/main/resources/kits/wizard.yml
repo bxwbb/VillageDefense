@@ -1,9 +1,9 @@
-name: "&bWizard"
+name: "&b巫师"
 description:
-  - "You're half blood."
-  - "You've come to the village to protect"
-  - "villagers from hordes of undead."
-  - "Use your dark powers to kill them all!"
+  - "你拥有半魔族血脉。"
+  - "降临村庄只为守护村民，"
+  - "抵御亡灵大军的入侵。"
+  - "运用黑暗力量将它们全部肃清！"
 enabled: true
 display_item:
   material: BLAZE_ROD
@@ -14,20 +14,20 @@ inventory:
     item:
       material: BLAZE_ROD
       damage: 0
-      name: "Magic wand"
+      name: "魔法法杖"
       lore:
-      - "Right click to cast dark matter"
+        - "右键释放黑暗能量"
     slot: 0
   '1':
     item:
       material: BLACK_DYE
       amount: 4
       damage: 0
-      name: "Dark essence"
+      name: "黑暗精华"
       lore:
-        - "Click to absorb surrounded matter"
-        - "and use it as your personal thorn shield!"
-        - "Lasts for 5 seconds"
+        - "点击吸收周遭能量"
+        - "化作自身荆棘护盾！"
+        - "持续5秒"
     slot: 1
   '2':
     item:
@@ -64,8 +64,8 @@ restock:
       material: BLACK_DYE
       amount: 1
       damage: 0
-      name: "Dark essence"
+      name: "黑暗精华"
       lore:
-        - "Click to absorb surrounded matter"
-        - "and use it as your personal thorn shield!"
-        - "Lasts for 5 seconds"
+        - "点击吸收周遭能量"
+        - "化作自身荆棘护盾！"
+        - "持续5秒"

@@ -1,6 +1,6 @@
-name: "&bTornado"
+name: "&b龙卷风"
 description:
-  - "Spawn in an awesome tornado!"
+  - "召唤强力龙卷风席卷战场！"
 enabled: true
 display_item:
   material: COBWEB
@@ -28,10 +28,10 @@ inventory:
       material: COBWEB
       amount: 5
       damage: 0
-      name: "Tornado Time"
+      name: "龙卷风降临"
       lore:
-        - "Right click to spawn a"
-        - "tornado at your location!"
+        - "右键可在自身位置"
+        - "召唤一道龙卷风！"
     slot: 3
 armour:
   helmet:
@@ -55,7 +55,7 @@ restock:
       material: COBWEB
       amount: 5
       damage: 0
-      name: "Tornado Time"
+      name: "龙卷风降临"
       lore:
-        - "Right click to spawn a"
-        - "tornado at your location!"
+        - "右键可在自身位置"
+        - "召唤一道龙卷风！"

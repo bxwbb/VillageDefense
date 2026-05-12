@@ -1,9 +1,9 @@
-name: "&6Medic"
+name: "&6战地医师"
 description:
-  - "This kit activates your passive powers."
-  - "Every time you hit a zombie, you have"
-  - "a 3/10 chance to heal the players"
-  - "in a 5 block radius around you."
+  - "该职业拥有专属被动能力。"
+  - "每次攻击僵尸时，有"
+  - "十分之三的概率治愈自身周围"
+  - "5格范围内的所有玩家。"
 enabled: true
 display_item:
   material: GHAST_TEAR

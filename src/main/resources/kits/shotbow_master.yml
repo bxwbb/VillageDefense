@@ -1,6 +1,6 @@
-name: "&bShotbow Master"
+name: "&b神弓大师"
 description:
-  - "You invented a crazy shotbow!"
+  - "你精通威力极强的弓箭组合！"
 enabled: true
 display_item:
   material: ARROW

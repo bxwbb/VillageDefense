@@ -1,8 +1,8 @@
-name: "&bHardcore Master"
+name: "&b极限大师"
 description:
-  - "One hit most zombies with your OP sword!"
-  - "However be careful. this kit is only for"
-  - "the pros! Do not use it if you aren't a pro!"
+  - "凭借超强圣剑，一刀斩杀多数僵尸！"
+  - "但请务必小心，该职业只适合"
+  - "高手游玩！新手切勿轻易尝试！"
 enabled: true
 display_item:
   material: DIAMOND_SWORD

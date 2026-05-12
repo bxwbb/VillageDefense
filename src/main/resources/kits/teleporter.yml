@@ -1,9 +1,9 @@
-name: "&bTeleporter"
+name: "&b传送师"
 description:
-  - "Everybody is astonished about your teleportation."
-  - "Nobody knows how to do it except you! Due to this,"
-  - "you are able to teleport to villagers"
-  - "that need help in no time!"
+  - "你的传送能力令所有人为之惊叹。"
+  - "除了你之外无人掌握此法！正因如此，"
+  - "你可以瞬间传送到"
+  - "需要援助的村民身边！"
 enabled: true
 display_item:
   material: ENDER_PEARL
@@ -30,10 +30,10 @@ inventory:
     item:
       material: GHAST_TEAR
       damage: 0
-      name: §rTeleportation Menu
+      name: §r传送菜单
       lore:
-      - '§7§7Right click to open teleportation '
-      - §7menu!
+        - '§7右键打开传送'
+        - §7功能菜单！
     slot: 3
 armour:
   helmet:

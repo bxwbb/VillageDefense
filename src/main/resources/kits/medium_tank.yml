@@ -1,8 +1,8 @@
-name: "&6Medium Tank"
+name: "&6中型坦克"
 description:
-  - "Start off with 6 more hearts!"
-  - "Don't be afraid!"
-  - "You have plenty hearts left to lose!"
+  - "开局额外拥有6颗爱心！"
+  - "无需畏惧敌人！"
+  - "你有着充足的血量承受伤害！"
 enabled: true
 display_item:
   material: IRON_CHESTPLATE
