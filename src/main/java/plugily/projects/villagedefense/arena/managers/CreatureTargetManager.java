@@ -21,6 +21,7 @@ package plugily.projects.villagedefense.arena.managers;
 
 import com.destroystokyo.paper.entity.ai.GoalType;
 import com.destroystokyo.paper.entity.ai.MobGoals;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.MetadataValue;
@@ -56,7 +57,7 @@ public class CreatureTargetManager {
                     setTarget(creature);
                     continue;
                 }
-                if (creatureTarget.getLocation().distance(creature.getLocation()) > 10 && creatureTarget instanceof Player) {
+                if (creatureTarget.getLocation().distance(creature.getLocation()) > 10 && creatureTarget instanceof Player player && !player.getGameMode().equals(GameMode.SPECTATOR)) {
                     setTarget(creature);
                 }
             }

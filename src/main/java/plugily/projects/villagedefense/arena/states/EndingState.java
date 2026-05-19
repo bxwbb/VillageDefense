@@ -27,7 +27,6 @@ import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.arena.managers.Shop.ShopManager;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Plajer
@@ -35,8 +34,6 @@ import java.util.Map;
  * Created at 03.06.2019
  */
 public class EndingState extends PluginEndingState {
-
-    public static final String giftName = "xinghan1";
 
     @Override
     public void handleCall(PluginArena arena) {
@@ -47,19 +44,23 @@ public class EndingState extends PluginEndingState {
             for (Player player : arena.getPlayers()) {
                 IUser user = getPlugin().getUserManager().getUser(player);
                 user.setStatistic("ORBS", 0);
-                int point = pluginArena.playerPoints.get(player);
-                int index = 1;
-                while (ShopManager.fileConfiguration.contains("rewards." + index)) {
-                    int score = ShopManager.fileConfiguration.getInt("rewards." + index + ".score");
-                    List<String> commands = ShopManager.fileConfiguration.getStringList("rewards." + index + ".commands");
-                    if (point >= score) {
-                        for (String command : commands) {
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replaceAll("%player%", player.getName()));
-                        }
-                    }
-                    index++;
-                }
             }
         }
+        for (Player player : arena.getPlayers()) {
+            if (!Arena.playerPoints.containsKey(player)) continue;
+            double point = Arena.playerPoints.get(player);
+            int index = 1;
+            while (ShopManager.fileConfiguration.contains("rewards." + index)) {
+                double score = ShopManager.fileConfiguration.getDouble("rewards." + index + ".score");
+                List<String> commands = ShopManager.fileConfiguration.getStringList("rewards." + index + ".commands");
+                if (point >= score) {
+                    for (String command : commands) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replaceAll("%player%", player.getName()));
+                    }
+                }
+                index++;
+            }
+        }
+        Arena.playerPoints.clear();
     }
 }

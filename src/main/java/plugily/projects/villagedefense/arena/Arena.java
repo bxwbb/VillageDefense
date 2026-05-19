@@ -21,9 +21,11 @@ package plugily.projects.villagedefense.arena;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
@@ -68,9 +70,18 @@ public class Arena extends PluginArena {
     private final List<Entity> spawnedEntities = new ArrayList<>();
     private MapRestorerManager mapRestorerManager;
     private WaveType waveType;
+    private Challenge challenge;
+
+    public Challenge getChallenge() {
+        return challenge;
+    }
+
+    public void setChallenge(Challenge challenge) {
+        this.challenge = challenge;
+    }
 
     private final Map<SpawnPoint, List<Location>> spawnPoints = new EnumMap<>(SpawnPoint.class);
-    public final Map<Player, Integer> playerPoints  = new HashMap<>();
+    public static final Map<Player, Double> playerPoints  = new HashMap<>();
 
     private ShopManager shopManager;
     private EnemySpawnManager enemySpawnManager;
@@ -191,9 +202,9 @@ public class Arena extends PluginArena {
 
     public void addBonusPoint(Location location) {
         plugin.getDebugger().debug("Arena {0} Adding bonus point on location {1}", getId(), location.toString());
-        List<Location> bonus = getZombieSpawns();
+        List<Location> bonus = getBonusPoints();
         bonus.add(location);
-        spawnPoints.put(SpawnPoint.ZOMBIE, bonus);
+        spawnPoints.put(SpawnPoint.BONUS, bonus);
         plugin.getDebugger().debug("Arena {0} bonus {1}", getId(), getBonusPoints());
     }
 
@@ -321,10 +332,13 @@ public class Arena extends PluginArena {
         pillager.getEquipment().setItemInOffHandDropChance(0.0f);
         plugin.getServer().getMobGoals().removeAllGoals(pillager, GoalType.TARGET);
         ItemStack crossbow = new ItemStack(Material.CROSSBOW);
-        ItemMeta meta = crossbow.getItemMeta();
+        CrossbowMeta meta = (CrossbowMeta) crossbow.getItemMeta();
         if (meta != null) {
-            meta.setUnbreakable(true);          // 不可破坏
-            meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE); // 隐藏不可破坏标识
+            meta.setUnbreakable(true);
+            meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+            crossbow.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 5);
+            crossbow.addUnsafeEnchantment(Enchantment.MULTISHOT, 1);
+            crossbow.addUnsafeEnchantment(Enchantment.PIERCING, 5);
             crossbow.setItemMeta(meta);
         }
         pillager.getEquipment().setItemInMainHand(crossbow);
@@ -556,9 +570,15 @@ public class Arena extends PluginArena {
         THEFT
     }
 
-    public List<Map.Entry<Player, Integer>> getSortedPlayers() {
-        List<Map.Entry<Player, Integer>> list = new ArrayList<>(playerPoints.entrySet());
-        list.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+    public enum Challenge {
+        EASY,
+        HARD,
+        INFINITE
+    }
+
+    public List<Map.Entry<Player, Double>> getSortedPlayers() {
+        List<Map.Entry<Player, Double>> list = new ArrayList<>(playerPoints.entrySet());
+        list.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
         return list;
     }
 

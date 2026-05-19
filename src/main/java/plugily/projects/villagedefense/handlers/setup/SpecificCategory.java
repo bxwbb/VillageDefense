@@ -22,10 +22,13 @@ import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.handlers.setup.categories.PluginSpecificCategory;
 import plugily.projects.minigamesbox.classic.handlers.setup.items.category.MaterialLocationItem;
 import plugily.projects.minigamesbox.classic.handlers.setup.items.category.MultiLocationItem;
+import plugily.projects.minigamesbox.classic.handlers.setup.items.category.SwitchItem;
 import plugily.projects.minigamesbox.classic.utils.helper.ItemBuilder;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 import plugily.projects.minigamesbox.inventory.common.item.SimpleClickableItem;
 import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
+
+import java.util.List;
 
 
 /**
@@ -58,6 +61,10 @@ public class SpecificCategory extends PluginSpecificCategory {
         MultiLocationItem bonus = new MultiLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.DIAMOND.parseMaterial()), "掠夺奖励箱", "站在奖励箱要生成的位置\n点击来设置奖励箱", "bonus", 1);
         gui.setItem((getInventoryLine() * 9) + 5, bonus);
         getItemList().add(bonus);
+
+        SwitchItem challenge = new SwitchItem(getSetupInventory(), new ItemBuilder(XMaterial.FISHING_ROD.parseMaterial()), "游玩模式设置", "游玩模式设置 - 简单 | 困难 | 无尽", "challenge", List.of("简单", "困难", "无尽"));
+        gui.setItem((getInventoryLine() * 9) + 6, challenge);
+        getItemList().add(challenge);
     }
 
 }

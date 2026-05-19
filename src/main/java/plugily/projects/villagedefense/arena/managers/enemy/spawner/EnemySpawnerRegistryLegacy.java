@@ -201,7 +201,7 @@ public class EnemySpawnerRegistryLegacy {
             if (spawned == arena.getZombieSpawns().size() * 2) break;
         }
 
-        if (wave % 10 == 0) {
+        if (wave % 10 == 0 && wave != 0) {
             giveRandomEliteBuff(arena);
         }
     }
@@ -264,7 +264,7 @@ public class EnemySpawnerRegistryLegacy {
      * 默认占用 3000 游戏时长过渡
      */
     public void smoothToDusk(World world) {
-        smoothSetTime(world, 12500, 3000);
+        smoothSetTime(world, 12500, 60);
     }
 
     public void giveRandomEliteBuff(Arena arena) {

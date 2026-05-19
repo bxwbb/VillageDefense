@@ -81,7 +81,7 @@ public class PlaceholderInitializer {
                 }
                 int wave = pluginArena.getWave();
                 String summaryEnding;
-                if (pluginArena.getPlugin().getConfigPreferences().getOption("LIMIT_WAVE_UNLIMITED") && wave >= pluginArena.getPlugin().getConfig().getInt("Limit.Wave.Game-End", 25)) {
+                if ((((Arena) arena).getChallenge().equals(Arena.Challenge.EASY) && wave >= 20) || (((Arena) arena).getChallenge().equals(Arena.Challenge.HARD) && wave >= 50)) {
                     summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_WIN").asKey().arena(pluginArena).build();
                 } else {
                     summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_LOSE").asKey().arena(pluginArena).build();
@@ -108,8 +108,8 @@ public class PlaceholderInitializer {
                 }
                 int wave = pluginArena.getWave();
                 String summaryEnding;
-                if (pluginArena.getPlugin().getConfigPreferences().getOption("LIMIT_WAVE_UNLIMITED") && wave >= pluginArena.getPlugin().getConfig().getInt("Limit.Wave.Game-End", 25)) {
-                    summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_SURVIVED").asKey().arena(pluginArena).build();
+                if ((((Arena) arena).getChallenge().equals(Arena.Challenge.EASY) && wave >= 20) || (((Arena) arena).getChallenge().equals(Arena.Challenge.HARD) && wave >= 50)) {
+                    summaryEnding = new MessageBuilder("&a怪物大军败下阵来").build();
                 } else if (!arena.getPlayersLeft().isEmpty()) {
                     summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_DIED_VILLAGERS").asKey().arena(pluginArena).build();
                 } else {

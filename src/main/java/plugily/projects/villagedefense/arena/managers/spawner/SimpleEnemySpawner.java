@@ -137,9 +137,9 @@ public interface SimpleEnemySpawner extends EnemySpawner {
         if (livingEntity == null) {
             return;
         }
-        VersionUtils.setMaxHealth(livingEntity, 10.0d + (arena.getWave() * 4));
-        livingEntity.setHealth(10.0d + (arena.getWave() * 4));
-        livingEntity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).setBaseValue(2.0d + arena.getWave() * 0.5);
+        VersionUtils.setMaxHealth(livingEntity, 5 + (arena.getWave() * 2));
+        livingEntity.setHealth(5 + (arena.getWave() * 2));
+        livingEntity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).setBaseValue(arena.getWave() * 0.5);
         if (livingEntity instanceof Creature creature) {
             if (canApplyAttributes()) {
                 CreatureUtils.applyAttributes(creature, arena);

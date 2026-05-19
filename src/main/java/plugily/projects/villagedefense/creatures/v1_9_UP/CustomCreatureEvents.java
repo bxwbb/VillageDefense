@@ -90,7 +90,7 @@ public class CustomCreatureEvents implements Listener {
                         plugin.getUserManager().addExperience(killer, 2 * arena.getArenaOption("CREATURE_DIFFICULTY_MULTIPLIER"));
                         plugin.getRewardsHandler().performReward(killer, plugin.getRewardsHandler().getRewardType("ZOMBIE_KILL"));
                         plugin.getPowerupRegistry().spawnPowerup(entity.getLocation(), arena);
-                        arena.playerPoints.put(killer, (int) (arena.playerPoints.get(killer) + Math.round(entity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).getBaseValue() + entity.getAttribute(XAttribute.MAX_HEALTH.get()).getBaseValue())));
+                        Arena.playerPoints.put(killer, Arena.playerPoints.get(killer) + Math.round(entity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).getBaseValue() + entity.getAttribute(XAttribute.MAX_HEALTH.get()).getBaseValue()));
                     }
                     continue;
                 }

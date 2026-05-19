@@ -111,7 +111,7 @@ public class ArenaManager extends PluginArenaManager {
                     }
                     user.setStatistic("HIGHEST_WAVE", wave);
                 }
-                if (plugin.getConfigPreferences().getOption("LIMIT_WAVE_UNLIMITED") && wave >= plugin.getConfig().getInt("Limit.Wave.Game-End", 25)) {
+                if ((((Arena) arena).getChallenge().equals(Arena.Challenge.EASY) && wave >= 20) || (((Arena) arena).getChallenge().equals(Arena.Challenge.HARD) && wave >= 50)) {
                     plugin.getUserManager().addStat(user, plugin.getStatsStorage().getStatisticType("WINS"));
                     XSound.ENTITY_VILLAGER_YES.play(player);
                 } else {
@@ -150,6 +150,16 @@ public class ArenaManager extends PluginArenaManager {
             return;
         }
 
+        if (arena.getChallenge().equals(Arena.Challenge.EASY) && wave >= 20) {
+            stopGame(false, arena);
+            return;
+        }
+
+        if (arena.getChallenge().equals(Arena.Challenge.HARD) && wave >= 50) {
+            stopGame(false, arena);
+            return;
+        }
+
         new TitleBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_TITLE_END").asKey().arena(arena).integer(wave).sendArena();
 
         for (IUser user : plugin.getUserManager().getUsers(arena)) {
@@ -181,6 +191,8 @@ public class ArenaManager extends PluginArenaManager {
             plugin.getUserManager().addExperience(player, 5);
             player.removePotionEffect(PotionEffectType.SLOWNESS);
             player.removePotionEffect(PotionEffectType.HUNGER);
+            arena.playerPoints.put(player, arena.playerPoints.get(player) + getReward(wave) / 2);
+            player.setFoodLevel(Math.min(player.getFoodLevel() + 5, 20));
         }
         arena.getVillagerSpawns().getFirst().getWorld().setStorm(false);
         arena.getVillagerSpawns().getFirst().getWorld().setWeatherDuration(0);
@@ -260,7 +272,9 @@ public class ArenaManager extends PluginArenaManager {
             骷髅马骑士（骷髅马若存活玩家可骑）
          */
 
-        int zombiesAmount = (int) Math.ceil((arena.getPlayers().size() * 0.5) * (wave * wave) / 2);
+        int p = arena.getPlayers().size();
+        int zombiesAmount = (int) Math.ceil((p * 0.6) * wave * Math.sqrt(wave) / 3);
+        zombiesAmount = Math.max(5, Math.min(zombiesAmount, 60));
         int maxzombies = plugin.getConfig().getInt("Limit.Spawn.Creatures", 75);
 
         if (zombiesAmount > maxzombies) {
@@ -309,80 +323,87 @@ public class ArenaManager extends PluginArenaManager {
         plugin.getDebugger().debug("[{0}] Wave start event finished took {1}ms", arena.getId(), System.currentTimeMillis() - start);
     }
 
-        private static final Random RANDOM = new Random();
+    private static final Random RANDOM = new Random();
 
-        /**
-         * 在指定坐标生成奖励宝箱 + 粒子音效 + 随机战利品
-         * @param loc 生成坐标
-         */
-        public static void spawnRewardChest(Location loc) {
-            // 1. 设置方块为宝箱
-            loc.getBlock().setType(Material.CHEST);
+    /**
+     * 在指定坐标生成奖励宝箱 + 粒子音效 + 随机战利品
+     *
+     * @param loc 生成坐标
+     */
+    public static void spawnRewardChest(Location loc) {
+        // 1. 设置方块为宝箱
+        loc.getBlock().setType(Material.CHEST);
 
-            // 2. 播放粒子效果（环绕烟花粒子）
-            loc.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, loc.add(0.5, 0.5, 0.5),
-                    80, 0.5, 0.5, 0.5, 0.15);
-            loc.subtract(0.5, 0.5, 0.5);
+        // 2. 播放粒子效果（环绕烟花粒子）
+        loc.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, loc.add(0.5, 0.5, 0.5),
+                80, 0.5, 0.5, 0.5, 0.15);
+        loc.subtract(0.5, 0.5, 0.5);
 
-            // 3. 播放音效
-            loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.8f, 1.1f);
+        // 3. 播放音效
+        loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.8f, 1.1f);
 
-            // 4. 获取宝箱库存
-            Inventory chestInv = ((org.bukkit.block.Chest) loc.getBlock().getState()).getInventory();
-            chestInv.clear();
+        // 4. 获取宝箱库存
+        Inventory chestInv = ((org.bukkit.block.Chest) loc.getBlock().getState()).getInventory();
+        chestInv.clear();
 
-            // 5. 随机生成奖励物品
-            fillChestRandomLoot(chestInv);
-        }
+        // 5. 随机生成奖励物品
+        fillChestRandomLoot(chestInv);
+    }
 
-        // 填充随机战利品：药水、金苹果、附魔金苹果、稀有食物
-        private static void fillChestRandomLoot(Inventory inv) {
-            // 随机药水类型池
-            PotionEffectType[] potionTypes = {
-                    PotionEffectType.INSTANT_HEALTH,
-                    PotionEffectType.SPEED,
-                    PotionEffectType.STRENGTH,
-                    PotionEffectType.REGENERATION,
-                    PotionEffectType.INVISIBILITY,
-                    PotionEffectType.FIRE_RESISTANCE
-            };
+    // 填充随机战利品：药水、金苹果、附魔金苹果、稀有食物
+    private static void fillChestRandomLoot(Inventory inv) {
+        // 随机药水类型池
+        PotionEffectType[] potionTypes = {
+                PotionEffectType.INSTANT_HEALTH,
+                PotionEffectType.SPEED,
+                PotionEffectType.STRENGTH,
+                PotionEffectType.REGENERATION,
+                PotionEffectType.INVISIBILITY,
+                PotionEffectType.FIRE_RESISTANCE
+        };
 
-            // 随机往箱子塞 6~12 个物品
-            int itemCount = 6 + RANDOM.nextInt(7);
+        // 随机往箱子塞 6~12 个物品
+        int itemCount = 6 + RANDOM.nextInt(7);
 
-            for (int i = 0; i < itemCount; i++) {
-                int rand = RANDOM.nextInt(100);
-                ItemStack item;
+        for (int i = 0; i < itemCount; i++) {
+            int rand = RANDOM.nextInt(100);
+            ItemStack item;
 
-                if (rand < 25) {
-                    // 金苹果
-                    item = new ItemStack(Material.GOLDEN_APPLE, 1 + RANDOM.nextInt(3));
-                } else if (rand < 40) {
-                    // 附魔金苹果
-                    item = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 1);
-                } else if (rand < 70) {
-                    // 随机药水
-                    item = new ItemStack(Material.POTION);
-                    PotionMeta meta = (PotionMeta) item.getItemMeta();
-                    if (meta != null) {
-                        PotionEffectType type = potionTypes[RANDOM.nextInt(potionTypes.length)];
-                        meta.addCustomEffect(new PotionEffect(type, 100 * RANDOM.nextInt(5), RANDOM.nextInt(3)), true);
-                        item.setItemMeta(meta);
-                    }
-                } else if (rand < 85) {
-                    // 腐肉、面包、胡萝卜等补给
-                    Material[] foods = {Material.BREAD, Material.CARROT, Material.GOLDEN_CARROT, Material.COOKED_BEEF};
-                    item = new ItemStack(foods[RANDOM.nextInt(foods.length)], 2 + RANDOM.nextInt(5));
-                } else {
-                    // 末影珍珠、不死图腾小概率
-                    Material[] rare = {Material.ENDER_PEARL, Material.TOTEM_OF_UNDYING};
-                    item = new ItemStack(rare[RANDOM.nextInt(rare.length)], 1);
+            if (rand < 25) {
+                // 金苹果
+                item = new ItemStack(Material.GOLDEN_APPLE, 1 + RANDOM.nextInt(3));
+            } else if (rand < 40) {
+                // 附魔金苹果
+                item = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 1);
+            } else if (rand < 70) {
+                // 随机药水
+                item = new ItemStack(Material.POTION);
+                PotionMeta meta = (PotionMeta) item.getItemMeta();
+                if (meta != null) {
+                    PotionEffectType type = potionTypes[RANDOM.nextInt(potionTypes.length)];
+                    meta.addCustomEffect(new PotionEffect(type, 100 * RANDOM.nextInt(5), RANDOM.nextInt(3)), true);
+                    item.setItemMeta(meta);
                 }
-
-                // 随机格子放入
-                int slot = RANDOM.nextInt(inv.getSize());
-                inv.setItem(slot, item);
+            } else if (rand < 85) {
+                // 腐肉、面包、胡萝卜等补给
+                Material[] foods = {Material.BREAD, Material.CARROT, Material.GOLDEN_CARROT, Material.COOKED_BEEF};
+                item = new ItemStack(foods[RANDOM.nextInt(foods.length)], 2 + RANDOM.nextInt(5));
+            } else {
+                // 末影珍珠、不死图腾小概率
+                Material[] rare = {Material.ENDER_PEARL, Material.TOTEM_OF_UNDYING};
+                item = new ItemStack(rare[RANDOM.nextInt(rare.length)], 1);
             }
+
+            // 随机格子放入
+            int slot = RANDOM.nextInt(inv.getSize());
+            inv.setItem(slot, item);
         }
+    }
+
+    public static long getReward(int x) {
+        if (x == 30) return 50000;
+        double y = 1874.38 * Math.exp(0.0885 * x);
+        return Math.round(y);
+    }
 
 }
