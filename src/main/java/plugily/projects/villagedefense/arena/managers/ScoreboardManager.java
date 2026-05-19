@@ -18,8 +18,10 @@
 
 package plugily.projects.villagedefense.arena.managers;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
+import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.arena.managers.PluginScoreboardManager;
 import plugily.projects.villagedefense.arena.Arena;
@@ -43,6 +45,24 @@ public class ScoreboardManager extends PluginScoreboardManager {
     }
 
     @Override
+    public void createScoreboard(IUser user) {
+        if (shouldUseBaseApiScoreboard()) {
+            super.removeScoreboard(user);
+            return;
+        }
+        super.createScoreboard(user);
+    }
+
+    @Override
+    public void updateScoreboards() {
+        if (shouldUseBaseApiScoreboard()) {
+            removeBukkitScoreboards();
+            return;
+        }
+        super.updateScoreboards();
+    }
+
+    @Override
     public List<String> getScoreboardLines(Player player) {
         List<String> lines = new ArrayList<>();
         if (arena.getArenaState() == IArenaState.IN_GAME) {
@@ -52,10 +72,11 @@ public class ScoreboardManager extends PluginScoreboardManager {
         }
 
         Arena pluginArena = (Arena) arena.getPlugin().getArenaRegistry().getArena(arena.getId());
-        if (pluginArena != null) {
+        if (pluginArena != null && arena.getArenaState() == IArenaState.IN_GAME) {
             List<Map.Entry<Player, Integer>> points = pluginArena.getSortedPlayers();
+            List<String> pointsLines = new ArrayList<>();
 
-            lines.add("§e§l积分 TOP 5 玩家");
+            pointsLines.add("§e§l积分 TOP 5 玩家");
 
             int rank = 1;
             for (int i = 0; i < Math.min(5, points.size()); i++) {
@@ -70,11 +91,26 @@ public class ScoreboardManager extends PluginScoreboardManager {
                     default -> "§f";
                 };
 
-                lines.add(rankColor + rank + ". §f" + name + " §7| §a" + score);
+                pointsLines.add(rankColor + rank + ". §f" + name + " §7| §a" + score);
                 rank++;
             }
+            lines.addAll(0, pointsLines);
         }
 
         return lines;
+    }
+
+    private boolean shouldUseBaseApiScoreboard() {
+        return Bukkit.getPluginManager().isPluginEnabled("BaseAPI")
+                && ((Arena) arena).getPlugin().getConfig().getBoolean("Scoreboard.BaseAPI.Enabled", true);
+    }
+
+    private void removeBukkitScoreboards() {
+        for (Player player : arena.getPlayers()) {
+            IUser user = arena.getPlugin().getUserManager().getUser(player);
+            if (user != null) {
+                super.removeScoreboard(user);
+            }
+        }
     }
 }

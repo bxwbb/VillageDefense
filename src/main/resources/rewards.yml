@@ -37,17 +37,15 @@
 rewards:
   # 游戏开始时执行的指令
   game-start:
-    - say %arena_name% 游戏已开始
-    - say 共有 %arena_players_size% 名玩家参与游戏
+    - ql addexp %player% 10
 
   # 游戏结束时执行的指令
   game-end:
-    - say %arena_name% 游戏已结束，最终波数：%arena_wave%
-    - say 本次共有 %arena_players_size% 名玩家参与
+    - ql addexp %player% 10
 
   # 每一波开始时执行
   start-wave:
-    - say 第 %arena_wave% 波已开始！
+    - ql addexp %player% 10
 
   # 每一波结束时执行的指令
   # 使用 "数字:" 可以指定只在某一波结束执行（例 1:）
@@ -55,27 +53,58 @@ rewards:
   # 不需要可以清空
   end-wave:
     1:
-      - say 你成功抵达第 %arena_wave% 波，加油！
+      - ql addexp %player% 15
+    3:
+      - ql addexp %player% 20
     5:
-      - say 你成功抵达第 %arena_wave% 波，太棒了！
-      - eco give %player% 5
+      - ql addexp %player% 30
+    8:
+      - ql addexp %player% 50
     10:
-      - broadcast 哇！%arena_name% 地图打到了第 %arena_wave% 波！
-    99:
-      - say 很棒的尝试 %player%，继续加油！
+      - ql addexp %player% 80
+    12:
+      - ql addexp %player% 100
+    15:
+      - ql addexp %player% 120
+    18:
+      - ql addexp %player% 140
+    20:
+      - ql addexp %player% 160
+      - money give %player% 游戏币 100
+      - money give %player% 紫水晶 5
+    23:
+      - ql addexp %player% 180
+    25:
+      - ql addexp %player% 200
+    28:
+      - ql addexp %player% 240
+    30:
+      - ql addexp %player% 280
+      - money give %player% 游戏币 200
+      - money give %player% 紫水晶 10
+    40:
+      - ql addexp %player% 320
+    50:
+      - ql addexp %player% 360
+    60:
+      - ql addexp %player% 400
+    70:
+      - ql addexp %player% 500
+    80:
+      - ql addexp %player% 700
+    90:
+      - ql addexp %player% 800
+    100:
+      - ql addexp %player% 1000
 
   # 击杀僵尸时执行的指令
-  zombie-kill:
-    - eco give %player% 2
-    - chance(10):eco give %player% 8
+  zombie-kill: []
 
   # 村民死亡时执行的指令
-  villager-death:
-    - say 下次一定要好好保护村民！
+  villager-death: []
 
   # 玩家死亡时执行的指令
-  player-death:
-    - script:player.sendMessage("Hey, you died");
+  player-death: []
 
 # 请勿修改此处版本校验配置
 # 虽然是你的服务器，想改也拦不住你！

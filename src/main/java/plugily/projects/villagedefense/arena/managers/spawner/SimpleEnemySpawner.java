@@ -28,6 +28,7 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
 import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -137,9 +138,10 @@ public interface SimpleEnemySpawner extends EnemySpawner {
         if (livingEntity == null) {
             return;
         }
-        VersionUtils.setMaxHealth(livingEntity, 10.0d + (arena.getWave() * 4));
-        livingEntity.setHealth(10.0d + (arena.getWave() * 4));
-        livingEntity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).setBaseValue(2.0d + arena.getWave() * 0.5);
+        double health = getConfiguredHealth(arena);
+        VersionUtils.setMaxHealth(livingEntity, health);
+        livingEntity.setHealth(health);
+        livingEntity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).setBaseValue(getConfiguredDamage(arena));
         if (livingEntity instanceof Creature creature) {
             if (canApplyAttributes()) {
                 CreatureUtils.applyAttributes(creature, arena);
@@ -149,6 +151,18 @@ public interface SimpleEnemySpawner extends EnemySpawner {
             }
         }
         arena.getEnemies().add(livingEntity);
+    }
+
+    default double getConfiguredHealth(Arena arena) {
+        double base = arena.getPlugin().getConfig().getDouble("Creatures.Health.Base", 10.0d);
+        double perWave = arena.getPlugin().getConfig().getDouble("Creatures.Health.Per-Wave", 4.0d);
+        return Math.max(1.0d, base + (arena.getWave() * perWave));
+    }
+
+    default double getConfiguredDamage(Arena arena) {
+        double base = arena.getPlugin().getConfig().getDouble("Creatures.Damage.Base", 2.0d);
+        double perWave = arena.getPlugin().getConfig().getDouble("Creatures.Damage.Per-Wave", 0.5d);
+        return Math.max(0.0d, base + (arena.getWave() * perWave));
     }
 
     //TODO Simplify creature spawn reduce to one method e.g. spawn; add weight to creatures configurable!
@@ -187,6 +201,10 @@ public interface SimpleEnemySpawner extends EnemySpawner {
         int spawnAmount = getFinalAmount(arena, wave, phase, spawn);   // 最终要生成的数量
         double spawnRate = getSpawnRate(arena, wave, phase, spawn);    // 生成概率（0-1）
         int weight = getSpawnWeight(arena, wave, phase, spawn);        // 生成权重（消耗的配额）
+        List<Location> spawnLocations = arena.getZombieSpawns();
+        if (spawnLocations.isEmpty()) {
+            return;
+        }
 
         // 调试输出
         arena.getPlugin().getDebugger().debug("Current Wave: " + wave + " Current Spawn amount: " + spawnAmount + " Current spawnRate: " + spawnRate + " Current Spawn Weight: " + weight);
@@ -205,14 +223,10 @@ public interface SimpleEnemySpawner extends EnemySpawner {
             // 3. 概率=1（必刷） 或 随机数小于概率（概率生成）
             if (zombiesToSpawn >= weight && spawnRate != 0 && (spawnRate == 1 || random.nextDouble() < spawnRate)) {
 
-                // 随机获取一个僵尸刷新点
-                // 前期不随机
-                Location location;
-                if (wave <= 5) {
-                    location = arena.getZombieSpawns().getFirst();
-                } else {
-                    location = arena.getRandomZombieSpawnLocation(random);
-                }
+                // 按刷怪点轮询；当本批数量等于刷怪点数量时，每个点各生成一次。
+                int spawnIndex = arena.getArenaOption("ZOMBIE_BATCH_SPAWN_INDEX");
+                Location location = spawnLocations.get(spawnIndex % spawnLocations.size());
+                arena.setArenaOption("ZOMBIE_BATCH_SPAWN_INDEX", spawnIndex + 1);
 
                 // —————————— 真正生成怪物的方法 ——————————
                 spawn(location, arena);

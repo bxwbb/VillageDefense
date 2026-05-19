@@ -22,6 +22,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.*;
@@ -29,6 +30,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.api.user.IUser;
@@ -65,6 +67,127 @@ public class ArenaEvents extends PluginArenaEvents {
         super(plugin);
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEnemyTarget(EntityTargetLivingEntityEvent event) {
+        Arena arena = getArenaByEnemy(event.getEntity());
+        if (arena == null || isAllowedEnemyTarget(arena, event.getTarget())) {
+            return;
+        }
+
+        event.setCancelled(true);
+        clearEnemyTarget(arena, event.getEntity());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEnemyHurtInvalidTarget(EntityDamageByEntityEvent event) {
+        Arena arena = getArenaByEnemySource(event.getDamager());
+        if (arena == null || isAllowedEnemyTarget(arena, event.getEntity())) {
+            return;
+        }
+
+        event.setCancelled(true);
+        event.setDamage(0);
+        clearEnemyTarget(arena, event.getEntity());
+
+        Entity shooter = getProjectileShooter(event.getDamager());
+        clearEnemyTarget(arena, shooter == null ? event.getDamager() : shooter);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onArenaEnemyExplode(EntityExplodeEvent event) {
+        Entity entity = event.getEntity();
+        if (entity == null || getArenaByEnemySource(entity) == null && getArenaByLocation(entity.getLocation()) == null) {
+            return;
+        }
+
+        event.blockList().clear();
+        event.setYield(0.0f);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onArenaBlockExplode(BlockExplodeEvent event) {
+        if (getArenaByLocation(event.getBlock().getLocation()) == null) {
+            return;
+        }
+
+        event.blockList().clear();
+        event.setYield(0.0f);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEnemyChangeBlock(EntityChangeBlockEvent event) {
+        if (getArenaByEnemySource(event.getEntity()) == null) {
+            return;
+        }
+
+        event.setCancelled(true);
+    }
+
+    private Arena getArenaByEnemySource(Entity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        Arena directArena = getArenaByEnemy(entity);
+        if (directArena != null) {
+            return directArena;
+        }
+
+        Entity shooter = getProjectileShooter(entity);
+        return shooter == null ? null : getArenaByEnemy(shooter);
+    }
+
+    private Arena getArenaByEnemy(Entity entity) {
+        if (!(entity instanceof LivingEntity)) {
+            return null;
+        }
+
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            if (arena.getEnemies().contains(entity)) {
+                return arena;
+            }
+        }
+        return null;
+    }
+
+    private Arena getArenaByLocation(Location location) {
+        if (location == null || location.getWorld() == null) {
+            return null;
+        }
+
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            if (arena.getStartLocation().getWorld() == location.getWorld()) {
+                return arena;
+            }
+        }
+        return null;
+    }
+
+    private boolean isAllowedEnemyTarget(Arena arena, Entity target) {
+        if (target instanceof Villager villager) {
+            return arena.getVillagers().contains(villager);
+        }
+        if (target instanceof Player player) {
+            return arena.getPlayersLeft().contains(player);
+        }
+        return false;
+    }
+
+    private void clearEnemyTarget(Arena arena, Entity entity) {
+        if (entity instanceof Creature creature && arena.getEnemies().contains(entity)) {
+            creature.setTarget(null);
+        }
+    }
+
+    private Entity getProjectileShooter(Entity entity) {
+        if (!(entity instanceof Projectile projectile)) {
+            return null;
+        }
+
+        ProjectileSource shooter = projectile.getShooter();
+        return shooter instanceof Entity ? (Entity) shooter : null;
     }
 
     //override WorldGuard build deny flag where villagers cannot be damaged
@@ -211,6 +334,24 @@ public class ArenaEvents extends PluginArenaEvents {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBossBarDamage(EntityDamageEvent event) {
+        updateBossBar(event);
+    }
+
+    private void updateBossBar(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) {
+            return;
+        }
+
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            if (arena.hasBossBar(entity)) {
+                arena.updateBossBar(entity, event.getFinalDamage());
+                return;
+            }
+        }
+    }
+
     @EventHandler
     public void onVillagerDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
@@ -295,6 +436,7 @@ public class ArenaEvents extends PluginArenaEvents {
             }
 
             IUser user = plugin.getUserManager().getUser(player);
+            boolean shouldModifyOrbs = !user.isSpectator();
 
             // 战斗阶段死亡后成为本波旁观者，是否下一波复活由配置控制。
             plugin.getUserManager().addStat(user, plugin.getStatsStorage().getStatisticType("DEATHS"));
@@ -302,7 +444,9 @@ public class ArenaEvents extends PluginArenaEvents {
             user.setSpectator(true);
             player.setGameMode(GameMode.SURVIVAL);
 
-            modifyUserOrbs(user);
+            if (shouldModifyOrbs) {
+                modifyUserOrbs(user);
+            }
 
             ArenaUtils.hidePlayer(player, arena);
             player.setAllowFlight(true);
@@ -372,7 +516,8 @@ public class ArenaEvents extends PluginArenaEvents {
                 user.setStatistic("ORBS", deathValue);
                 break;
             case PERCENTAGE:
-                user.setStatistic("ORBS", current * (deathValue / 100));
+                double percentage = Math.max(0, Math.min(100, deathValue)) / 100.0d;
+                user.setStatistic("ORBS", (int) Math.floor(current * (1.0d - percentage)));
                 break;
             default:
                 break;

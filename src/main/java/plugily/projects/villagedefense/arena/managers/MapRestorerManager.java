@@ -58,6 +58,9 @@ public class MapRestorerManager extends PluginMapRestorerManager {
     public void fullyRestoreArena() {
         super.fullyRestoreArena();
         arena.setWave(1);
+        arena.setFinalWaveCompleted(false);
+        arena.clearSpawnedBossWaves();
+        arena.clearBossBars();
         arena.getSpawnedEntities().clear();
         arena.getDroppedFleshes().clear();
 
@@ -72,8 +75,11 @@ public class MapRestorerManager extends PluginMapRestorerManager {
 
     public final void clearEnemiesFromArena() {
         arena.getEnemySpawnManager().applyIdle(0);
-        arena.getEnemies().forEach(Entity::remove);
-        arena.getEnemies().clear();
+        List<org.bukkit.entity.LivingEntity> enemies = new ArrayList<>(arena.getEnemies());
+        for (org.bukkit.entity.LivingEntity enemy : enemies) {
+            arena.removeEnemy(enemy);
+            enemy.remove();
+        }
     }
 
     public final void clearDroppedEntities() {

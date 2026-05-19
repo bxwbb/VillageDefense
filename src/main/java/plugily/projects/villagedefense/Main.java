@@ -29,6 +29,7 @@ import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
 import plugily.projects.minigamesbox.classic.utils.services.metrics.Metrics;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.villagedefense.arena.*;
+import plugily.projects.villagedefense.arena.managers.BaseApiScoreboardManager;
 import plugily.projects.villagedefense.arena.managers.doors.DoorBreakListener;
 import plugily.projects.villagedefense.arena.managers.enemy.spawner.EnemySpawnerRegistry;
 import plugily.projects.villagedefense.arena.managers.enemy.spawner.EnemySpawnerRegistryLegacy;
@@ -128,6 +129,9 @@ public class Main extends PluginMain {
         CreatureUtils.init(this);
         new PowerupHandler(this);
         new PluginEvents(this);
+        if (getServer().getPluginManager().getPlugin("BaseAPI") != null) {
+            new BaseApiScoreboardManager(this);
+        }
         netherMobSummoner = new NetherMobSummoner(this);
         addPluginMetrics();
     }

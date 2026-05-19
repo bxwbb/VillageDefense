@@ -80,6 +80,7 @@ public class ArenaUtils extends PluginArenaUtils {
             ArenaUtils.showPlayer(player, arena);
             user.getKit().giveKitItems(player);
             player.updateInventory();
+            arena.showBossBars(player);
             new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWNED").asKey().player(player).arena(arena).sendPlayer();
         }
     }
@@ -97,14 +98,13 @@ public class ArenaUtils extends PluginArenaUtils {
                 toRemove.remove(0);
             }
         }
-        arena.getEnemies().removeAll(toRemove);
-
         boolean eachThree = toRemove.size() > 70;
         for (int i = 0; i < toRemove.size(); i++) {
             LivingEntity livingEntity = toRemove.get(i);
             if (!eachThree || (i % 3) == 0) {
                 VersionUtils.sendParticles("LAVA", arena.getPlayers(), livingEntity.getLocation(), 20);
             }
+            arena.removeEnemy(livingEntity);
             livingEntity.remove();
         }
     }

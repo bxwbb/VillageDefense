@@ -134,23 +134,22 @@ public class AdditionalValueInitializer {
      */
     getArenaOptionManager().registerArenaOption("ZOMBIE_SPAWN_COUNTER", new ArenaOption("null", 0));
     /**
-     * Value describes how many seconds zombie spawn system should hold and not spawn any entity.
-     * This value reduces server load and lag preventing spawning hordes at once.
-     * Example when wave is 30 counter will set value to 2 holding zombies spawn for 2 seconds
-     * Algorithm: floor(wave / 15)
+     * Shared spawn-point cursor for the current enemy spawn batch.
+     */
+    getArenaOptionManager().registerArenaOption("ZOMBIE_BATCH_SPAWN_INDEX", new ArenaOption("null", 0));
+    /**
+     * Configured delay in Minecraft ticks between enemy spawn batches.
+     * 20 ticks equals roughly 1 second on a healthy server.
      */
     getArenaOptionManager().registerArenaOption("ZOMBIE_IDLE_PROCESS", new ArenaOption("null", 0));
     /**
      * Value that describes the multiplier of extra health zombies will receive.
      * Current health + multiplier.
      * <p>
-     * Since 4.0.0 there is maximum amount of 750 to spawn in wave.
+     * Waves have a configured maximum amount of creatures to spawn.
      * The more value will be above 750 the stronger zombies will be.
      * <p>
-     * Zombies amount is based on algorithm: ceil((players * 0.5) * (wave * wave) / 2)
-     * Difficulty multiplier is based on: ceil((ceil((players * 0.5) * (wave * wave) / 2) - 750) / 15)
-     * Example: 12 players in wave 20 will receive 30 difficulty multiplier.
-     * So each zombie will get 30 HP more, harder!
+     * Zombies amount is read from Creatures.Spawn-Amount in config.yml.
      */
     getArenaOptionManager().registerArenaOption("CREATURE_DIFFICULTY_MULTIPLIER", new ArenaOption("null", 1));
   }

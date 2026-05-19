@@ -1,98 +1,99 @@
-## Plugily Projects 随机道具配置文件
-# 配置示例
-
+## Plugily Projects powerups.yml
+#示例
 Powerups:
-  # 拾取道具提示
   Pickup:
-    Chat: "&a%player% picked the &4Powerup %value% up"
-  # 道具效果结束提示
+    Chat: "&a%player% 拾取了 &4能力道具 %value%"
   Ended:
-    Title: "&4Powerup %value% from %player%"
-    Subtitle: "&chas ended"
-    Chat: "&4Powerup %value% from %player% has ended%"
-  # 地面随机掉落道具概率
+    Title: "&4来自 %player% 的能力道具 %value%"
+    Subtitle: "&c已结束"
+    Chat: "&4来自 %player% 的能力道具 %value% 已结束"
   Drop:
     Chance: 1
-  # 各类随机道具内容配置
   Content:
-    # 地图清理器：清除全场怪物
     Map-Clean:
       name: "&e&l地图清理"
-      description: "&7瞬间清空地图所有怪物！"
+      description: "&7地图已被清理！"
       material: BLAZE_POWDER
-      # 可自定义添加任意药水效果
-      # 格式：药水类型, 持续秒数, 等级
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
       potion-effect:
         - ""
-      # 生效范围：
-      # PLAYER = 仅拾取者生效
-      # ALL = 竞技场全体玩家生效
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: PLAYER
-      # 可执行自定义指令/脚本（同奖励配置格式）
+      # 类似于奖励
+      #ArenaUtils.removeSpawnedEnemies(pickup.getArena());
       execute:
         - ""
-
-    # 双倍伤害
     Double-Damage:
       name: "&c&l双倍伤害"
-      description: "&7接下来 %number% 秒伤害翻倍！"
+      description: "&7双倍伤害持续 %number% 秒！"
       material: REDSTONE
-      # 药水效果：类型, 时长, 等级
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
       potion-effect:
         - "INCREASE_DAMAGE, 20, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: ALL
+      # 类似于奖励
       execute:
         - ""
-
-    # 群体回血
     Healing:
-      name: "&6&l生命恢复"
-      description: "&7接下来 %number% 秒持续回血！"
+      name: "&6&l复苏"
+      description: "&7恢复效果持续 %number% 秒！"
       material: GOLDEN_APPLE
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
       potion-effect:
         - "REGENERATION, 10, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: ALL
+      # 类似于奖励
       execute:
         - ""
-
-    # 铁傀儡增援
     Golem-Raid:
-      name: "&a&l傀儡援军"
-      description: "&7召唤铁傀儡守护村庄！"
+      name: "&a&l铁傀儡突袭"
+      description: "&7铁傀儡已经入侵了这个村庄！"
       material: IRON_INGOT
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
       potion-effect:
         - "REGENERATION, 3, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: PLAYER
+      # 类似于奖励
       execute:
         - ""
-
-    # 一击秒杀
     One-Shot-One-Kill:
-      name: "&b&l狂暴模式"
-      description: "&7所有僵尸只需一击秒杀！"
+      name: "&b&l狂暴"
+      description: "&7每只僵尸只需一击！"
       material: DIAMOND_SWORD
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
       potion-effect:
         - "INCREASE_DAMAGE, 15, 1000"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: ALL
+      # 类似于奖励
       execute:
         - ""
-
-    # 极速加速
     Speed:
       active: true
-      name: "&a&l速度增幅"
-      description: "&7接下来 %number% 秒移动速度翻倍！"
+      name: "&a&l速度提升"
+      description: "&7速度加倍持续 %number% 秒！"
       material: FEATHER
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
       potion-effect:
         - "SPEED, 15, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: PLAYER
+      # 类似于奖励
       execute:
         - ""
 
-# 请勿修改此处版本校验配置
-# 虽然是你的服务器，想改也拦不住你！
-# 真心不建议乱改哦 ;p
-# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
+# 不要编辑此文件。但谁又能阻止你呢？这是你的服务器！
+# 说真的，别编辑 ;p
+# 你编辑了是吧？下次小心点！
 Do-Not-Edit:
   File-Version: 1
   Core-Version: 1

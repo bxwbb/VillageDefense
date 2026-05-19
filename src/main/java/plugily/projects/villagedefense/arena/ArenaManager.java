@@ -20,6 +20,10 @@ package plugily.projects.villagedefense.arena;
 
 import org.bukkit.*;
 import org.bukkit.block.Biome;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -75,6 +79,7 @@ public class ArenaManager extends PluginArenaManager {
     @Override
     public void leaveAttempt(@NotNull Player player, @NotNull IPluginArena arena) {
         Arena gameArena = (Arena) arena;
+        gameArena.hideBossBars(player);
         // 玩家离开时清掉归属于他的狼/铁傀儡，避免残留宠物继续帮其他玩家打波次。
         List<Entity> pets = new ArrayList<>(gameArena.getAlivePetsList());
         pets.stream()
@@ -100,7 +105,8 @@ public class ArenaManager extends PluginArenaManager {
 
     @Override
     public void stopGame(boolean quickStop, @NotNull IPluginArena arena) {
-        int wave = ((Arena) arena).getWave();
+        Arena gameArena = ((Arena) arena);
+        int wave = gameArena.getWave();
         for (Player player : arena.getPlayers()) {
             IUser user = plugin.getUserManager().getUser(player);
             if (!quickStop) {
@@ -111,7 +117,7 @@ public class ArenaManager extends PluginArenaManager {
                     }
                     user.setStatistic("HIGHEST_WAVE", wave);
                 }
-                if (plugin.getConfigPreferences().getOption("LIMIT_WAVE_UNLIMITED") && wave >= plugin.getConfig().getInt("Limit.Wave.Game-End", 25)) {
+                if (gameArena.isFinalWaveCompleted()) {
                     plugin.getUserManager().addStat(user, plugin.getStatsStorage().getStatisticType("WINS"));
                     XSound.ENTITY_VILLAGER_YES.play(player);
                 } else {
@@ -122,9 +128,9 @@ public class ArenaManager extends PluginArenaManager {
             }
         }
         List<LivingEntity> allEntities = new ArrayList<>();
-        Arena gameArena = ((Arena) arena);
         allEntities.addAll(gameArena.getEnemies());
         allEntities.addAll(gameArena.getAliveEntitiesList());
+        gameArena.clearBossBars();
         for (LivingEntity entity : allEntities) {
             if (ServerVersion.Version.isCurrentHigher(ServerVersion.Version.v1_12)) {
                 // 结束阶段先关 AI，减少地图恢复和传送期间实体继续移动造成的边界问题。
@@ -144,22 +150,14 @@ public class ArenaManager extends PluginArenaManager {
     public void endWave(@NotNull Arena arena) {
         int wave = arena.getWave();
 
-        // 有限波次模式下，达到配置终点直接结束游戏，不再进入下一波等待。
-        if (plugin.getConfigPreferences().getOption("LIMIT_WAVE_UNLIMITED") && wave >= plugin.getConfig().getInt("Limit.Wave.Game-End", 25)) {
+        new TitleBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_TITLE_END").asKey().arena(arena).integer(wave).sendArena();
+        giveWaveEndRewards(arena, wave);
+
+        // 达到当前模式终点后直接结束游戏，不再进入下一波等待。
+        if (arena.isFinalWave(wave)) {
+            arena.setFinalWaveCompleted(true);
             stopGame(false, arena);
             return;
-        }
-
-        new TitleBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_TITLE_END").asKey().arena(arena).integer(wave).sendArena();
-
-        for (IUser user : plugin.getUserManager().getUsers(arena)) {
-            if (!user.isSpectator() && !user.isPermanentSpectator()) {
-                Player player = user.getPlayer();
-                // END_WAVE 支持把当前波次作为参数传入奖励系统，便于配置按波次发奖励。
-                plugin.getRewardsHandler().performReward(player, arena, plugin.getRewardsHandler().getRewardType("END_WAVE"), arena.getWave());
-                KitUtils.reStock(user);
-            }
-            XSound.ENTITY_VILLAGER_YES.play(user.getPlayer());
         }
 
         arena.setTimer(plugin.getConfig().getInt("Time-Manager.Cooldown-Before-Next-Wave", 25));
@@ -178,6 +176,7 @@ public class ArenaManager extends PluginArenaManager {
         }
 
         for (Player player : arena.getPlayersLeft()) {
+            arena.showBossBars(player);
             plugin.getUserManager().addExperience(player, 5);
             player.removePotionEffect(PotionEffectType.SLOWNESS);
             player.removePotionEffect(PotionEffectType.HUNGER);
@@ -192,9 +191,28 @@ public class ArenaManager extends PluginArenaManager {
         }
     }
 
-    private void refreshAllPlayers(Arena arena) {
-        int waveStat = arena.getWave() * 10;
+    private void giveWaveEndRewards(Arena arena, int wave) {
+        int waveEndPoints = getConfiguredWaveEndPoints();
+        int waveEndOrbs = getConfiguredWaveEndOrbs(wave);
 
+        for (IUser user : plugin.getUserManager().getUsers(arena)) {
+            if (!user.isSpectator() && !user.isPermanentSpectator()) {
+                Player player = user.getPlayer();
+                // END_WAVE 支持把当前波次作为参数传入奖励系统，便于配置按波次发奖励。
+                plugin.getRewardsHandler().performReward(player, arena, plugin.getRewardsHandler().getRewardType("END_WAVE"), wave);
+                if (waveEndPoints > 0) {
+                    arena.addPlayerPoints(player, waveEndPoints);
+                }
+                if (waveEndOrbs > 0) {
+                    user.adjustStatistic(plugin.getStatsStorage().getStatisticType("ORBS"), waveEndOrbs);
+                }
+                KitUtils.reStock(user);
+            }
+            XSound.ENTITY_VILLAGER_YES.play(user.getPlayer());
+        }
+    }
+
+    private void refreshAllPlayers(Arena arena) {
         String feelRefreshed = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_FEEL_REFRESHED").asKey().build();
         String nextWave = new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_NEXT_IN").asKey().arena(arena).integer(arena.getTimer()).build();
 
@@ -204,7 +222,6 @@ public class ArenaManager extends PluginArenaManager {
             int healPower = (int) Math.ceil(VersionUtils.getMaxHealth(player) * 0.25); //25% of max health rounded up
             player.setHealth(Math.min(player.getHealth() + healPower, VersionUtils.getMaxHealth(player)));
             player.sendMessage(feelRefreshed);
-            plugin.getUserManager().getUser(player).adjustStatistic(plugin.getStatsStorage().getStatisticType("ORBS"), waveStat);
         }
     }
 
@@ -244,7 +261,7 @@ public class ArenaManager extends PluginArenaManager {
 
         Bukkit.getPluginManager().callEvent(new VillageWaveStartEvent(arena, wave));
 
-        // 数量随玩家数和波次平方增长；超过上限后改为提升单体难度，保护服务器实体数量。
+        // 数量从配置分段读取；超过上限后改为提升单体难度，保护服务器实体数量。
 
         /*
         a.前期（如1-5波）#发育期
@@ -260,7 +277,7 @@ public class ArenaManager extends PluginArenaManager {
             骷髅马骑士（骷髅马若存活玩家可骑）
          */
 
-        int zombiesAmount = (int) Math.ceil((arena.getPlayers().size() * 0.5) * (wave * wave) / 2);
+        int zombiesAmount = getConfiguredZombiesAmount(wave);
         int maxzombies = plugin.getConfig().getInt("Limit.Spawn.Creatures", 75);
 
         if (zombiesAmount > maxzombies) {
@@ -276,12 +293,12 @@ public class ArenaManager extends PluginArenaManager {
             zombiesAmount = maxzombies;
         }
 
-        // 高波次增加刷怪间隔，避免同一 tick 生成过多实体。
-        int zombieIdle = (int) Math.floor((double) wave / 15);
+        int zombieIdle = getConfiguredSpawnIntervalTicks(wave);
 
         // 设置刷怪数量和生成间隔
         arena.setArenaOption("ZOMBIES_TO_SPAWN", zombiesAmount);
         arena.setArenaOption("ZOMBIE_IDLE_PROCESS", zombieIdle);
+        spawnModeBoss(arena, wave);
 
         if (zombieIdle > 0) {
             plugin.getDebugger().debug("[{0}] Spawn idle process initiated to prevent server overload! Value: {1}", arena.getId(), zombieIdle);
@@ -307,6 +324,117 @@ public class ArenaManager extends PluginArenaManager {
         }
 
         plugin.getDebugger().debug("[{0}] Wave start event finished took {1}ms", arena.getId(), System.currentTimeMillis() - start);
+    }
+
+    private int getConfiguredZombiesAmount(int wave) {
+        return getConfiguredWaveValue(wave, "Creatures.Spawn-Amount", 100);
+    }
+
+    private int getConfiguredSpawnIntervalTicks(int wave) {
+        return getConfiguredWaveValue(wave, "Creatures.Spawn-Interval-Ticks", 20);
+    }
+
+    private int getConfiguredWaveEndPoints() {
+        return Math.max(0, plugin.getConfig().getInt("Points.Wave-End", 0));
+    }
+
+    private int getConfiguredWaveEndOrbs(int wave) {
+        return getConfiguredWaveValue(wave, "Orbs.Wave-End", 1);
+    }
+
+    private void spawnModeBoss(Arena arena, int wave) {
+        String bossesPath = "Game-Modes." + arena.getGameMode().name() + ".Bosses";
+        ConfigurationSection bosses = plugin.getConfig().getConfigurationSection(bossesPath);
+        if (bosses == null) {
+            return;
+        }
+
+        for (String bossId : bosses.getKeys(false)) {
+            String bossPath = bossesPath + "." + bossId;
+            if (!plugin.getConfig().getBoolean(bossPath + ".Enabled", true)
+                    || wave != plugin.getConfig().getInt(bossPath + ".Wave", arena.getFinalWave())
+                    || !arena.markBossSpawned(arena.getGameMode().name() + ":" + bossId + ":" + wave)) {
+                continue;
+            }
+            spawnConfiguredBoss(arena, bossPath);
+        }
+    }
+
+    private void spawnConfiguredBoss(Arena arena, String bossPath) {
+        EntityType bossType = getConfiguredBossType(bossPath);
+        Location location = getBossSpawnLocation(arena);
+        Entity entity = location.getWorld().spawnEntity(location, bossType);
+        if (!(entity instanceof LivingEntity)) {
+            entity.remove();
+            return;
+        }
+        LivingEntity boss = (LivingEntity) entity;
+        double health = Math.max(1.0d, plugin.getConfig().getDouble(bossPath + ".Health", 200.0d));
+        VersionUtils.setMaxHealth(boss, health);
+        boss.setHealth(health);
+        String bossName = ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString(bossPath + ".Name", "&c&lBoss"));
+        boss.setCustomName(bossName);
+        boss.setCustomNameVisible(true);
+        arena.getEnemies().add(boss);
+        if (shouldCreateBossBar(bossType)) {
+            BossBar bossBar = Bukkit.createBossBar(bossName, BarColor.RED, BarStyle.SEGMENTED_10);
+            arena.addBossBar(boss, bossBar);
+        }
+    }
+
+    private boolean shouldCreateBossBar(EntityType bossType) {
+        return bossType != EntityType.WITHER && bossType != EntityType.ENDER_DRAGON;
+    }
+
+    private EntityType getConfiguredBossType(String bossPath) {
+        String configuredType = plugin.getConfig().getString(bossPath + ".Type", "WITHER");
+        try {
+            return EntityType.valueOf(configuredType.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ignored) {
+            return EntityType.WITHER;
+        }
+    }
+
+    private Location getBossSpawnLocation(Arena arena) {
+        List<Location> zombieSpawns = arena.getZombieSpawns();
+        if (!zombieSpawns.isEmpty()) {
+            return zombieSpawns.get(0);
+        }
+        return arena.getStartLocation();
+    }
+
+    private int getConfiguredWaveValue(int wave, String path, int fallback) {
+        ConfigurationSection ranges = plugin.getConfig().getConfigurationSection(path + ".Ranges");
+        if (ranges != null) {
+            for (String range : ranges.getKeys(false)) {
+                if (isWaveInRange(wave, range)) {
+                    return Math.max(0, ranges.getInt(range));
+                }
+            }
+        }
+        return Math.max(0, plugin.getConfig().getInt(path + ".Default", fallback));
+    }
+
+    private boolean isWaveInRange(int wave, String range) {
+        String value = range.replace(" ", "");
+        if (value.endsWith("+")) {
+            return wave >= parseWaveBound(value.substring(0, value.length() - 1), Integer.MAX_VALUE);
+        }
+        if (value.contains("-")) {
+            String[] bounds = value.split("-", 2);
+            int min = parseWaveBound(bounds[0], Integer.MIN_VALUE);
+            int max = parseWaveBound(bounds[1], Integer.MAX_VALUE);
+            return wave >= min && wave <= max;
+        }
+        return wave == parseWaveBound(value, Integer.MIN_VALUE);
+    }
+
+    private int parseWaveBound(String value, int fallback) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 
         private static final Random RANDOM = new Random();

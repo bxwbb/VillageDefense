@@ -22,6 +22,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Villager;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 import plugily.projects.villagedefense.arena.Arena;
 
@@ -39,7 +41,8 @@ import java.util.*;
  */
 public class EnemySpawnManager {
     private final Arena arena;
-    private int localIdleProcess = 0;
+    private int ticksUntilNextSpawn = 0;
+    private BukkitTask spawnTask;
     private final List<LivingEntity> glitchedEnemies = new ArrayList<>();
     private final Map<LivingEntity, Location> enemyCheckerLocations = new HashMap<>();
 
@@ -48,8 +51,10 @@ public class EnemySpawnManager {
     }
 
     public void applyIdle(int idle) {
-        // idle 表示接下来多少次主循环跳过刷怪，用于高波次削峰。
-        localIdleProcess = idle;
+        ticksUntilNextSpawn = Math.max(0, idle);
+        if (idle <= 0) {
+            stopSpawnTask();
+        }
     }
 
     /**
@@ -115,21 +120,41 @@ public class EnemySpawnManager {
      * 随机值与当前波次等级
      */
     public void spawnEnemies() {
-        if (checkForIdle()) {
-            // Registry 会按版本和波次把生成尝试分发给各个 EnemySpawner。
-            arena.getPlugin().getEnemySpawnerRegistry().spawnEnemies(arena.getPlugin().getRandom(), arena);
+        if (spawnTask != null) {
+            return;
         }
+        ticksUntilNextSpawn = 0;
+        spawnTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!arena.isFighting() || arena.getArenaOption("ZOMBIES_TO_SPAWN") <= 0) {
+                    stopSpawnTask();
+                    return;
+                }
+                if (!checkForSpawnInterval()) {
+                    return;
+                }
+                // Registry 会按版本和波次把生成尝试分发给各个 EnemySpawner。
+                arena.getPlugin().getEnemySpawnerRegistry().spawnEnemies(arena.getPlugin().getRandom(), arena);
+                ticksUntilNextSpawn = Math.max(0, arena.getArenaOption("ZOMBIE_IDLE_PROCESS") - 1);
+            }
+        }.runTaskTimer(arena.getPlugin(), 0L, 1L);
     }
 
-    private boolean checkForIdle() {
-        //Idling to ~~save server stability~~ protect against hordes of enemies
-        if (localIdleProcess > 0) {
-            localIdleProcess--;
+    private void stopSpawnTask() {
+        if (spawnTask == null) {
+            return;
+        }
+        spawnTask.cancel();
+        spawnTask = null;
+        ticksUntilNextSpawn = 0;
+    }
+
+    private boolean checkForSpawnInterval() {
+        if (ticksUntilNextSpawn > 0) {
+            ticksUntilNextSpawn--;
             return false;
         }
-
-        applyIdle(arena.getArenaOption("ZOMBIE_IDLE_PROCESS"));
-        // idle 归零，本轮可以刷怪，并重置下一轮 idle。
         return true;
     }
 

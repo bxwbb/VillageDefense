@@ -52,7 +52,7 @@ public class CreatureTargetManager {
         for (LivingEntity livingEntity : arena.getEnemies()) {
             if (livingEntity instanceof Creature creature) {
                 LivingEntity creatureTarget = creature.getTarget();
-                if (creatureTarget == null) {
+                if (creatureTarget == null || !isAllowedEnemyTarget(creatureTarget)) {
                     setTarget(creature);
                     continue;
                 }
@@ -96,9 +96,9 @@ public class CreatureTargetManager {
     }
 
     private void setTarget(Creature creature) {
-        if (creature.getTarget() != null && creature.getTarget().getType().equals(EntityType.VILLAGER)) return;
         LivingEntity nearestEntity = getNearestEntity(creature);
         if (nearestEntity == null) {
+            creature.setTarget(null);
             return;
         }
         creature.setTarget(nearestEntity);
@@ -131,69 +131,20 @@ public class CreatureTargetManager {
 
     /**
      * 获取生物应该攻击的最近目标实体
-     * 根据生物的自定义配置优先选择目标类型（村民、铁傀儡、玩家等）
+     * 敌人只允许选择本局村民或存活玩家，避免怪物互相误伤后转仇恨。
      *
      * @param creature 要设置目标的生物
      * @return 最近的合法目标实体（LivingEntity），无目标返回null
      */
     public LivingEntity getNearestEntity(Creature creature) {
 
-        // 从传入的生物获取对应的自定义生物配置
-        CustomCreature customCreature = getCustomCreatureFromCreature(creature);
-
-        // 如果没有自定义配置，直接返回null，不设置目标
-        if (customCreature == null) {
-            Location location = creature.getLocation();
-            List<Entity> entities = new ArrayList<>();
-            entities.addAll(arena.getVillagers());
-            entities.addAll(arena.getPlayers());
-            entities.addAll(arena.getPillagers());
-            entities.addAll(arena.getIronGolems());
-            if (entities.isEmpty()) {
-                plugin.getDebugger().debug("Arena {0} found no entity to target", arena.getId());
-                return null;
-            }
-            Entity nearestEntity = entities.get(0);
-            for (Entity entity : entities) {
-                double distance = location.distance(entity.getLocation());
-                if (distance < location.distance(nearestEntity.getLocation())) {
-                    nearestEntity = entity;
-                }
-            }
-            return (LivingEntity) nearestEntity;
-        }
-
         // 获取当前生物所在的位置，用于计算距离
         Location location = creature.getLocation();
 
         // 存储候选目标实体列表
         List<Entity> entities = new ArrayList<>();
-
-        // 根据自定义配置的优先目标类型，添加对应的实体到候选列表
-        switch (customCreature.getPriorityTarget()) {
-            // 优先目标：任意目标 / 村民 → 都选择村民
-            case ANY:
-            case VILLAGER:
-                entities.addAll(arena.getVillagers());
-                break;
-            // 优先目标：铁傀儡 → 选择铁傀儡
-            case IRON_GOLEM:
-                entities.addAll(arena.getIronGolems());
-                break;
-            // 优先目标：狼 → 选择狼
-            case WOLF:
-                entities.addAll(arena.getWolves());
-                break;
-            // 优先目标：玩家 → 选择存活玩家
-            case PLAYER:
-                entities.addAll(arena.getPlayersLeft());
-                break;
-        }
-
-        // 如果按优先类型没找到目标，默认选择村民作为保底
-        if (entities.isEmpty()) {
-            entities.addAll(arena.getVillagers());
-        }
+        entities.addAll(arena.getVillagers());
+        entities.addAll(arena.getPlayersLeft());
 
         // 如果依然没有任何目标，返回null
         if (entities.isEmpty()) {
@@ -225,6 +176,16 @@ public class CreatureTargetManager {
         return (LivingEntity) nearestEntity;
     }
 
+    private boolean isAllowedEnemyTarget(LivingEntity target) {
+        if (target instanceof Villager villager) {
+            return arena.getVillagers().contains(villager);
+        }
+        if (target instanceof Player player) {
+            return arena.getPlayersLeft().contains(player);
+        }
+        return false;
+    }
+
     public void unTargetPlayerFromZombies(Player player, Arena arena) {
         for (LivingEntity zombie : arena.getEnemies()) {
             if (zombie instanceof Creature creature) {
@@ -233,8 +194,9 @@ public class CreatureTargetManager {
                 if (!player.equals(target)) {
                     continue;
                 }
-                //set new target as villager so zombies won't stay still waiting for nothing
-                creature.setTarget(arena.getVillagers().get(arena.getVillagers().size() > 1 ? (plugin.getRandom().nextInt(arena.getVillagers().size() - 1)) : 0));
+                //set new target so zombies won't stay still waiting for nothing
+                creature.setTarget(null);
+                setTarget(creature);
             }
         }
     }

@@ -21,9 +21,14 @@ Bossbar:
   Interval: 5
 
 
-# 是否在游戏内显示右侧计分板
+# 是否显示右侧计分板（外部大厅和游戏内）
 Scoreboard:
   Display: true
+  BaseAPI:
+    # 是否通过 BaseAPI 向客户端发送计分板包
+    Enabled: true
+    # 发包刷新间隔，单位 tick，20 tick = 1 秒
+    Update-Interval-Ticks: 20
 
 
 # 是否启用跨服BC联动模式（单服务器多竞技场推荐关闭）
@@ -110,7 +115,7 @@ Database: false
 
 # 是否开启游戏奖励系统，详细配置在 rewards.yml
 # 可搭配脚本引擎自定义奖励规则：https://tutorial.plugily.xyz
-Rewards: false
+Rewards: true
 
 
 # 聊天格式配置
@@ -232,25 +237,166 @@ Limit:
     Golems: 15
     # 单局竞技场生成村民数量
     Villagers: 10
-    # 怪物数量达到多少后开始强化怪物属性
-    Creatures: 75
+    # 单波怪物最大生成数量，超过后会截断并转为强化怪物属性
+    Creatures: 120
   # 宠物死亡后是否允许重新购买（无视数量上限和权限限制）
   Entity-Buy-After-Death: false
 
 
+# 游戏模式配置
+# 房间可在 arenas.yml 内用 mode: EASY / HARD / ENDLESS 指定；不写则使用 Default
+Game-Modes:
+  Default: ENDLESS
+  EASY:
+    # 简单模式最终波数
+    Final-Wave: 20
+    Bosses:
+      '1':
+        Enabled: true
+        Wave: 20
+        Type: WITHER
+        Name: "&5&l凋零Boss"
+        Health: 200.0
+  HARD:
+    # 困难模式最终波数
+    Final-Wave: 30
+    Bosses:
+      '1':
+        Enabled: true
+        Wave: 20
+        Type: WITHER
+        Name: "&5&l凋零Boss"
+        Health: 200.0
+      '2':
+        Enabled: true
+        Wave: 30
+        Type: WARDEN
+        Name: "&1&l坚守者Boss"
+        Health: 200.0
+  ENDLESS:
+    # 0 = 无尽模式不自动结束
+    Final-Wave: 0
+    Bosses:
+      '1':
+        Enabled: true
+        Wave: 20
+        Type: WITHER
+        Name: "&5&l凋零Boss"
+        Health: 200.0
+      '2':
+        Enabled: true
+        Wave: 30
+        Type: WARDEN
+        Name: "&1&l坚守者Boss"
+        Health: 200.0
+
+
 # 怪物属性配置
 Creatures:
+  # 怪物基础血量公式：最终血量 = Base + 当前波次 * Per-Wave
+  Health:
+    Base: 10.0
+    Per-Wave: 2.0
+  # 怪物基础伤害公式：最终伤害 = Base + 当前波次 * Per-Wave
+  Damage:
+    Base: 2.0
+    Per-Wave: 1
+  # 每波怪物总生成数量配置
+  # 按区间从上到下匹配，支持：
+  #   '1-5': 20   代表第1到5波生成20个
+  #   '100+': 100 代表第100波及以后生成100个
+  Spawn-Amount:
+    Default: 100
+    Ranges:
+      '1-2': 10
+      '3-5': 15
+      '6-8': 20
+      '9-11': 25
+      '12-15': 30
+      '16-20': 40
+      '21-25': 50
+      '26-30': 60
+      '31-40': 65
+      '41-50': 70
+      '51-60': 75
+      '61-70': 80
+      '71-80': 85
+      '81-100': 90
+      '101+': 100
+  # 怪物生成间隔配置，单位 tick
+  # 20 tick = 1 秒；20 代表每隔 20 tick，所有刷怪点同时各尝试刷 1 只怪
+  Spawn-Interval-Ticks:
+    Default: 40
+    Ranges:
+      '1+': 40
   # 怪物达到数量上限后 属性削弱倍率（数值越高怪物越弱）
   Multiplier-Divider: 18
   # 是否显示怪物简易血量条（替换名字为剩余血量百分比）
   Health-Bar: true
 
 
+
+# 游戏内积分配置，对应 %arena_player_points%
+Points:
+  # 每波结束时给存活玩家增加的积分
+  Wave-End: 1000
+  # 击杀一只怪物额外增加的积分
+  Kill-Creature: 50
+  Damage:
+    # 每造成 1 点实际伤害增加的积分，支持小数；设为 0 可关闭
+    Per-Point: 5.0
+  End-Rewards:
+    # 游戏结束时是否根据积分执行指令奖励
+    Enabled: true
+    # true = 达到多个档位就执行多个档位；false = 只执行最高达到档位
+    Cumulative: false
+    # 按积分档位执行指令，支持 %player%
+    Levels:
+      '1':
+        Score: 90000
+        Commands:
+          - "gift give %player% 村守1传奇宝箱 2"
+      '2':
+        Score: 60000
+        Commands:
+          - "gift give %player% 村守1史诗宝箱 2"
+      '3':
+        Score: 40000
+        Commands:
+          - "gift give %player% 村守1珍惜宝箱 2"
+      '4':
+        Score: 20000
+        Commands:
+          - "gift give %player% 村守1稀有宝箱 2"
+      '5':
+        Score: 10000
+        Commands:
+          - "gift give %player% 村守1普通宝箱 2"
+
+
 # 宝珠（游戏货币）配置
 Orbs:
   Start:
     # 玩家开局初始宝珠数量
-    Amount: 20
+    Amount: 200
+  Wave-End:
+    # 每波结束时给存活玩家增加的宝珠数量
+    # 按区间从上到下匹配，支持：
+    #   '1-2': 10   代表第1到2波结束给10个宝珠
+    #   '100+': 100 代表第100波及以后结束给100个宝珠
+    Default: 100
+    Ranges:
+      '1-2': 100
+      '3-5': 200
+      '6-8': 300
+      '9-11': 400
+      '12-19': 500
+      '20': 1000
+      '21-29': 600
+      '30': 2000
+      '31-70': 700
+      '71-99': 800
+      '100+': 1000
   Death:
     # 玩家死亡宝珠扣除规则
     # PERCENTAGE = 按百分比扣除
@@ -273,7 +419,7 @@ Glowing-Status:
   # 从第几波开始僵尸自带发光效果
   Starting-Wave: 6
   # 剩余多少怪物时触发发光（设0不限制）
-  Creatures-Left: 0
+  Creatures-Left: 3
 
 
 # 是否允许玩家进入竞技场旁观者模式

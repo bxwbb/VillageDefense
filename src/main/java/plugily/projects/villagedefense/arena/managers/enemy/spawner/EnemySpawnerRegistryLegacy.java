@@ -85,12 +85,20 @@ public class EnemySpawnerRegistryLegacy {
      * @param arena  目标竞技场
      */
     public void spawnEnemies(Random random, Arena arena) {
-        int spawn = arena.getWave() * arena.getPlayers().size();
+        int spawn = arena.getZombieSpawns().size();
+        if (spawn <= 0) {
+            return;
+        }
         // 生物生成限制
         int zombiesLimit = plugin.getConfig().getInt("Limit.Spawn.Creatures", 75);
         if (zombiesLimit < spawn) {
             // 波次高于实体上限时，降低本轮 spawn 权重，实体强度由 ArenaManager 的倍率补足。
             spawn = (int) Math.ceil(zombiesLimit / 2.0);
+        }
+        int waveZombiesToSpawn = arena.getArenaOption("ZOMBIES_TO_SPAWN");
+        int batchBudget = Math.min(spawn, waveZombiesToSpawn);
+        if (batchBudget <= 0) {
+            return;
         }
         String zombieSpawnCounterOption = "ZOMBIE_SPAWN_COUNTER";
         // 计数器递增
@@ -191,15 +199,19 @@ public class EnemySpawnerRegistryLegacy {
 
         // 打乱生成顺序
         Collections.shuffle(enemySpawners);
-        int spawned = 0;
+        int consumedInBatch = 0;
+        arena.setArenaOption("ZOMBIES_TO_SPAWN", batchBudget);
+        arena.setArenaOption("ZOMBIE_BATCH_SPAWN_INDEX", random.nextInt(spawn));
         for (EnemySpawner enemySpawner : enemySpawners) {
             // spawner 内部会按波次、权重和剩余数量决定是否真正生成。
             plugin.getDebugger().debug("Trying enemy spawn for " + enemySpawner.getName());
+            int beforeSpawner = arena.getArenaOption("ZOMBIES_TO_SPAWN");
             enemySpawner.spawn(random, arena, spawn);
-            spawned++;
-            if (wave <= 5 && spawned == 2) break;
-            if (spawned == arena.getZombieSpawns().size() * 2) break;
+            int afterSpawner = arena.getArenaOption("ZOMBIES_TO_SPAWN");
+            consumedInBatch += Math.max(0, beforeSpawner - afterSpawner);
+            if (afterSpawner <= 0) break;
         }
+        arena.setArenaOption("ZOMBIES_TO_SPAWN", Math.max(0, waveZombiesToSpawn - consumedInBatch));
 
         if (wave % 10 == 0) {
             giveRandomEliteBuff(arena);

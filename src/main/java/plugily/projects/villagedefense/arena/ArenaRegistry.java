@@ -56,6 +56,9 @@ public class ArenaRegistry extends PluginArenaRegistry {
         boolean checks = super.additionalValidatorChecks(section, arena, id);
         if (!checks) return false;
 
+        String configuredMode = section.getString(id + ".mode", plugin.getConfig().getString("Game-Modes.Default", "ENDLESS"));
+        ((Arena) arena).setGameMode(Arena.GameMode.fromString(configuredMode));
+
         if (!section.getBoolean(id + ".isdone")) {
             plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("NOT VALIDATED").arena(arena).build());
             return false;

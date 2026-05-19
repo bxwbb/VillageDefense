@@ -76,46 +76,59 @@ Commands:
 # 占位符：
 # https://wiki.plugily.xyz/villagedefense/placeholders/language
 Scoreboard:
-  Title: "&a&l%plugin_name%"
+  Title: "村庄守卫战"
   Content:
+    Lobby:
+      - " &7%server_time_yyyy-MM-dd%"
+      - ""
+      - " &a&l欢迎 &f%player_name%"
+      - " &f称号: %qctitle_title% "
+      - " &f点券: &6%qceco_balance_点券% "
+      - " &f游戏币: &b%qceco_balance_游戏币% "
+      - ""
+      - " &f等级: %qclevel_level_format%"
+      - " &f距离升级还需: &7%qclevel_exp_needed_formatted%"
+      - ""
+      - " &f在线玩家: &a%bungee_total%"
+      - ""
+      - "&c千&a阙&e云&b庭 &6@ &e2026"
     Waiting:
       - ""
-      - "■ 玩家数 | %arena_players_size%"
+      - " &a玩家数 | %arena_players_size%"
       - ""
-      - "■ 最小玩家数 | %arena_min_players%"
+      - " &f最小玩家数 | %arena_min_players%"
       - ""
-      - "   www.plugily.xyz"
+      - " &c千&a阙&e云&b庭 &6@ &e2026"
     Starting:
       - ""
-      - "■ 开始倒计时 | %arena_time%"
+      - " &e开始倒计时 | %arena_time%"
       - ""
-      - "■ 玩家数 | %arena_players_size%"
+      - " &a玩家数 | %arena_players_size%"
       - ""
-      - "■ 最小玩家数 | %arena_min_players%"
+      - " &f最小玩家数 | %arena_min_players%"
       - ""
-      - "   千阙云庭 @ 2026"
+      - " &c千&a阙&e云&b庭 &6@ &e2026"
     # 游戏进行中的计分板内容
     In-Game:
       - ""
-      - "■ 村民数 | %arena_villager_size%"
-      - "■ 存活玩家数 | %arena_players_left_size%"
-      - "■ 剩余僵尸数 | %arena_zombie_size_left%"
+      - " &a村民数 | %arena_villager_size%"
+      - " &a存活玩家数 | %arena_players_left_size%"
+      - " &c剩余僵尸数 | %arena_zombie_size_left%"
       - ""
-      - "■ 腐肉数量 | %arena_rotten_flesh_amount%"
-      - "■ 能量球数 | %user_statistic_orbs%"
+      - " &7腐肉数量 | %arena_rotten_flesh_amount%"
+      - " &7能量球数 | %user_statistic_orbs%"
       - ""
-      - "   千阙云庭 @ 2026"
+      - " &c千&a阙&e云&b庭 &6@ &e2026"
     In-Game-Waiting:
       - ""
-      - "■ 村民数 | %arena_villager_size%"
-      - "■ 存活玩家数 | %arena_players_left_size%"
+      - " &a村民数 | %arena_villager_size%"
+      - " &a存活玩家数 | %arena_players_left_size%"
+      - " &f下一波倒计时 | %arena_time%"
       - ""
-      - "■ 下一波倒计时 | %arena_time%"
+      - " &7腐肉数量 | %arena_rotten_flesh_amount%"
+      - " &7能量球数 | %user_statistic_orbs%"
       - ""
-      - "■ 腐肉数量 | %arena_rotten_flesh_amount%"
-      - "■ 能量球数 | %user_statistic_orbs%"
-      - ""
-      - "   千阙云庭 @ 2026"
+      - " &c千&a阙&e云&b庭 &6@ &e2026"
     # 游戏结束时的计分板内容
     Ending:
       - "&f"
@@ -160,7 +173,7 @@ Bossbar:
 #
 In-Game:
   # 用于大多数游戏消息。
-  Plugin-Prefix: "(%plugin_name%)"
+  Plugin-Prefix: "&2村庄守卫战 &7>"
   Game-Chat-Format: "[%user_statistic_level%][%kit%] %player% | %message%"
   You-Leveled-Up: "%plugin_prefix% 您升级了！现在是 %number% 级！"
   Commands-Blocked: "%color_chat_issue%%plugin_prefix% 您必须先离开游戏才能执行命令。唯一能用的命令是 /%plugin_short_command% leave！"
@@ -215,7 +228,7 @@ In-Game:
     Game-End:
       Summary:
         - "&a&m--------------------------------------------------"
-        - "%plugin_name%"
+        - "&2村庄守卫战"
         - ""
         - "%arena_summary%"
         - "%arena_summary_player%"
@@ -223,6 +236,7 @@ In-Game:
         - "&e&l到达波次 | %arena_option_wave% (最佳 %user_statistic_highest_wave%)"
         - "&6&l总击杀僵尸数 | %arena_option_total_killed_zombies%"
         - "&c&l总花费能量球数 | %arena_option_total_orbs_spent%"
+        - "&c&l总积分 | %arena_player_points%"
         - ""
         - "&a&m--------------------------------------------------"
       Placeholders:
@@ -248,7 +262,7 @@ In-Game:
       # 村民名字之间不要使用空格。名字数量和长度没有限制 :)
       Villager:
         Died: "%color_chat_issue%%plugin_prefix% 一个村民死了！"
-        Names: "贾格尔,凯尔西,凯尔顿,海莉,哈洛,霍华德,伍尔弗里克,温弗雷德,阿什莉,贝利,贝克特,阿尔弗雷多,阿尔弗雷德,阿代尔,埃德加,埃德,伊德维格,埃德加拉斯,巴克利,斯坦利,纳夫利,玛丽,杰弗里,罗莎莉,艾略特,哈里,山姆,罗莎琳,汤姆,伊万,凯文,亚当"
+        Names: "星汉,初云,Kaelthas,蜜蜂,封神,混合,冰心,寒筏,西瓜,天蝎,支恒,白黑之间,青蛙,无邪,村正,猫七街,帕西,雪狐,凯莉尼亚,杉本,倔强男同,超级扫把星"
       Wave:
         Stuck-Zombies: "%color_chat_issue%%plugin_prefix% 似乎最后一只僵尸卡在某个地方了。别担心！神明已经替你消灭了它！"
         Spectator-Warning: "%color_chat_issue%%plugin_prefix% 您是旁观者！在下波次开始时您重生前无法做任何事！"
@@ -317,7 +331,7 @@ Signs:
 # 竞技场选择器消息
 #
 Arena-Selector:
-  Inventory-Title: "%plugin_short_command% ▸ 竞技场选择器"
+  Inventory-Title: "&8竞技场选择器"
   Item:
     Name: "%arena_name%"
     Lore:
