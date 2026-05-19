@@ -108,6 +108,7 @@ public class ShopMenuBedrock extends ShopMenu {
             jsonObject.put("data", data);
             catArray.add(jsonObject);
             cat++;
+            if (catIndex == Category.length) break;
             if (cat == Category[catIndex]) {
                 ret.put(CategoryName[catIndex], catArray);
                 catArray = new ArrayList<>();
@@ -150,6 +151,7 @@ public class ShopMenuBedrock extends ShopMenu {
             jsonObject.put("data", data);
             catArray.add(jsonObject);
             cat++;
+            if (catIndex == Category.length) break;
             if (cat == Category[catIndex]) {
                 ret.put(CategoryName[catIndex], catArray);
                 catArray = new ArrayList<>();

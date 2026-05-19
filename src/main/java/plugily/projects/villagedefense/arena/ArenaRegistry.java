@@ -90,8 +90,20 @@ public class ArenaRegistry extends PluginArenaRegistry {
             return false;
         } else {
             for (String string : bonusSection) {
-                ((Arena) arena).addVillagerSpawn(LocationSerializer.getLocation(string));
+                ((Arena) arena).addBonusPoint(LocationSerializer.getLocation(string));
             }
+        }
+
+        String challenge = section.getString(id + ".challenge");
+        if (challenge == null) {
+            plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("VILLAGER SPAWNS").arena(arena).build());
+            return false;
+        } else {
+            ((Arena) arena).setChallenge(switch (challenge) {
+                case "简单" -> Arena.Challenge.EASY;
+                case "困难" -> Arena.Challenge.HARD;
+                default -> Arena.Challenge.INFINITE;
+            });
         }
 
         if (arena.getStartLocation().getWorld().getDifficulty() == Difficulty.PEACEFUL) {

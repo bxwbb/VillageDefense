@@ -38,7 +38,6 @@ import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
 
-import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 

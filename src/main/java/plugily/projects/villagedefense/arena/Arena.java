@@ -21,10 +21,11 @@ package plugily.projects.villagedefense.arena;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.boss.BossBar;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +33,6 @@ import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.misc.MiscUtils;
-import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XEntityType;
 import plugily.projects.villagedefense.Main;
@@ -68,15 +68,20 @@ public class Arena extends PluginArena {
     private final List<Pillager> pillagers = new ArrayList<>();
     private final List<Item> droppedFleshes = new ArrayList<>();
     private final List<Entity> spawnedEntities = new ArrayList<>();
-    private final Set<String> spawnedBossKeys = new HashSet<>();
-    private final Map<UUID, BossBar> bossBars = new HashMap<>();
     private MapRestorerManager mapRestorerManager;
     private WaveType waveType;
-    private GameMode gameMode = GameMode.ENDLESS;
-    private boolean finalWaveCompleted = false;
+    private Challenge challenge;
+
+    public Challenge getChallenge() {
+        return challenge;
+    }
+
+    public void setChallenge(Challenge challenge) {
+        this.challenge = challenge;
+    }
 
     private final Map<SpawnPoint, List<Location>> spawnPoints = new EnumMap<>(SpawnPoint.class);
-    public final Map<Player, Integer> playerPoints  = new HashMap<>();
+    public static final Map<Player, Double> playerPoints  = new HashMap<>();
 
     private ShopManager shopManager;
     private EnemySpawnManager enemySpawnManager;
@@ -182,7 +187,6 @@ public class Arena extends PluginArena {
     }
 
     public void removeEnemy(LivingEntity enemy) {
-        removeBossBar(enemy);
         enemies.remove(enemy);
     }
 
@@ -198,9 +202,9 @@ public class Arena extends PluginArena {
 
     public void addBonusPoint(Location location) {
         plugin.getDebugger().debug("Arena {0} Adding bonus point on location {1}", getId(), location.toString());
-        List<Location> bonus = getZombieSpawns();
+        List<Location> bonus = getBonusPoints();
         bonus.add(location);
-        spawnPoints.put(SpawnPoint.ZOMBIE, bonus);
+        spawnPoints.put(SpawnPoint.BONUS, bonus);
         plugin.getDebugger().debug("Arena {0} bonus {1}", getId(), getBonusPoints());
     }
 
@@ -251,116 +255,6 @@ public class Arena extends PluginArena {
      */
     public void setWave(int wave) {
         setArenaOption("WAVE", wave);
-    }
-
-    public GameMode getGameMode() {
-        return gameMode;
-    }
-
-    public void setGameMode(GameMode gameMode) {
-        this.gameMode = gameMode == null ? GameMode.ENDLESS : gameMode;
-    }
-
-    public int getFinalWave() {
-        String path = "Game-Modes." + gameMode.name() + ".Final-Wave";
-        int fallback;
-        switch (gameMode) {
-            case EASY:
-                fallback = 20;
-                break;
-            case HARD:
-                fallback = 30;
-                break;
-            default:
-                fallback = plugin.getConfig().getInt("Limit.Wave.Game-End", 0);
-                break;
-        }
-        if (plugin.getConfig().contains(path)) {
-            return Math.max(0, plugin.getConfig().getInt(path));
-        }
-        return Math.max(0, fallback);
-    }
-
-    public boolean isFinalWave(int wave) {
-        int finalWave = getFinalWave();
-        return finalWave > 0 && wave >= finalWave;
-    }
-
-    public boolean isFinalWaveCompleted() {
-        return finalWaveCompleted;
-    }
-
-    public void setFinalWaveCompleted(boolean finalWaveCompleted) {
-        this.finalWaveCompleted = finalWaveCompleted;
-    }
-
-    public boolean markBossSpawned(String bossKey) {
-        return spawnedBossKeys.add(bossKey);
-    }
-
-    public void clearSpawnedBossWaves() {
-        spawnedBossKeys.clear();
-    }
-
-    public void addBossBar(LivingEntity boss, BossBar bossBar) {
-        if (boss == null || bossBar == null) {
-            return;
-        }
-        bossBars.put(boss.getUniqueId(), bossBar);
-        for (Player player : getPlayers()) {
-            bossBar.addPlayer(player);
-        }
-        updateBossBar(boss);
-    }
-
-    public void showBossBars(Player player) {
-        if (player == null) {
-            return;
-        }
-        for (BossBar bossBar : bossBars.values()) {
-            bossBar.addPlayer(player);
-        }
-    }
-
-    public void hideBossBars(Player player) {
-        if (player == null) {
-            return;
-        }
-        for (BossBar bossBar : bossBars.values()) {
-            bossBar.removePlayer(player);
-        }
-    }
-
-    public boolean hasBossBar(LivingEntity boss) {
-        return boss != null && bossBars.containsKey(boss.getUniqueId());
-    }
-
-    public void updateBossBar(LivingEntity boss) {
-        updateBossBar(boss, 0.0d);
-    }
-
-    public void updateBossBar(LivingEntity boss, double pendingDamage) {
-        BossBar bossBar = boss == null ? null : bossBars.get(boss.getUniqueId());
-        if (bossBar == null) {
-            return;
-        }
-        double maxHealth = Math.max(1.0d, VersionUtils.getMaxHealth(boss));
-        double health = Math.max(0.0d, boss.getHealth() - Math.max(0.0d, pendingDamage));
-        bossBar.setProgress(Math.max(0.0d, Math.min(1.0d, health / maxHealth)));
-    }
-
-    public void removeBossBar(LivingEntity boss) {
-        BossBar bossBar = boss == null ? null : bossBars.remove(boss.getUniqueId());
-        if (bossBar != null) {
-            bossBar.removeAll();
-        }
-    }
-
-    public void clearBossBars() {
-        for (BossBar bossBar : bossBars.values()) {
-            bossBar.removeAll();
-        }
-        bossBars.clear();
     }
 
     public void spawnVillager(Location location) {
@@ -438,10 +332,13 @@ public class Arena extends PluginArena {
         pillager.getEquipment().setItemInOffHandDropChance(0.0f);
         plugin.getServer().getMobGoals().removeAllGoals(pillager, GoalType.TARGET);
         ItemStack crossbow = new ItemStack(Material.CROSSBOW);
-        ItemMeta meta = crossbow.getItemMeta();
+        CrossbowMeta meta = (CrossbowMeta) crossbow.getItemMeta();
         if (meta != null) {
-            meta.setUnbreakable(true);          // 不可破坏
-            meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE); // 隐藏不可破坏标识
+            meta.setUnbreakable(true);
+            meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+            crossbow.addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 5);
+            crossbow.addUnsafeEnchantment(Enchantment.MULTISHOT, 1);
+            crossbow.addUnsafeEnchantment(Enchantment.PIERCING, 5);
             crossbow.setItemMeta(meta);
         }
         pillager.getEquipment().setItemInMainHand(crossbow);
@@ -673,50 +570,16 @@ public class Arena extends PluginArena {
         THEFT
     }
 
-    public enum GameMode {
+    public enum Challenge {
         EASY,
         HARD,
-        ENDLESS;
-
-        public static GameMode fromString(String value) {
-            if (value == null) {
-                return ENDLESS;
-            }
-            String normalized = value.trim().toUpperCase(Locale.ROOT);
-            switch (normalized) {
-                case "EASY":
-                case "SIMPLE":
-                case "简单":
-                    return EASY;
-                case "HARD":
-                case "DIFFICULT":
-                case "困难":
-                    return HARD;
-                case "ENDLESS":
-                case "UNLIMITED":
-                case "无尽":
-                    return ENDLESS;
-                default:
-                    return ENDLESS;
-            }
-        }
+        INFINITE
     }
 
-    public List<Map.Entry<Player, Integer>> getSortedPlayers() {
-        List<Map.Entry<Player, Integer>> list = new ArrayList<>(playerPoints.entrySet());
-        list.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+    public List<Map.Entry<Player, Double>> getSortedPlayers() {
+        List<Map.Entry<Player, Double>> list = new ArrayList<>(playerPoints.entrySet());
+        list.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
         return list;
-    }
-
-    public int getPlayerPoints(Player player) {
-        return playerPoints.getOrDefault(player, 0);
-    }
-
-    public void addPlayerPoints(Player player, int amount) {
-        if (player == null || amount <= 0) {
-            return;
-        }
-        playerPoints.put(player, getPlayerPoints(player) + amount);
     }
 
 }

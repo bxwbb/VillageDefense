@@ -78,7 +78,7 @@ public class StartingState extends PluginStartingState {
             pluginArena.setFighting(false);
 
             for (Player player : pluginArena.getPlayers()) {
-                pluginArena.playerPoints.put(player, 0);
+                pluginArena.playerPoints.put(player, 0d);
             }
         }
     }

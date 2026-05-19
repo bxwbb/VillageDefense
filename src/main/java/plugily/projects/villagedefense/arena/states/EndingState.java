@@ -19,12 +19,12 @@
 package plugily.projects.villagedefense.arena.states;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.arena.states.PluginEndingState;
 import plugily.projects.villagedefense.arena.Arena;
+import plugily.projects.villagedefense.arena.managers.Shop.ShopManager;
 
 import java.util.List;
 
@@ -35,8 +35,6 @@ import java.util.List;
  */
 public class EndingState extends PluginEndingState {
 
-    public static final String giftName = "xinghan1";
-
     @Override
     public void handleCall(PluginArena arena) {
         super.handleCall(arena);
@@ -46,53 +44,23 @@ public class EndingState extends PluginEndingState {
             for (Player player : arena.getPlayers()) {
                 IUser user = getPlugin().getUserManager().getUser(player);
                 user.setStatistic("ORBS", 0);
-                performPointRewards(pluginArena, player);
             }
         }
-    }
-
-    private void performPointRewards(Arena arena, Player player) {
-        if (!getPlugin().getConfig().getBoolean("Points.End-Rewards.Enabled", true)) {
-            return;
-        }
-
-        int point = arena.getPlayerPoints(player);
-        ConfigurationSection configRewards = getPlugin().getConfig().getConfigurationSection("Points.End-Rewards.Levels");
-        boolean cumulative = getPlugin().getConfig().getBoolean("Points.End-Rewards.Cumulative", true);
-        if (configRewards == null) {
-            return;
-        }
-        performConfiguredPointRewards(configRewards, point, player, cumulative);
-    }
-
-    private void performConfiguredPointRewards(ConfigurationSection rewards, int point, Player player, boolean cumulative) {
-        int bestScore = Integer.MIN_VALUE;
-        List<String> bestCommands = null;
-
-        for (String key : rewards.getKeys(false)) {
-            int score = rewards.getInt(key + ".Score");
-            List<String> commands = rewards.getStringList(key + ".Commands");
-            if (point < score) {
-                continue;
-            }
-            if (cumulative) {
-                dispatchCommands(commands, player);
-                continue;
-            }
-            if (score > bestScore) {
-                bestScore = score;
-                bestCommands = commands;
+        for (Player player : arena.getPlayers()) {
+            if (!Arena.playerPoints.containsKey(player)) continue;
+            double point = Arena.playerPoints.get(player);
+            int index = 1;
+            while (ShopManager.fileConfiguration.contains("rewards." + index)) {
+                double score = ShopManager.fileConfiguration.getDouble("rewards." + index + ".score");
+                List<String> commands = ShopManager.fileConfiguration.getStringList("rewards." + index + ".commands");
+                if (point >= score) {
+                    for (String command : commands) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replaceAll("%player%", player.getName()));
+                    }
+                }
+                index++;
             }
         }
-
-        if (!cumulative && bestCommands != null) {
-            dispatchCommands(bestCommands, player);
-        }
-    }
-
-    private void dispatchCommands(List<String> commands, Player player) {
-        for (String command : commands) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
-        }
+        Arena.playerPoints.clear();
     }
 }

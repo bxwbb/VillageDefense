@@ -22,12 +22,12 @@ package plugily.projects.villagedefense.creatures.v1_9_UP;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftZombie;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
+import plugily.projects.minigamesbox.classic.utils.version.xseries.XAttribute;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XEntityType;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 import plugily.projects.villagedefense.Main;
@@ -54,36 +54,12 @@ public class CustomCreatureEvents implements Listener {
     }
 
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEnemyDamageForPoints(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) {
-            return;
-        }
-        Player player = getDamageSourcePlayer(event.getDamager());
-        if (player == null) {
-            return;
-        }
-        Arena arena = plugin.getArenaRegistry().getArena(player);
-        if (arena == null || !arena.isFighting() || !arena.getEnemies().contains(entity)) {
-            return;
-        }
-        if (plugin.getUserManager().getUser(player).isSpectator()) {
-            return;
-        }
-
-        double pointsPerDamage = Math.max(0.0d, plugin.getConfig().getDouble("Points.Damage.Per-Point", 0.0d));
-        if (pointsPerDamage <= 0.0d) {
-            return;
-        }
-
-        double effectiveDamage = Math.min(event.getFinalDamage(), entity.getHealth());
-        int points = (int) Math.floor(effectiveDamage * pointsPerDamage);
-        arena.addPlayerPoints(player, points);
-    }
-
     @EventHandler
     public void onCreatureDeathEvent(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
+        if (!(entity instanceof Creature)) {
+            return;
+        }
         for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
             if (entity instanceof IronGolem || (entity instanceof Pillager pillager && pillager.hasMetadata("IS_PLAYER")) || entity instanceof Wolf || entity instanceof Villager) {
                 if (arena.getIronGolems().contains(entity) || arena.getPillagers().contains(entity) || arena.getWolves().contains(entity) || arena.getVillagers().contains(entity)) {
@@ -95,7 +71,7 @@ public class CustomCreatureEvents implements Listener {
                     event.getDrops().add(itemStack);
                 }
             } else if (arena.getEnemies().contains(entity)) {
-                CustomCreature customCreature = entity instanceof Creature creature ? arena.getCreatureTargetManager().getCustomCreatureFromCreature(creature) : null;
+                CustomCreature customCreature = arena.getCreatureTargetManager().getCustomCreatureFromCreature((Creature) entity);
                 if (customCreature == null) {
                     Optional<EnemySpawner> simpleEnemySpawner = arena.getPlugin().getEnemySpawnerRegistry().getSpawnerByName(String.valueOf(entity.getMetadata("PlugilyProjects-VillageDefense-Name")));
                     if (simpleEnemySpawner.isPresent()) {
@@ -105,7 +81,7 @@ public class CustomCreatureEvents implements Listener {
                     event.getDrops().add(new ItemStack(XMaterial.ROTTEN_FLESH.get(), 5));
                     event.setDroppedExp(5);
 
-                    arena.removeEnemy(entity);
+                    arena.removeEnemy((Creature) entity);
                     arena.changeArenaOptionBy("TOTAL_KILLED_ZOMBIES", 1);
 
                     Player killer = entity.getKiller();
@@ -114,7 +90,7 @@ public class CustomCreatureEvents implements Listener {
                         plugin.getUserManager().addExperience(killer, 2 * arena.getArenaOption("CREATURE_DIFFICULTY_MULTIPLIER"));
                         plugin.getRewardsHandler().performReward(killer, plugin.getRewardsHandler().getRewardType("ZOMBIE_KILL"));
                         plugin.getPowerupRegistry().spawnPowerup(entity.getLocation(), arena);
-                        addKillPoints(arena, killer);
+                        Arena.playerPoints.put(killer, Arena.playerPoints.get(killer) + Math.round(entity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).getBaseValue() + entity.getAttribute(XAttribute.MAX_HEALTH.get()).getBaseValue()));
                     }
                     continue;
                 }
@@ -125,7 +101,7 @@ public class CustomCreatureEvents implements Listener {
                 }
                 event.setDroppedExp(customCreature.getExpDrop());
 
-                arena.removeEnemy(entity);
+                arena.removeEnemy((Creature) entity);
                 arena.changeArenaOptionBy("TOTAL_KILLED_ZOMBIES", 1);
 
                 Player killer = entity.getKiller();
@@ -134,7 +110,6 @@ public class CustomCreatureEvents implements Listener {
                     plugin.getUserManager().addExperience(killer, 2 * arena.getArenaOption("CREATURE_DIFFICULTY_MULTIPLIER"));
                     plugin.getRewardsHandler().performReward(killer, plugin.getRewardsHandler().getRewardType("ZOMBIE_KILL"));
                     plugin.getPowerupRegistry().spawnPowerup(entity.getLocation(), arena);
-                    addKillPoints(arena, killer);
                 }
             }
         }
@@ -194,20 +169,6 @@ public class CustomCreatureEvents implements Listener {
         }
         plugin.getDebugger().debug("Arena {0} Couldn't find creature spawner", arena.getId());
         return null;
-    }
-
-    private Player getDamageSourcePlayer(Entity damager) {
-        if (damager instanceof Player player) {
-            return player;
-        }
-        if (damager instanceof Projectile projectile && projectile.getShooter() instanceof Player player) {
-            return player;
-        }
-        return null;
-    }
-
-    private void addKillPoints(Arena arena, Player killer) {
-        arena.addPlayerPoints(killer, Math.max(0, plugin.getConfig().getInt("Points.Kill-Creature", 0)));
     }
 
 }

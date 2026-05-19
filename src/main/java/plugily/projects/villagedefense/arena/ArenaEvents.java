@@ -26,6 +26,8 @@ import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -47,6 +49,7 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XSound;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -62,6 +65,30 @@ import java.util.Random;
 public class ArenaEvents extends PluginArenaEvents {
 
     private final Main plugin;
+
+    public static final List<InventoryType> INVENTORY_TYPES = List.of(
+            InventoryType.DISPENSER,
+            InventoryType.DROPPER,
+            InventoryType.FURNACE,
+            InventoryType.WORKBENCH,
+            InventoryType.CRAFTING,
+            InventoryType.BREWING,
+            InventoryType.PLAYER,
+            InventoryType.CREATIVE,
+            InventoryType.MERCHANT,
+            InventoryType.ENDER_CHEST,
+            InventoryType.BEACON,
+            InventoryType.HOPPER,
+            InventoryType.SHULKER_BOX,
+            InventoryType.BARREL,
+            InventoryType.BLAST_FURNACE,
+            InventoryType.SMOKER,
+            InventoryType.CARTOGRAPHY,
+            InventoryType.SMITHING,
+            InventoryType.LOOM,
+            InventoryType.STONECUTTER,
+            InventoryType.MERCHANT
+    );
 
     public ArenaEvents(Main plugin) {
         super(plugin);
@@ -322,8 +349,7 @@ public class ArenaEvents extends PluginArenaEvents {
                     return;
                 default:
                     Entity entity = event.getEntity();
-                    if (entity instanceof LivingEntity) {
-                        LivingEntity livingEntity = (LivingEntity) entity;
+                    if (entity instanceof LivingEntity livingEntity) {
                         double h = livingEntity.getHealth() / VersionUtils.getMaxHealth(livingEntity);
                         Random random = new Random();
                         if (h < 0.5d && h >= 0.3d && random.nextInt(100) < 20) {
@@ -347,6 +373,52 @@ public class ArenaEvents extends PluginArenaEvents {
         for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
             if (arena.hasBossBar(entity)) {
                 arena.updateBossBar(entity, event.getFinalDamage());
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            switch (XEntityType.of(event.getEntityType())) {
+                case IRON_GOLEM:
+                case PILLAGER:
+                case WOLF:
+                case VILLAGER:
+                    return;
+                case ITEM_FRAME:
+                case GLOW_ITEM_FRAME:
+                case PAINTING:
+                    event.setCancelled(true);
+                    return;
+                default:
+                    if (!arena.getEnemies().contains(event.getEntity())) {
+                        continue;
+                    }
+                    if (!(event.getDamager() instanceof Player player)) {
+                        return;
+                    }
+                    double damage = event.getDamage();
+                    if (!Arena.playerPoints.containsKey(player)) Arena.playerPoints.put(player, 0d);
+                    Arena.playerPoints.put(player, Arena.playerPoints.get(player) + damage * 2);
+                    return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInteractContainer(PlayerInteractEvent event) {
+        if (event.getClickedBlock() == null) return;
+        Player player = event.getPlayer();
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            if (arena.getPlayers().contains(player) && !INVENTORY_TYPES.contains(player.getOpenInventory().getType())) {
+                if (player.getOpenInventory().getType().equals(InventoryType.CHEST)) {
+                    String title = player.getOpenInventory().title().insertion();
+                    if (title != null && title.contains("商店")) return;
+                }
+                player.getOpenInventory();
+                event.setCancelled(true);
                 return;
             }
         }
@@ -430,7 +502,7 @@ public class ArenaEvents extends PluginArenaEvents {
                 inventory.clear();
                 player.setFlying(false);
                 player.setAllowFlight(false);
-                plugin.getUserManager().getUser(player).setStatistic("ORBS", 0);
+                plugin.getUserManager().getUser(player).setStatistic("ORBS", (int) Math.round(plugin.getUserManager().getUser(player).getStatistic("ORBS") * 0.5));
                 VersionUtils.teleport(player, arena.getEndLocation());
                 return;
             }
@@ -548,6 +620,4 @@ public class ArenaEvents extends PluginArenaEvents {
         }
         arena.removeDroppedFlesh(e.getItem());
     }
-
-
 }
