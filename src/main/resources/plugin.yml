@@ -1,0 +1,45 @@
+name: VillageDefense
+main: plugily.projects.villagedefense.Main
+authors: [ PlugilyProjects, Tigerpanzer_02, TomTheDeveloper, Plajer, montlikadani ]
+version: ${version}
+softdepend: [ BaseAPI, floodgate, PlaceholderAPI, Parties, Spigot-Party-API-PAF, PartyAndFriends, ViaVersion, ProtocolSupport, ProtocolLib ]
+api-version: 1.13
+
+commands:
+  villagedefense:
+    description: VillageDefense Commands
+    usage: "\u00A76Correct usage: /vd [option]"
+    aliases: [ vd, villaged ]
+  villagedefenseadmin:
+    description: VillageDefense Admin Commands
+    usage: "\u00A76Correct usage: /vda [option]"
+    aliases: [ vda, villageadmin ]
+
+permissions:
+  villagedefense.admin.*:
+    default: op
+    children:
+      villagedefense.updatenotify: true
+      villagedefense.admin: true
+      villagedefense.admin.setup: true
+      villagedefense.admin.setshopchest: true
+      villagedefense.admin.setprice: true
+      villagedefense.admin.create: true
+      villagedefense.admin.delete: true
+      villagedefense.admin.list: true
+      villagedefense.admin.spychat: true
+      villagedefense.admin.stopgame: true
+      villagedefense.admin.forcestart: true
+      villagedefense.admin.respawn: true
+      villagedefense.admin.respawn.others: true
+      villagedefense.admin.addsign: true
+      villagedefense.admin.clear: true
+      villagedefense.admin.addorbs: true
+      villagedefense.admin.addorbs.others: true
+      villagedefense.admin.setwave: true
+      villagedefense.admin.sign.create: true
+      villagedefense.admin.sign.break: true
+      villagedefense.admin.reload: true
+      villagedefense.command.override: true
+      villagedefense.admin.setlevel: true
+      villagedefense.admin.addlevel: true

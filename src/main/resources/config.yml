@@ -1,0 +1,466 @@
+## 感谢使用我们的插件！~Plugily Projects 作者 Tigerpanzer_02
+#      村庄防御 主配置文件
+#
+#    你可以在此修改村庄防御的基础配置
+#      请仔细阅读每一行注释！
+#   乱改配置容易导致插件出错，请谨慎修改！
+#
+
+# 设置插件语言区域，默认英文
+# 可用语言列表：
+#    default - 使用英语，读取语言文件 language.yml
+#    语言包仓库：https://github.com/Plugily-Projects/locale_storage/tree/master/plugins/minecraft/villagedefense
+#    使用对应语言文件名即可 例如 de_DE.yml → 填写 locale: de_DE
+locale: default
+
+
+# 是否在游戏顶部显示Boss血条，展示竞技场额外信息
+Bossbar:
+  Display: true
+  # 血条轮换消息间隔（秒）
+  Interval: 5
+
+
+# 是否显示右侧计分板
+Scoreboard:
+  Display: true
+
+
+# 是否启用旧版 BC 联动模式
+# 这个开关只影响原来的代理大厅/传送流程，不影响 Redis 跨服房间匹配
+# 现有的“多服房间列表 + 跨服匹配”只看 Network.Enabled 和 Redis 配置
+# 查看教程：https://wiki.plugily.xyz/
+Bungee-Mode: false
+
+
+# Redis 跨服房间匹配配置
+# 开启后所有小游戏服会把本服房间写入 Redis，大厅/子服可跨服选择并跳转加入
+# 注意：代理端仍需要允许 BungeeCord 插件消息通道
+Network:
+  # 是否启用 Redis 跨服房间列表与跨服加入
+  Enabled: false
+  Redis:
+    Host: "127.0.0.1"
+    Port: 6379
+    Password: ""
+    Database: 0
+    Timeout-Millis: 2000
+  Rooms:
+    # Redis Hash key，所有小游戏服保持一致
+    Key: "VillageDefense:rooms"
+    # 本服房间多久发布一次，单位秒
+    Publish-Interval-Seconds: 10
+    # 超过多少秒没更新就视为离线房间
+    Expire-Seconds: 30
+  Pending-Join:
+    # 玩家跨服跳转后的待加入信息 key 前缀
+    Key-Prefix: "VillageDefense:pending:"
+    # 玩家切服后自动 join 的有效期，单位秒
+    Expire-Seconds: 30
+
+
+# 是否开启游戏背包管理功能（多竞技场非常实用）
+# 自动保存玩家进游戏前的背包、血量、饱食度、经验、盔甲、药水效果
+# 退出游戏后自动还原所有物品和状态
+Inventory-Manager: true
+
+
+# 职业套装配置
+# 修改后需要重启服务器才可生效
+Kit:
+  # 是否启用职业套装系统
+  Enabled: true
+  # 玩家默认初始职业
+  # 名称需和 kits 文件夹内职业配置文件名一致
+  Default: "knight"
+
+
+# 指令相关配置
+Commands:
+  # 游戏内允许使用的白名单指令
+  # 清空列表即完全禁止游戏内使用指令（需配合下方 Block.In-Game.Commands 开启）
+  Whitelist:
+    - me
+    - help
+  # 自定义快捷缩写指令
+  Shorter:
+    '1':
+      Short: "start"
+      Executes: "vda forcestart"
+      Enabled: true
+    '2':
+      Short: "leave"
+      Executes: "vd leave"
+      Enabled: true
+    '3':
+      Short: "kit"
+      Executes: "vd selectkit"
+      Enabled: false
+    '4':
+      Short: "stats"
+      Executes: "vd stats"
+      Enabled: false
+    '5':
+      Short: "top"
+      Executes: "vd top"
+      Enabled: false
+
+
+# 玩家行为限制配置
+Block:
+  In-Game:
+    # 是否封禁游戏内所有非插件自带指令
+    Commands: true
+    # 是否禁止在竞技场中使用退出指令
+    Leave: false
+    # 禁止将物品移入合成台、附魔台、铁砧等容器
+    Item-Move: false
+    ArmorStand:
+      # 是否禁止双击盔甲架破坏
+      Destroy: true
+      # 是否禁止右键交互盔甲架
+      Interact: true
+      # 仅在游戏进行中生效限制？
+      # true = 只在对局中禁止 / false = 大厅、结束、开局全阶段都禁止
+      Check: true
+    # 是否禁止游戏内交互门、按钮、栅栏、红石等功能性方块
+    # 完整方块列表：https://github.com/CryptoMorin/XSeries/blob/e84000a2bead7367d893cf8661f8d5432116adaa/core/src/main/java/com/cryptomorin/xseries/XTag.java#L2793
+    Interact: false
+
+
+# 是否启用MySQL数据库存储玩家数据
+# 开启前请谨慎：插件没有自带存档迁移工具
+# 关闭则所有玩家数据以本地文件形式保存
+Database: false
+
+
+# 是否开启游戏奖励系统，详细配置在 rewards.yml
+# 可搭配脚本引擎自定义奖励规则：https://tutorial.plugily.xyz
+Rewards: true
+
+
+# 聊天格式配置
+Chat:
+  # 是否启用游戏内专属聊天格式（职业、等级前缀）
+  # 格式样式可在 language.yml 自定义
+  # 支持PlaceholderAPI占位符
+  Format: true
+  Separate:
+    # 是否开启竞技场独立聊天框
+    # 多服多竞技场专用，仅同局玩家互相可见聊天
+    Arena: true
+    # 旁观者是否只能和其他旁观者聊天
+    Spectators: true
+
+
+# 游戏胜利、波次结束等特殊时刻是否在玩家位置燃放烟花
+Firework: true
+
+
+# 告示牌后方方块是否根据游戏状态自动变色
+# 默认变色规则：
+# - 等待玩家：白色染色玻璃
+# - 即将开局：黄色染色玻璃
+# - 游戏进行：橙色染色玻璃
+# - 游戏结束：灰色染色玻璃
+# - 重启中：黑色染色玻璃
+# 可在 signs.yml 自定义方块样式
+Sign-Block-States: true
+
+
+# 是否启用插件节日专属特效
+# 例如万圣节前后4天死亡特效、幽灵音效等节日彩蛋
+# 更多节日活动查看官方维基
+Holidays: true
+
+
+# 是否开启随机道具能力系统，配置文件 powerups.yml
+Powerups: true
+
+
+# 是否根据玩家数据生成全服排行榜
+Leaderboard: true
+
+
+# 队伍组队配置
+Parties:
+  # 是否兼容服务器现有组队插件（支持主流组队插件，查看维基）
+  # 队长加入竞技场时，全队自动跟随加入
+  External: true
+  # 是否启用插件自带独立组队系统（仅适配本小游戏）
+  # 指令用法查看官方维基
+  Own: false
+
+
+# 伤害规则配置
+Damage:
+  # 是否开启掉落伤害
+  Fall: true
+  # 是否开启溺水伤害
+  Drowning: true
+  # 是否开启火焰伤害
+  Fire: true
+  # 是否开启游戏内饥饿掉血机制
+  Hunger: true
+
+
+# 天气与时间循环配置
+Cycle:
+  # 是否固定所有竞技场世界永远晴天
+  Weather: false
+  # 是否锁定竞技场世界时间固定不变
+  Daylight:
+    Enable: false
+    Time: 10000
+
+
+# 全局时间管理（单位：秒）
+Time-Manager:
+  # 等待玩家开局倒计时
+  Waiting: 20
+  # 人数足够后开局倒计时
+  Starting: 60
+  # 人数满员时缩短的开局时间
+  Shorten-Waiting: 5
+  # 单局游戏最长时长
+  In-Game: 270
+  # 每波僵尸结束到下一波刷新的间隔
+  Cooldown-Before-Next-Wave: 25
+  # 游戏结束等待重启时间
+  Ending: 10
+  # 竞技场重启重置等待时间
+  Restarting: 5
+
+
+# 是否开启狼、铁傀儡升级系统
+# 升级价格可在 entity_upgrades.yml 配置
+Entity-Upgrades: true
+
+
+# 复活规则配置
+Respawn:
+  # 每波僵尸结束/开始时自动复活阵亡玩家
+  After-Wave: true
+  # 游戏进行中是否允许新玩家加入，等待下一波复活
+  In-Game-Join: true
+
+
+# 数量限制配置
+Limit:
+  Wave:
+    # 是否开启无限僵尸波次
+    Unlimited: true
+    # 最大波次限制，到达后游戏直接结束（关闭无限波次生效）
+    Game-End: 200
+  Spawn:
+    # 全局可生成宠物数量上限（仅商店购买生效）
+    Wolves: 20
+    Golems: 15
+    # 单局竞技场生成村民数量
+    Villagers: 10
+    # 单波怪物最大生成数量，超过后会截断并转为强化怪物属性
+    Creatures: 120
+  # 宠物死亡后是否允许重新购买（无视数量上限和权限限制）
+  Entity-Buy-After-Death: false
+
+
+# 游戏模式配置
+# 房间可在 arenas.yml 内用 mode: EASY / HARD / ENDLESS 指定；不写则使用 Default
+Game-Modes:
+  Default: ENDLESS
+  EASY:
+    # 简单模式最终波数
+    Final-Wave: 20
+    Bosses:
+      '1':
+        Enabled: true
+        Wave: 20
+        Type: WITHER
+        Name: "&5&l凋零Boss"
+        Health: 200.0
+  HARD:
+    # 困难模式最终波数
+    Final-Wave: 30
+    Bosses:
+      '1':
+        Enabled: true
+        Wave: 20
+        Type: WITHER
+        Name: "&5&l凋零Boss"
+        Health: 200.0
+      '2':
+        Enabled: true
+        Wave: 30
+        Type: WARDEN
+        Name: "&1&l坚守者Boss"
+        Health: 200.0
+  ENDLESS:
+    # 0 = 无尽模式不自动结束
+    Final-Wave: 0
+    Bosses:
+      '1':
+        Enabled: true
+        Wave: 20
+        Type: WITHER
+        Name: "&5&l凋零Boss"
+        Health: 200.0
+      '2':
+        Enabled: true
+        Wave: 30
+        Type: WARDEN
+        Name: "&1&l坚守者Boss"
+        Health: 200.0
+
+
+# 怪物属性配置
+Creatures:
+  # 怪物基础血量公式：最终血量 = Base + 当前波次 * Per-Wave
+  Health:
+    Base: 10.0
+    Per-Wave: 2.0
+  # 怪物基础伤害公式：最终伤害 = Base + 当前波次 * Per-Wave
+  Damage:
+    Base: 2.0
+    Per-Wave: 0.5
+  # 每波怪物总生成数量配置
+  # 按区间从上到下匹配，支持：
+  #   '1-5': 20   代表第1到5波生成20个
+  #   '100+': 100 代表第100波及以后生成100个
+  Spawn-Amount:
+    Default: 100
+    Ranges:
+      '1-2': 10
+      '3-5': 15
+      '6-8': 20
+      '9-11': 25
+      '12-15': 30
+      '16-20': 40
+      '21-25': 50
+      '26-30': 60
+      '31-40': 65
+      '41-50': 70
+      '51-60': 75
+      '61-70': 80
+      '71-80': 85
+      '81-100': 90
+      '101+': 100
+  # 怪物生成间隔配置，单位 tick
+  # 20 tick = 1 秒；20 代表每隔 20 tick，所有刷怪点同时各尝试刷 1 只怪
+  Spawn-Interval-Ticks:
+    Default: 40
+    Ranges:
+      '1+': 40
+  # 怪物达到数量上限后 属性削弱倍率（数值越高怪物越弱）
+  Multiplier-Divider: 18
+  # 是否显示怪物简易血量条（替换名字为剩余血量百分比）
+  Health-Bar: true
+
+
+
+# 游戏内积分配置，对应 %arena_player_points%
+Points:
+  # 每波结束时给存活玩家增加的积分
+  Wave-End: 1000
+  # 击杀一只怪物额外增加的积分
+  Kill-Creature: 50
+  Damage:
+    # 每造成 1 点实际伤害增加的积分，支持小数；设为 0 可关闭
+    Per-Point: 5.0
+  End-Rewards:
+    # 游戏结束时是否根据积分执行指令奖励
+    Enabled: true
+    # true = 达到多个档位就执行多个档位；false = 只执行最高达到档位
+    Cumulative: false
+    # 按积分档位执行指令，支持 %player%
+    Levels:
+      '1':
+        Score: 90000
+        Commands:
+          - "gift give %player% 村守1传奇宝箱 2"
+      '2':
+        Score: 60000
+        Commands:
+          - "gift give %player% 村守1史诗宝箱 2"
+      '3':
+        Score: 40000
+        Commands:
+          - "gift give %player% 村守1珍惜宝箱 2"
+      '4':
+        Score: 20000
+        Commands:
+          - "gift give %player% 村守1稀有宝箱 2"
+      '5':
+        Score: 10000
+        Commands:
+          - "gift give %player% 村守1普通宝箱 2"
+
+
+# 宝珠（游戏货币）配置
+Orbs:
+  Start:
+    # 玩家开局初始宝珠数量
+    Amount: 200
+  Wave-End:
+    # 每波结束时给存活玩家增加的宝珠数量
+    # 按区间从上到下匹配，支持：
+    #   '1-2': 10   代表第1到2波结束给10个宝珠
+    #   '100+': 100 代表第100波及以后结束给100个宝珠
+    Default: 100
+    Ranges:
+      '1-2': 100
+      '3-5': 200
+      '6-8': 300
+      '9-11': 400
+      '12-19': 500
+      '20': 1000
+      '21-29': 600
+      '30': 2000
+      '31-70': 700
+      '71-99': 800
+      '100+': 1000
+  Death:
+    # 玩家死亡宝珠扣除规则
+    # PERCENTAGE = 按百分比扣除
+    # AMOUNT = 固定增减数值
+    # SET = 直接设置为固定数值
+    # KEEP = 保留原有宝珠不变
+    Type: PERCENTAGE
+    Value: 50
+
+
+# 铁傀儡/狼/村民 名字是否永久可见
+Name-Visibility:
+  Golem: true
+  Wolf: true
+  Villager: true
+
+
+# 僵尸高亮发光配置
+Glowing-Status:
+  # 从第几波开始僵尸自带发光效果
+  Starting-Wave: 6
+  # 剩余多少怪物时触发发光（设0不限制）
+  Creatures-Left: 3
+
+
+# 是否允许玩家进入竞技场旁观者模式
+Spectators: true
+
+
+# 更新检测提示
+Update-Notifier:
+  # 插件启动/管理员进服时是否检测版本更新
+  # 建议保持开启，及时修复漏洞
+  Enabled: true
+  # 是否推送测试版更新通知
+  # 测试版稳定性不如正式版，谨慎更新
+  Notify-Beta-Versions: true
+
+
+# 请勿修改此处版本校验配置
+# 毕竟是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
+Do-Not-Edit:
+  File-Version: 1
+  Core-Version: 7

@@ -1,0 +1,45 @@
+name: "&f战士"
+description:
+  - "&f独一无二的战士职业！"
+  - ""
+  - "&f生命值：&c26"
+  - "&f速度：&b0.21"
+  - ""
+  - "&b专属技能："
+  - "&7向前释放可穿墙剑刃"
+  - "&7造成目标最大生命值 &c25% &7伤害"
+  - "&e冷却时间: &f100s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: IRON_SWORD
+kit_type: free
+unlockedOnDefault: true
+skills: [blade]
+inventory:
+  '0':
+    item:
+      material: WOODEN_SWORD
+      damage: 0
+      enchants:
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 8
+    slot: 1
+armour:
+  helmet:
+    material: LEATHER_HELMET
+  chestplate:
+    material: LEATHER_CHESTPLATE
+  leggings:
+    material: LEATHER_LEGGINGS
+  boots:
+    material: LEATHER_BOOTS
+Speed:
+  Walk: 0.21
+Health:
+  Max: 26.0
+Food: 20

@@ -1,0 +1,68 @@
+name: "&c荒野狂战士"
+description:
+  - "&f在混乱与鲜血中越战越勇！"
+  - ""
+  - "&f生命值：&c20"
+  - "&f速度：&b0.2"
+  - ""
+  - "&6专属技能："
+  - "&7血量越低，造成伤害越高"
+  - "&7最高提升至 &c3倍 &7伤害"
+  - "&b持续时间: &f20s &8| &e冷却时间: &f100s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: NETHERITE_SWORD
+  amount: 10
+kit_type: level
+required-level: 100
+unlockedOnDefault: false
+skills: [rage]
+inventory:
+  '0':
+    item:
+      material: STONE_SWORD
+      damage: 0
+      enchants:
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: SPLASH_POTION
+      damage: 0
+      base-type: INSTANT_HEAL, false, false
+    slot: 1
+  '2':
+    item:
+      material: COOKIE
+      amount: 10
+    slot: 2
+armour:
+  helmet:
+    material: LEATHER_HELMET
+    damage: 0
+    color: 255, 255, 255
+  chestplate:
+    material: LEATHER_CHESTPLATE
+    damage: 0
+    color: 255, 255, 255
+  leggings:
+    material: LEATHER_LEGGINGS
+    damage: 0
+    color: 255, 255, 255
+  boots:
+    material: LEATHER_BOOTS
+    damage: 0
+    color: 255, 255, 255
+Speed:
+  Walk: 0.2
+Health:
+  Max: 20.0
+Food: 20
+
+restock:
+  '1':
+    item:
+      material: SPLASH_POTION
+      damage: 0
+      base-type: INSTANT_HEAL, false, false

@@ -1,0 +1,99 @@
+## Plugily Projects powerups.yml
+#示例
+Powerups:
+  Pickup:
+    Chat: "&a%player% 拾取了 &4能力道具 %value%"
+  Ended:
+    Title: "&4来自 %player% 的能力道具 %value%"
+    Subtitle: "&c已结束"
+    Chat: "&4来自 %player% 的能力道具 %value% 已结束"
+  Drop:
+    Chance: 1
+  Content:
+    Map-Clean:
+      name: "&e&l地图清理"
+      description: "&7地图已被清理！"
+      material: BLAZE_POWDER
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
+      potion-effect:
+        - ""
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
+      potion-type: PLAYER
+      # 类似于奖励
+      #ArenaUtils.removeSpawnedEnemies(pickup.getArena());
+      execute:
+        - ""
+    Double-Damage:
+      name: "&c&l双倍伤害"
+      description: "&7双倍伤害持续 %number% 秒！"
+      material: REDSTONE
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
+      potion-effect:
+        - "INCREASE_DAMAGE, 20, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
+      potion-type: ALL
+      # 类似于奖励
+      execute:
+        - ""
+    Healing:
+      name: "&6&l复苏"
+      description: "&7恢复效果持续 %number% 秒！"
+      material: GOLDEN_APPLE
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
+      potion-effect:
+        - "REGENERATION, 10, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
+      potion-type: ALL
+      # 类似于奖励
+      execute:
+        - ""
+    Golem-Raid:
+      name: "&a&l铁傀儡突袭"
+      description: "&7铁傀儡已经入侵了这个村庄！"
+      material: IRON_INGOT
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
+      potion-effect:
+        - "REGENERATION, 3, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
+      potion-type: PLAYER
+      # 类似于奖励
+      execute:
+        - ""
+    One-Shot-One-Kill:
+      name: "&b&l狂暴"
+      description: "&7每只僵尸只需一击！"
+      material: DIAMOND_SWORD
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
+      potion-effect:
+        - "INCREASE_DAMAGE, 15, 1000"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
+      potion-type: ALL
+      # 类似于奖励
+      execute:
+        - ""
+    Speed:
+      active: true
+      name: "&a&l速度提升"
+      description: "&7速度加倍持续 %number% 秒！"
+      material: FEATHER
+      # 你可以添加任意数量的药水效果
+      # 格式: 药水名称, 持续时间, 强度
+      potion-effect:
+        - "SPEED, 15, 1"
+      # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
+      potion-type: PLAYER
+      # 类似于奖励
+      execute:
+        - ""
+
+# 不要编辑此文件。但谁又能阻止你呢？这是你的服务器！
+# 说真的，别编辑 ;p
+# 你编辑了是吧？下次小心点！
+Do-Not-Edit:
+  File-Version: 1
+  Core-Version: 1

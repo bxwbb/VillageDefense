@@ -1,0 +1,47 @@
+name: "&c爆破专家"
+description:
+  - "&f爆炸就是艺术！"
+  - ""
+  - "&f生命值：&c28"
+  - "&f速度：&b0.21"
+  - ""
+  - "&6专属技能："
+  - "&7在面前生成 &c2 &7个TNT，2秒后爆"
+  - "&e冷却时间: &f90s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: TNT
+kit_type: level
+required-level: 1
+unlockedOnDefault: false
+skills: [explosion]
+inventory:
+  '0':
+    item:
+      material: WOODEN_SWORD
+      damage: 0
+      enchants:
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 8
+    slot: 1
+  '2':
+    item:
+      material: BOOK
+      damage: 0
+      name: "僵尸牵引术"
+      lore:
+        - "将僵尸传送至你的身边！"
+      enchants:
+        SHARPNESS: 1
+    slot: 2
+Speed:
+  Walk: 0.21
+Health:
+  Max: 28.0
+Food: 20
+armour: {}

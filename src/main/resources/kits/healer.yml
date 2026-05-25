@@ -1,0 +1,78 @@
+name: "&a治疗师"
+description:
+  - "&f身为治疗师，深受大家爱戴"
+  - "&f你可以治愈队友"
+  - ""
+  - "&f生命值：&c20"
+  - "&f速度：&b0.23"
+  - ""
+  - "&6专属技能："
+  - "&7全队每秒恢复 &a3 &7点生命"
+  - "&b持续时间: &f20s &8| &e冷却时间: &f100s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: POPPY
+kit_type: level
+required-level: 6
+unlockedOnDefault: false
+skills: [heal]
+inventory:
+  '0':
+    item:
+      material: WOODEN_SWORD
+      damage: 0
+      enchants:
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 8
+    slot: 1
+  '2':
+    item:
+      material: SPLASH_POTION
+      damage: 0
+      base-type: INSTANT_HEAL, false, false
+    slot: 2
+  '3':
+    item:
+      material: SPLASH_POTION
+      damage: 0
+      base-type: REGEN, false, false
+    slot: 3
+armour:
+  helmet:
+    material: LEATHER_HELMET
+    damage: 0
+    color: 255, 255, 255
+  chestplate:
+    material: LEATHER_CHESTPLATE
+    damage: 0
+    color: 255, 255, 255
+  leggings:
+    material: LEATHER_LEGGINGS
+    damage: 0
+    color: 255, 255, 255
+  boots:
+    material: LEATHER_BOOTS
+    damage: 0
+    color: 255, 255, 255
+Speed:
+  Walk: 0.23
+Health:
+  Max: 20.0
+Food: 20
+
+restock:
+  '1':
+    item:
+      material: SPLASH_POTION
+      damage: 0
+      base-type: INSTANT_HEAL, false, false
+  '2':
+    item:
+      material: SPLASH_POTION
+      damage: 0
+      base-type: REGEN, false, false

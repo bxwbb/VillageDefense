@@ -1,0 +1,51 @@
+name: "&6重装坦克"
+description:
+  - "&f开局身穿铁甲并拥有双倍生命值！"
+  - "&f没错，就是这么强悍，"
+  - "&f你将会是最后屹立不倒的那个人！"
+  - ""
+  - "&f生命值：&c40"
+  - "&f速度：&b0.20"
+  - ""
+  - "&6专属技能："
+  - "&7获得 &b抗性等级3"
+  - "&b持续时间: &f20s &8| &e冷却时间: &f100s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: NETHERITE_CHESTPLATE
+kit_type: premium
+unlockedOnDefault: false
+skills: [resistance]
+inventory:
+  '0':
+    item:
+      material: STICK
+      damage: 0
+      enchants:
+        SHARPNESS: 2
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 8
+    slot: 1
+  '2':
+    item:
+      material: SADDLE
+    slot: 2
+armour:
+  helmet:
+    material: IRON_HELMET
+  chestplate:
+    material: IRON_CHESTPLATE
+  leggings:
+    material: IRON_LEGGINGS
+  boots:
+    material: IRON_BOOTS
+Speed:
+  Walk: 0.2
+Health:
+  Max: 40.0
+Food: 20

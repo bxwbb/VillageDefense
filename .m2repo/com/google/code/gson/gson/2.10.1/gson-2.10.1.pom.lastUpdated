@@ -1,0 +1,15 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue May 19 16:28:17 HKT 2026
+@default-papermc-https\://repo.papermc.io/repository/maven-public/.lastUpdated=1779179294247
+https\://hub.spigotmc.org/nexus/content/repositories/snapshots/.error=
+https\://hub.spigotmc.org/nexus/content/repositories/snapshots/.lastUpdated=1779179276774
+https\://jitpack.io/.error=
+https\://jitpack.io/.lastUpdated=1779179296191
+https\://maven.plugily.xyz/releases/.error=
+https\://maven.plugily.xyz/releases/.lastUpdated=1779179295083
+https\://maven.plugily.xyz/snapshots/.error=
+https\://maven.plugily.xyz/snapshots/.lastUpdated=1779179295341
+https\://repo.codemc.org/repository/maven-public/.error=
+https\://repo.codemc.org/repository/maven-public/.lastUpdated=1779179297710
+https\://repo.maven.apache.org/maven2/.lastUpdated=1779179297895
+https\://repo.papermc.io/repository/maven-public/.error=Could not transfer artifact com.google.code.gson\:gson\:pom\:2.10.1 from/to papermc (https\://repo.papermc.io/repository/maven-public/)\: status code\: 520, reason phrase\: <none> (520)

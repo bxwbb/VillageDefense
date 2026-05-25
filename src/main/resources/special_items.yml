@@ -1,0 +1,151 @@
+# 自定义随身特殊物品配置
+# 你也可以自己新增自定义特殊物品！
+#
+# 可用阶段标签：
+# SERVER_JOIN（进服）、WAITING_FOR_PLAYERS（等待玩家）、ENOUGH_PLAYERS_TO_START（人数足够可开局）
+# LOBBY（大厅等待）、IN_GAME（游戏中）、SPECTATOR（旁观者）、ENDING（游戏结束）
+#
+# 请勿修改：Kit-Menu、Leave-Lobby、Leave-Spectator、Player-List、Spectator-Options、Forcestart
+# 这些是插件硬编码绑定的功能，改结构会报错！
+#
+# 更多参考请查阅官方维基！
+
+# 职业选择菜单
+Kit-Menu:
+  permission: ""
+  execute:
+    - ""
+  displayname: "&b&l职业菜单 &7(右键使用)"
+  lore:
+    - "&7右键点击选择游戏职业"
+  material: NETHER_STAR
+  slot: 0
+  stage: LOBBY
+  force: true
+  move: false
+
+# 返回大厅道具（跟随 bungee.yml 跨服配置）
+# 开启跨服后会自动传送到主大厅服
+Lobby-Leave:
+  permission: ""
+  execute:
+    - ""
+  displayname: "&c&l返回大厅 &7(右键使用)"
+  lore:
+    - "&7右键离开小游戏返回大厅"
+  material: BED
+  slot: 8
+  stage: LOBBY
+  force: true
+  move: false
+
+# 旁观者退出游戏道具
+# 跟随 bungee.yml 跨服配置
+Spectator-Leave:
+  permission: ""
+  execute:
+    - ""
+  displayname: "&c&l退出游戏 &7(右键使用)"
+  lore:
+    - "&7右键离开本局游戏返回大厅"
+  material: BED
+  slot: 8
+  stage: SPECTATOR
+  force: true
+  move: false
+
+# 存活玩家列表
+Player-List:
+  permission: ""
+  execute:
+    - ""
+  displayname: "&a&l存活玩家 &7(右键使用)"
+  lore:
+    - "&7右键查看当前存活玩家列表"
+  material: PLAYER_HEAD
+  slot: 0
+  stage: SPECTATOR
+  force: true
+  move: false
+
+# 旁观者设置菜单
+Spectator-Settings:
+  permission: ""
+  execute:
+    - ""
+  displayname: "&b&l旁观设置 &7(右键使用)"
+  lore:
+    - "&7右键调整旁观者相关设置"
+  material: COMPASS
+  slot: 4
+  stage: SPECTATOR
+  force: true
+  move: false
+
+# 强制开局道具
+Forcestart:
+  permission: "plugily.projects.forcestart"
+  execute:
+    - ""
+  displayname: "&c&l手动开局 &7(右键使用)"
+  lore:
+    - "&7使用需要拥有以下权限"
+    - "&7plugily.projects.forcestart"
+  material: EMERALD
+  slot: 2
+  stage: ENOUGH_PLAYERS_TO_START
+  force: true
+  move: false
+
+# 竞技场选择器（默认禁用）
+Arena-Selector:
+  disabled: true # 默认已禁用
+  permission: ""
+  execute:
+    - "p:vd arenas"
+  displayname: "&c&l竞技场选择 &7(右键使用)"
+  lore:
+    - "&7右键查看所有可用竞技场"
+  material: CHEST
+  slot: 4
+  stage: SERVER_JOIN
+  force: false
+  move: true
+
+# 个人数据统计（默认禁用）
+Stats:
+  disabled: true # 默认已禁用
+  permission: ""
+  execute:
+    - "p:vd stats"
+  displayname: "&c&l个人战绩 &7(右键使用)"
+  lore:
+    - "&7右键查看自己的游戏统计数据"
+  material: PLAYER_HEAD
+  slot: 0
+  stage: SERVER_JOIN
+  force: false
+  move: false
+
+# 返回主大厅道具（默认禁用，跟随跨服配置）
+Back-To-Hub:
+  disabled: true # 默认已禁用
+  permission: ""
+  execute:
+    - "p:hub"
+  displayname: "&c&l返回主大厅 &7(右键使用)"
+  lore:
+    - "&7右键传送回服务器大厅"
+  material: Bed
+  slot: 8
+  stage: SERVER_JOIN
+  force: false
+  move: false
+
+# 请勿修改此处版本校验配置
+# 虽然是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改了是吧？下次别乱碰这里啦！
+Do-Not-Edit:
+  File-Version: 1
+  Core-Version: 1

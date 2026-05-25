@@ -1,0 +1,45 @@
+# 生物配置总项
+Creatures:
+  # 村庄可骑乘生物配置
+  Village:
+    # 可骑乘村民
+    RIDEABLE_VILLAGER:
+      # 是否开启节日专属特效
+      holiday_effects: true
+      # 生物属性配置
+      attributes:
+        # 移动速度
+        GENERIC_MOVEMENT_SPEED: 0.3
+        # 最大生命值
+        GENERIC_MAX_HEALTH: 200.0
+        # 跟随目标距离范围
+        GENERIC_FOLLOW_RANGE: 200.0
+      # 死亡掉落物品 null=无掉落
+      drop_item: null
+    # 可骑乘铁傀儡
+    RIDEABLE_IRON_GOLEM:
+      holiday_effects: true
+      attributes:
+        GENERIC_MOVEMENT_SPEED: 0.1
+        GENERIC_MAX_HEALTH: 100.0
+        GENERIC_FOLLOW_RANGE: 200.0
+      drop_item: null
+    # 可骑乘狼
+    RIDEABLE_WOLF:
+      holiday_effects: true
+      attributes:
+        GENERIC_MOVEMENT_SPEED: 0.2
+        GENERIC_MAX_HEALTH: 30.0
+        GENERIC_FOLLOW_RANGE: 200.0
+      drop_item: null
+
+  # 游戏内僵尸/怪物种类配置
+  Content:
+
+# 请勿修改此处版本校验
+# 毕竟是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
+Do-Not-Edit:
+  File-Version: 1
+  Core-Version: 1

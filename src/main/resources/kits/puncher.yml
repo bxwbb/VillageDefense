@@ -1,0 +1,69 @@
+name: "&7击退者"
+description:
+  - "&f用强力铲子将僵尸狠狠击退！"
+  - "&f拥有顶级击退效果可不是开玩笑的！"
+  - ""
+  - "&f生命值：&c30"
+  - "&f速度：&b0.20"
+  - ""
+  - "&b专属技能："
+  - "&7击退周围所有怪物"
+  - "&7造成目标最大生命值 &c15% &7伤害"
+  - "&e冷却时间: &f100s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: DIAMOND_SHOVEL
+kit_type: level
+required-level: 4
+unlockedOnDefault: false
+skills: [knockback]
+inventory:
+  '0':
+    item:
+      material: DIAMOND_SHOVEL
+      damage: 0
+      enchants:
+        SHARPNESS: 2
+        UNBREAKING: 10
+        KNOCKBACK: 3
+    slot: 0
+  '1':
+    item:
+      material: BOW
+      damage: 0
+      enchants:
+        UNBREAKING: 5
+    slot: 1
+  '2':
+    item:
+      material: ARROW
+      amount: 25
+    slot: 2
+  '3':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 8
+    slot: 3
+armour:
+  helmet:
+    material: LEATHER_HELMET
+    damage: 0
+    color: 0, 0, 0
+  chestplate:
+    material: LEATHER_CHESTPLATE
+    damage: 0
+    color: 0, 0, 0
+  leggings:
+    material: LEATHER_LEGGINGS
+    damage: 0
+    color: 0, 0, 0
+  boots:
+    material: LEATHER_BOOTS
+    damage: 0
+    color: 0, 0, 0
+Speed:
+  Walk: 0.2
+Health:
+  Max: 30.0
+Food: 20

@@ -1,0 +1,53 @@
+name: "&6铁巨人伙伴"
+description:
+  - "&f拥有生成铁傀儡的能力"
+  - ""
+  - "&f生命值：&c20"
+  - "&f速度：&b0.20"
+  - ""
+  - "&6专属技能："
+  - "&7在当前位置生成一个铁傀儡帮助作战"
+  - "&e冷却时间: &f100s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: IRON_INGOT
+kit_type: level
+required-level: 18
+unlockedOnDefault: false
+skills: [golem]
+inventory:
+  '0':
+    item:
+      material: STONE_SWORD
+      damage: 0
+      enchants:
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 8
+    slot: 1
+armour:
+  helmet:
+    material: LEATHER_HELMET
+    damage: 0
+    color: 255, 255, 255
+  chestplate:
+    material: LEATHER_CHESTPLATE
+    damage: 0
+    color: 255, 255, 255
+  leggings:
+    material: LEATHER_LEGGINGS
+    damage: 0
+    color: 255, 255, 255
+  boots:
+    material: LEATHER_BOOTS
+    damage: 0
+    color: 255, 255, 255
+Speed:
+  Walk: 0.2
+Health:
+  Max: 20.0
+Food: 20

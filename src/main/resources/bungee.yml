@@ -1,0 +1,37 @@
+# 适用于BC跨服模式的配置
+# 记得在主配置 config.yml 中开启此项 (Bungee-Mode: true)
+
+# 玩家游戏结束后要传送回的 BC 大厅服务器名称
+# (也就是放游戏告示牌、主大厅的那个服)
+Hub: lobby
+
+# 游戏结束后是否关闭当前小游戏服务器？
+Shutdown-When-Game-Ends: true
+
+# 玩家退出游戏（如点击退出道具）是否自动连接回大厅服？
+Connect-To-Hub: true
+
+# 是否将游戏结束位置设为大厅服？
+# 开启后玩家游戏结束会直接跳转至大厅服
+End-Location-Hub: true
+
+# 以下配置适用于 BC 小游戏联动系统
+# 占位符 %state% —— 会在服务器简介显示当前游戏状态
+MOTD:
+  Manager: false
+  Message: "小游戏当前状态：%state%"
+  Game-States:
+    Inactive: "&l未开启..."
+    In-Game: "&l游戏进行中"
+    Starting: "&e&l即将开局"
+    Full-Game: "&4&l已满人"
+    Ending: "&l游戏结束"
+    Restarting: "&c&l正在重启"
+
+# 请勿随意修改此处版本校验配置
+# 毕竟是你的服务器，想改也拦不住你！
+# 真心不建议乱改哦 ;p
+# 你还是偷偷改掉了是吧？下次别乱碰这里啦！
+Do-Not-Edit:
+  File-Version: 1
+  Core-Version: 1

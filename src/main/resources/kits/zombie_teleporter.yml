@@ -1,0 +1,37 @@
+name: "&3僵尸牵引师"
+description:
+  - "&f抛出诱饵村民，吸引周围僵尸疯狂聚集！"
+  - ""
+  - "&f生命值：&c28"
+  - "&f速度：&b0.2"
+  - ""
+  - "&b专属技能："
+  - "&7在当前位置生成一个诱饵村民，怪物会优先攻击诱饵"
+  - "&b持续时间: &f15s &8| &e冷却时间: &f100s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: FISHING_ROD
+kit_type: level
+required-level: 1
+unlockedOnDefault: false
+skills: [decoy]
+inventory:
+  '0':
+    item:
+      material: WOODEN_SWORD
+      damage: 0
+      enchants:
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 10
+    slot: 1
+Speed:
+  Walk: 0.2
+Health:
+  Max: 28.0
+Food: 20
+armour: {}

@@ -1,0 +1,48 @@
+name: "&b雷电法王"
+description:
+  - "&f驾驭雷霆之力，对僵尸降下闪电制裁！"
+  - ""
+  - "&f生命值：&c24"
+  - "&f速度：&b0.22"
+  - ""
+  - "&6专属技能："
+  - "&7攻击有 &b15% &7概率触发雷电攻击"
+  - "&7对目标造成 &c15% &7最大生命值的伤害"
+  - "&8被动生效"
+enabled: true
+display_item:
+  material: BONE
+kit_type: level
+required-level: 20
+unlockedOnDefault: false
+skills: [lightning]
+inventory:
+  '0':
+    item:
+      material: STONE_SWORD
+      enchants:
+        UNBREAKING: 10
+    slot: 0
+  '1':
+    item:
+      material: COOKED_PORKCHOP
+      amount: 8
+    slot: 1
+armour:
+  helmet:
+    material: LEATHER_HELMET
+    color: 0, 0, 0
+  chestplate:
+    material: LEATHER_CHESTPLATE
+    color: 0, 0, 0
+  leggings:
+    material: LEATHER_LEGGINGS
+    color: 0, 0, 0
+  boots:
+    material: LEATHER_BOOTS
+    color: 0, 0, 0
+Speed:
+  Walk: 0.22
+Health:
+  Max: 24.0
+Food: 20

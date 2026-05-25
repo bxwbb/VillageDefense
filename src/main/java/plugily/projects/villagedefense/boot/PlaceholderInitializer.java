@@ -1,0 +1,281 @@
+/*
+ *  Village Defense - Protect villagers from hordes of zombies
+ *  Copyright (c) 2026 Plugily Projects - maintained by Tigerpanzer_02 and contributors
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package plugily.projects.villagedefense.boot;
+
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
+import plugily.projects.minigamesbox.api.arena.IArenaState;
+import plugily.projects.minigamesbox.api.arena.IPluginArena;
+import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
+import plugily.projects.minigamesbox.classic.handlers.placeholder.Placeholder;
+import plugily.projects.minigamesbox.classic.handlers.placeholder.PlaceholderManager;
+import plugily.projects.villagedefense.Main;
+import plugily.projects.villagedefense.arena.Arena;
+import plugily.projects.villagedefense.arena.ArenaRegistry;
+import plugily.projects.villagedefense.network.NetworkRoomManager;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * @author Tigerpanzer_02
+ * <p>
+ * Created at 15.10.2022
+ */
+public class PlaceholderInitializer {
+
+    private static final long MODE_COUNT_CACHE_MILLIS = 1000L;
+
+    private final Main plugin;
+    private final Map<String, Integer> cachedPlayingPlayersByMode = new ConcurrentHashMap<>();
+    private volatile long modeCountCacheExpiresAt;
+
+    public PlaceholderInitializer(Main plugin) {
+        this.plugin = plugin;
+        registerPlaceholders();
+    }
+
+    private void registerPlaceholders() {
+        getPlaceholderManager().registerPlaceholder(new Placeholder("wave", Placeholder.PlaceholderType.ARENA, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player, IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                return Integer.toString(pluginArena.getWave());
+            }
+
+            @Override
+            public String getValue(IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                return Integer.toString(pluginArena.getWave());
+            }
+        });
+        getPlaceholderManager().registerPlaceholder(new Placeholder("summary_player", Placeholder.PlaceholderType.ARENA, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player, IPluginArena arena) {
+                return getSummary(arena);
+            }
+
+            @Override
+            public String getValue(IPluginArena arena) {
+                return getSummary(arena);
+            }
+
+            @Nullable
+            private String getSummary(IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                int wave = pluginArena.getWave();
+                String summaryEnding;
+                if (pluginArena.isFinalWaveCompleted()) {
+                    summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_WIN").asKey().arena(pluginArena).build();
+                } else {
+                    summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_LOSE").asKey().arena(pluginArena).build();
+                }
+                return summaryEnding;
+            }
+        });
+        getPlaceholderManager().registerPlaceholder(new Placeholder("summary", Placeholder.PlaceholderType.ARENA, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player, IPluginArena arena) {
+                return getSummary(arena);
+            }
+
+            @Override
+            public String getValue(IPluginArena arena) {
+                return getSummary(arena);
+            }
+
+            @Nullable
+            private String getSummary(IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                int wave = pluginArena.getWave();
+                String summaryEnding;
+                if (pluginArena.isFinalWaveCompleted()) {
+                    summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_SURVIVED").asKey().arena(pluginArena).build();
+                } else if (!arena.getPlayersLeft().isEmpty()) {
+                    summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_DIED_VILLAGERS").asKey().arena(pluginArena).build();
+                } else {
+                    summaryEnding = new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_DIED_PLAYERS").asKey().arena(pluginArena).build();
+                }
+                return summaryEnding;
+            }
+        });
+        getPlaceholderManager().registerPlaceholder(new Placeholder("villager_size", Placeholder.PlaceholderType.ARENA, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player, IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                return Integer.toString(pluginArena.getVillagers().size());
+            }
+
+            @Override
+            public String getValue(IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                return Integer.toString(pluginArena.getVillagers().size());
+            }
+        });
+        getPlaceholderManager().registerPlaceholder(new Placeholder("zombie_size_left", Placeholder.PlaceholderType.ARENA, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player, IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                return Integer.toString(pluginArena.getZombiesLeft());
+            }
+
+            @Override
+            public String getValue(IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (pluginArena == null) {
+                    return null;
+                }
+                return Integer.toString(pluginArena.getZombiesLeft());
+            }
+        });
+        getPlaceholderManager().registerPlaceholder(new Placeholder("rotten_flesh_amount", Placeholder.PlaceholderType.ARENA, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player, IPluginArena arena) {
+                return Integer.toString(arena.getArenaOption("ROTTEN_FLESH_AMOUNT"));
+            }
+
+            @Override
+            public String getValue(IPluginArena arena) {
+                return Integer.toString(arena.getArenaOption("ROTTEN_FLESH_AMOUNT"));
+            }
+        });
+        getPlaceholderManager().registerPlaceholder(new Placeholder("player_points", Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player) {
+                if (player == null) {
+                    return "0";
+                }
+                Arena pluginArena = getArenaRegistry().getArena(player);
+                if (pluginArena == null) {
+                    return "0";
+                }
+                return Integer.toString(pluginArena.playerPoints.getOrDefault(player, 0));
+            }
+        });
+        getPlaceholderManager().registerPlaceholder(new Placeholder("player_points", Placeholder.PlaceholderType.ARENA, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue(Player player, IPluginArena arena) {
+                Arena pluginArena = getArenaRegistry().getArena(arena.getId());
+                if (player == null || pluginArena == null) {
+                    return "0";
+                }
+                return Integer.toString(pluginArena.playerPoints.getOrDefault(player, 0));
+            }
+        });
+        registerModePlayingPlayersPlaceholder("easy_players", "EASY");
+        registerModePlayingPlayersPlaceholder("hard_players", "HARD");
+        registerModePlayingPlayersPlaceholder("endless_players", "ENDLESS");
+    }
+
+    private void registerModePlayingPlayersPlaceholder(String id, String mode) {
+        getPlaceholderManager().registerPlaceholder(new Placeholder(id, Placeholder.PlaceholderExecutor.ALL) {
+            @Override
+            public String getValue() {
+                return Integer.toString(getPlayingPlayersByMode(mode));
+            }
+
+            @Override
+            public String getValue(Player player) {
+                return Integer.toString(getPlayingPlayersByMode(mode));
+            }
+        });
+    }
+
+    private int getPlayingPlayersByMode(String mode) {
+        long now = System.currentTimeMillis();
+        if (now >= modeCountCacheExpiresAt) {
+            refreshModeCountCache(now);
+        }
+        return cachedPlayingPlayersByMode.getOrDefault(mode, 0);
+    }
+
+    private synchronized void refreshModeCountCache(long now) {
+        if (now < modeCountCacheExpiresAt) {
+            return;
+        }
+
+        Map<String, Integer> totals = new HashMap<>();
+        NetworkRoomManager networkRoomManager = plugin.getNetworkRoomManager();
+        if (networkRoomManager != null) {
+            for (NetworkRoomManager.RoomSnapshot room : networkRoomManager.getRoomsForSelection()) {
+                if (room == null || !room.isInGame()) {
+                    continue;
+                }
+                String mode = normalizeMode(room.getMode());
+                totals.put(mode, totals.getOrDefault(mode, 0) + room.getPlayers());
+            }
+        } else {
+            for (Arena arena : getArenaRegistry().getPluginArenas()) {
+                if (arena == null || arena.getArenaState() != IArenaState.IN_GAME) {
+                    continue;
+                }
+                String mode = arena.getGameMode() == null ? "ENDLESS" : arena.getGameMode().name();
+                totals.put(mode, totals.getOrDefault(mode, 0) + arena.getPlayers().size());
+            }
+        }
+
+        cachedPlayingPlayersByMode.clear();
+        cachedPlayingPlayersByMode.put("EASY", totals.getOrDefault("EASY", 0));
+        cachedPlayingPlayersByMode.put("HARD", totals.getOrDefault("HARD", 0));
+        cachedPlayingPlayersByMode.put("ENDLESS", totals.getOrDefault("ENDLESS", 0));
+        modeCountCacheExpiresAt = now + MODE_COUNT_CACHE_MILLIS;
+    }
+
+    private String normalizeMode(String mode) {
+        if (mode == null) {
+            return "ENDLESS";
+        }
+        String normalized = mode.trim().toUpperCase();
+        if ("EASY".equals(normalized) || "HARD".equals(normalized) || "ENDLESS".equals(normalized)) {
+            return normalized;
+        }
+        return "ENDLESS";
+    }
+
+    private PlaceholderManager getPlaceholderManager() {
+        return plugin.getPlaceholderManager();
+    }
+
+    private ArenaRegistry getArenaRegistry() {
+        return plugin.getArenaRegistry();
+    }
+
+}

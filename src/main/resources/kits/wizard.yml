@@ -1,0 +1,53 @@
+name: "&d巫师"
+description:
+  - "&f你拥有半魔族血脉。"
+  - "&f降临村庄只为守护村民，"
+  - ""
+  - "&f生命值：&c20"
+  - "&f速度：&b0.22"
+  - ""
+  - "&b专属技能："
+  - "&7召唤黑洞吸引周围的怪物，并每秒照成 &c8% 伤害"
+  - "&b持续时间: &f 7s &8| &e冷却时间: &f120s"
+  - "&8右键释放"
+enabled: true
+display_item:
+  material: BLAZE_ROD
+kit_type: premium
+unlockedOnDefault: false
+skills: [black_hole]
+inventory:
+  '0':
+    item:
+      material: BLAZE_ROD
+      damage: 0
+      name: "魔法法杖"
+      lore:
+        - "右键释放黑暗能量"
+    slot: 0
+  '2':
+    item:
+      material: SADDLE
+    slot: 2
+armour:
+  helmet:
+    material: LEATHER_HELMET
+    damage: 0
+    color: 128, 128, 128
+  chestplate:
+    material: LEATHER_CHESTPLATE
+    damage: 0
+    color: 128, 128, 128
+  leggings:
+    material: LEATHER_LEGGINGS
+    damage: 0
+    color: 128, 128, 128
+  boots:
+    material: LEATHER_BOOTS
+    damage: 0
+    color: 128, 128, 128
+Speed:
+  Walk: 0.22
+Health:
+  Max: 20.0
+Food: 20

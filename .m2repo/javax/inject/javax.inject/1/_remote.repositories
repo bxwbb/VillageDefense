@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue May 19 16:39:50 HKT 2026
+javax.inject-1.jar>central=
+javax.inject-1.jar>papermc=
+javax.inject-1.pom>papermc=
