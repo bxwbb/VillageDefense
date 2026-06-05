@@ -48,6 +48,8 @@ import plugily.projects.villagedefense.handlers.upgrade.upgrades.Upgrade;
 import plugily.projects.villagedefense.handlers.upgrade.upgrades.UpgradeBuilder;
 import plugily.projects.villagedefense.kits.KitAbilityInitializer;
 import plugily.projects.villagedefense.kits.KitUtils;
+import plugily.projects.villagedefense.kits.purchase.KitPurchaseManager;
+import plugily.projects.villagedefense.kits.selection.BedrockKitSelectionManager;
 import plugily.projects.villagedefense.kits.skills.SkillManager;
 import plugily.projects.villagedefense.network.NetworkRoomManager;
 
@@ -75,6 +77,8 @@ public class Main extends PluginMain {
     private NetherMobSummoner netherMobSummoner;
     private NetworkRoomManager networkRoomManager;
     private SkillManager skillManager;
+    private KitPurchaseManager kitPurchaseManager;
+    private BedrockKitSelectionManager bedrockKitSelectionManager;
 
     @TestOnly
     public Main() {
@@ -98,6 +102,10 @@ public class Main extends PluginMain {
         new AdditionalValueInitializer(this);
         initializePluginClasses();
         addKits();
+        if (getConfigPreferences().getOption("KITS")) {
+            kitPurchaseManager = new KitPurchaseManager(this);
+            bedrockKitSelectionManager = new BedrockKitSelectionManager(this);
+        }
         getDebugger().debug("Full {0} plugin enabled", getName());
         getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
     }
@@ -107,6 +115,7 @@ public class Main extends PluginMain {
         addFileName("powerups");
         addFileName("creatures");
         addFileName("skills");
+        addFileName("kit_shop");
 
         // 框架创建 Arena 时不直接注入 Main，这里用静态 init 维持旧 API 的访问方式。
         Arena.init(this);
@@ -228,7 +237,18 @@ public class Main extends PluginMain {
         return skillManager;
     }
 
+    public KitPurchaseManager getKitPurchaseManager() {
+        return kitPurchaseManager;
+    }
+
+    public BedrockKitSelectionManager getBedrockKitSelectionManager() {
+        return bedrockKitSelectionManager;
+    }
+
     public void onDisable() {
+        if (kitPurchaseManager != null) {
+            kitPurchaseManager.shutdown();
+        }
         if (skillManager != null) {
             skillManager.shutdown();
         }

@@ -79,6 +79,7 @@ public class ArenaUtils extends PluginArenaUtils {
             player.getInventory().clear();
             ArenaUtils.showPlayer(player, arena);
             user.getKit().giveKitItems(player);
+            arena.applyRottenFleshHealthBonus(player);
             player.updateInventory();
             arena.showBossBars(player);
             new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWNED").asKey().player(player).arena(arena).sendPlayer();

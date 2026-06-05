@@ -1,0 +1,231 @@
+# 职业购买菜单配置
+Settings:
+  # Java 版箱子 GUI 标题；基岩版表单也使用这个标题。
+  Title: "&2职业购买"
+  # Java 版箱子 GUI 行数，范围 1-6。
+  Rows: 6
+  # 基岩版表单顶部显示的文本。
+  Bedrock-Content:
+    - "&7请选择要购买的职业: "
+  # 基岩版职业列表里已拥有状态文本。
+  Bedrock-Status-Owned: "&a已拥有"
+  # 基岩版职业列表里未拥有状态文本。
+  Bedrock-Status-Unowned: "&7未拥有"
+  # 基岩版职业详情页购买按钮文本。
+  Bedrock-Buy-Button: "&a点击购买"
+  # 基岩版职业选择详情页选择按钮文本。
+  Bedrock-Select-Button: "&a选择该职业"
+  # 基岩版职业选择表单标题；留空则使用 Title。
+  Bedrock-Select-Title: "&2职业选择"
+  # 基岩版职业详情页返回按钮文本。
+  Bedrock-Back-Button: "&c返回"
+  # 购买成功提示。
+  Bought-Message: "&a你成功购买了职业 &f%kit_name%&a！"
+  # 已拥有职业提示。
+  Already-Owned-Message: "&e你已经拥有职业 &f%kit_name%&e"
+  # Vault 或经济插件缺失时的提示。
+  Vault-Missing-Message: "&c未找到 Vault 或经济插件，无法购买职业"
+  # 游戏币不足提示。
+  Not-Enough-Money-Message: "&c你的游戏币不足"
+  # 职业未启用或不存在时提示。
+  Kit-Unavailable-Message: "&c该职业当前不可购买"
+  # 购买失败时提示。
+  Purchase-Failed-Message: "&c购买失败，请稍后再试"
+  # 购买按钮/物品里已拥有状态文本。
+  Status-Owned: "&a已拥有"
+  # 购买按钮/物品里可购买状态文本。
+  Status-Available: "&e可购买"
+  # 购买按钮/物品里游戏币不足状态文本。
+  Status-No-Money: "&c你的游戏币不足"
+
+# 每个节点名必须对应 kits 文件夹里的职业文件名。
+# Placeholders: %kit_key%, %kit_name%, %price%, %price_raw%, %balance%, %status%, %description%
+Kits:
+  warrior:
+    # 是否在购买菜单里显示。
+    Enabled: false
+    # 价格，0 表示免费；默认职业通常不需要购买。
+    Price: 0
+    # Java GUI 格子位置，0-53；不写或为 -1 时自动排布。
+    Slot: 0
+    # 菜单显示名；留空则使用职业自身 name。
+    Display-Name: ""
+    # Java GUI 图标材质；留空则使用职业自身 display_item。
+    Material: ""
+    # Java GUI 与基岩表单按钮描述。
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  archer:
+    Enabled: true
+    Price: 8000
+    Slot: 10
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  blasting:
+    Enabled: true
+    Price: 8000
+    Slot: 11
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  blocker:
+    Enabled: true
+    Price: 5000
+    Slot: 12
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  golem_friend:
+    Enabled: true
+    Price: 12000
+    Slot: 13
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  hardcore:
+    Enabled: true
+    Price: 12000
+    Slot: 14
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  healer:
+    Enabled: true
+    Price: 8000
+    Slot: 15
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  heavy_tank:
+    Enabled: true
+    Price: 8000
+    Slot: 16
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  lightning:
+    Enabled: true
+    Price: 12000
+    Slot: 19
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  looter:
+    Enabled: true
+    Price: 12000
+    Slot: 20
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  puncher:
+    Enabled: true
+    Price: 8000
+    Slot: 21
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  terminator:
+    Enabled: true
+    Price: 12000
+    Slot: 22
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  wizard:
+    Enabled: true
+    Price: 8000
+    Slot: 23
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"
+  zombie_teleporter:
+    Enabled: true
+    Price: 5000
+    Slot: 24
+    Display-Name: ""
+    Material: ""
+    Lore:
+      - "&7价格: &b%price% 游戏币"
+      - "&7状态: %status%"
+      - ""
+      - "%description%"
+      - ""
+      - "&e点击购买"

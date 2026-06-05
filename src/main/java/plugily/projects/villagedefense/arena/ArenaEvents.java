@@ -190,6 +190,9 @@ public class ArenaEvents extends PluginArenaEvents {
         if (target instanceof Villager villager) {
             return arena.getVillagers().contains(villager);
         }
+        if (target instanceof IronGolem ironGolem) {
+            return arena.getIronGolems().contains(ironGolem);
+        }
         if (target instanceof Player player) {
             return arena.getPlayersLeft().contains(player);
         }
@@ -525,6 +528,7 @@ public class ArenaEvents extends PluginArenaEvents {
             return;
         }
         Player player = e.getPlayer();
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> arena.applyRottenFleshHealthBonus(player), 1L);
         player.setAllowFlight(true);
         player.setFlying(true);
         IUser user = plugin.getUserManager().getUser(player);

@@ -103,7 +103,7 @@ public class CustomCreatureEvents implements Listener {
                         event.getDrops().add(itemStack);
                     }
                     event.getDrops().add(new ItemStack(XMaterial.ROTTEN_FLESH.get(), 5));
-                    event.setDroppedExp(5);
+                    event.setDroppedExp(Math.max(0, plugin.getConfig().getInt("Creatures.Default-Exp-Drop", 5)));
 
                     arena.removeEnemy(entity);
                     arena.changeArenaOptionBy("TOTAL_KILLED_ZOMBIES", 1);

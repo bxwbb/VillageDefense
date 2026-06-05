@@ -25,12 +25,15 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.StructureModifier;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import plugily.projects.villagedefense.Main;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
@@ -78,14 +81,16 @@ public class RideableCreatureEvents {
   private void handleSteer(PacketEvent event, Entity vehicle) {
     Player player = event.getPlayer();
     PacketContainer packet = event.getPacket();
-    //https://wiki.vg/Protocol#Player_Input
-    float sideways = packet.getFloat().read(0);
-    float forward = packet.getFloat().read(1);
-    boolean jump = packet.getBooleans().read(0);
-    boolean unmount = packet.getBooleans().read(1);
-    if(unmount) {
+    Optional<SteerInput> steerInputOptional = readSteerInput(packet);
+    if(!steerInputOptional.isPresent()) {
       return;
     }
+    SteerInput steerInput = steerInputOptional.get();
+    if(steerInput.unmount) {
+      return;
+    }
+    float sideways = steerInput.sideways;
+    float forward = steerInput.forward;
     Location location = player.getLocation();
     double radians = Math.toRadians(location.getYaw());
     double x = -forward * Math.sin(radians) + sideways * Math.cos(radians);
@@ -98,13 +103,111 @@ public class RideableCreatureEvents {
     if(!Double.isFinite(velocity.getZ())) {
       velocity.setZ(0);
     }
-    if(jump && vehicle.isOnGround()) {
+    if(steerInput.jump && vehicle.isOnGround()) {
       velocity.setY(0.5);
     }
     try {
       velocity.checkFinite();
       vehicle.setVelocity(velocity);
     } catch(Exception ignored) {
+    }
+  }
+
+  private Optional<SteerInput> readSteerInput(PacketContainer packet) {
+    // Older protocol versions expose sideways/forward as floats and jump/unmount as booleans.
+    StructureModifier<Float> floats = packet.getFloat();
+    StructureModifier<Boolean> booleans = packet.getBooleans();
+    if(floats.size() >= 2 && booleans.size() >= 2) {
+      return Optional.of(new SteerInput(
+          floats.read(0),
+          floats.read(1),
+          booleans.read(0),
+          booleans.read(1)
+      ));
+    }
+
+    // Newer protocol versions wrap movement flags in a single Input object.
+    Object input = packet.getModifier().readSafely(0);
+    if(input == null) {
+      return Optional.empty();
+    }
+    return readModernInput(input);
+  }
+
+  private Optional<SteerInput> readModernInput(Object input) {
+    Boolean forward = readBoolean(input, "forward");
+    Boolean backward = readBoolean(input, "backward");
+    Boolean left = readBoolean(input, "left");
+    Boolean right = readBoolean(input, "right");
+    Boolean jump = readBoolean(input, "jump");
+    Boolean shift = readBoolean(input, "shift");
+
+    if(forward == null && backward == null && left == null && right == null && jump == null && shift == null) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new SteerInput(
+        booleanValue(left) - booleanValue(right),
+        booleanValue(forward) - booleanValue(backward),
+        Boolean.TRUE.equals(jump),
+        Boolean.TRUE.equals(shift)
+    ));
+  }
+
+  private Boolean readBoolean(Object target, String name) {
+    Boolean methodValue = readBooleanMethod(target, name);
+    if(methodValue != null) {
+      return methodValue;
+    }
+    return readBooleanField(target, name);
+  }
+
+  private Boolean readBooleanMethod(Object target, String name) {
+    Class<?> type = target.getClass();
+    while(type != null) {
+      try {
+        Method method = type.getDeclaredMethod(name);
+        method.setAccessible(true);
+        Object value = method.invoke(target);
+        return value instanceof Boolean ? (Boolean) value : null;
+      } catch(ReflectiveOperationException | RuntimeException ignored) {
+        type = type.getSuperclass();
+      }
+    }
+    return null;
+  }
+
+  private Boolean readBooleanField(Object target, String name) {
+    Class<?> type = target.getClass();
+    while(type != null) {
+      try {
+        Field field = type.getDeclaredField(name);
+        field.setAccessible(true);
+        Object value = field.get(target);
+        return value instanceof Boolean ? (Boolean) value : null;
+      } catch(ReflectiveOperationException | RuntimeException ignored) {
+        type = type.getSuperclass();
+      }
+    }
+    return null;
+  }
+
+  private int booleanValue(Boolean value) {
+    return Boolean.TRUE.equals(value) ? 1 : 0;
+  }
+
+  private static class SteerInput {
+
+    private final float sideways;
+    private final float forward;
+    private final boolean jump;
+    private final boolean unmount;
+
+    private SteerInput(float sideways, float forward, boolean jump, boolean unmount) {
+      this.sideways = sideways;
+      this.forward = forward;
+      this.jump = jump;
+      this.unmount = unmount;
     }
   }
 

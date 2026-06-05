@@ -315,11 +315,11 @@ public class PluginEvents implements Listener {
                 }
                 arena.changeArenaOptionBy("ROTTEN_FLESH_AMOUNT", itemStack.getAmount());
                 VersionUtils.sendParticles("CLOUD", arena.getPlayers(), location, 50, 2, 2, 2);
-                if (!arena.checkLevelUpRottenFlesh() || arena.getArenaOption("ROTTEN_FLESH_LEVEL") >= 30) {
+                if (arena.getArenaOption("ROTTEN_FLESH_LEVEL") >= 30 || !arena.checkLevelUpRottenFlesh()) {
                     return;
                 }
+                arena.applyRottenFleshHealthBonusToPlayers();
                 for (Player player : arena.getPlayers()) {
-                    VersionUtils.setMaxHealth(player, VersionUtils.getMaxHealth(player) + 2.0);
                     VersionUtils.sendParticles("HEART", arena.getPlayers(), location, 50, 2, 2, 2);
                     new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_ROTTEN_FLESH_LEVEL_UP").asKey().player(player).sendPlayer();
                 }

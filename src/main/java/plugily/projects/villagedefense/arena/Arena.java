@@ -29,6 +29,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
+import plugily.projects.minigamesbox.api.kit.IKit;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.misc.MiscUtils;
@@ -576,6 +577,36 @@ public class Arena extends PluginArena {
         }
 
         return false;
+    }
+
+    public void applyRottenFleshHealthBonus(Player player) {
+        if (player == null) {
+            return;
+        }
+        IKit kit = getPlugin().getUserManager().getUser(player).getKit();
+        double baseMaxHealth = kit == null ? VersionUtils.getMaxHealth(player) : getKitBaseMaxHealth(kit, VersionUtils.getMaxHealth(player));
+        double maxHealth = Math.max(1.0d, baseMaxHealth + getRottenFleshHealthBonus());
+        double currentHealth = Math.min(Math.max(1.0d, player.getHealth()), maxHealth);
+        VersionUtils.setMaxHealth(player, maxHealth);
+        player.setHealth(currentHealth);
+    }
+
+    public void applyRottenFleshHealthBonusToPlayers() {
+        for (Player player : getPlayers()) {
+            applyRottenFleshHealthBonus(player);
+        }
+    }
+
+    public double getRottenFleshHealthBonus() {
+        return Math.max(0, getArenaOption("ROTTEN_FLESH_LEVEL")) * 2.0d;
+    }
+
+    private double getKitBaseMaxHealth(IKit kit, double fallback) {
+        Object configured = kit.getOptionalConfiguration("Health");
+        if (configured instanceof org.bukkit.configuration.ConfigurationSection section) {
+            return Math.max(1.0d, section.getDouble("Max", fallback));
+        }
+        return Math.max(1.0d, fallback - getRottenFleshHealthBonus());
     }
 
     protected void addVillager(Villager villager) {

@@ -322,6 +322,8 @@ Creatures:
   Damage:
     Base: 2.0
     Per-Wave: 0.5
+  # 普通内置怪死亡掉落的经验球数量；自定义怪使用 creatures.yml 里的 exp
+  Default-Exp-Drop: 5
   # 每波怪物总生成数量配置
   # 按区间从上到下匹配，支持：
   #   '1-5': 20   代表第1到5波生成20个

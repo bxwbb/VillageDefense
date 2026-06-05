@@ -131,7 +131,7 @@ public class CreatureTargetManager {
 
     /**
      * 获取生物应该攻击的最近目标实体
-     * 敌人只允许选择本局村民或存活玩家，避免怪物互相误伤后转仇恨。
+     * 敌人只允许选择本局诱饵、村民、铁傀儡或存活玩家，避免怪物互相误伤后转仇恨。
      *
      * @param creature 要设置目标的生物
      * @return 最近的合法目标实体（LivingEntity），无目标返回null
@@ -149,6 +149,7 @@ public class CreatureTargetManager {
         // 存储候选目标实体列表
         List<Entity> entities = new ArrayList<>();
         entities.addAll(arena.getVillagers());
+        entities.addAll(arena.getIronGolems());
         entities.addAll(arena.getPlayersLeft());
 
         // 如果依然没有任何目标，返回null
@@ -189,6 +190,9 @@ public class CreatureTargetManager {
         if (target instanceof Villager villager) {
             return arena.getVillagers().contains(villager)
                     || (plugin.getSkillManager() != null && plugin.getSkillManager().isDecoy(arena, villager));
+        }
+        if (target instanceof IronGolem ironGolem) {
+            return arena.getIronGolems().contains(ironGolem);
         }
         if (target instanceof Player player) {
             return arena.getPlayersLeft().contains(player);

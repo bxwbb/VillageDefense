@@ -174,7 +174,7 @@ In-Game:
     Arena-Not-Configured: "%color_chat_issue%%plugin_prefix% 竞技场尚未配置！请联系服务器管理员！"
     Title: "20,30,20;%arena_name%;%arena_players_size%/%arena_max_players%"
   Death:
-    Tag: "&8已阵亡亡"
+    Tag: "&8已阵亡"
     Screen: "%color_chat_issue%你已阵亡！"
   Spectator:
     Blocked: "%color_chat_issue%%plugin_prefix% 此竞技场已禁用旁观者模式"
@@ -200,7 +200,7 @@ In-Game:
   Messages:
     Join: "%plugin_prefix% %player% 加入了游戏 (%arena_players_size%/%arena_max_players%)！"
     Leave: "%plugin_prefix% %player% 离开了游戏 (%arena_players_size%/%arena_max_players%)！"
-    Death: "%plugin_prefix% %player% 阵亡亡了！"
+    Death: "%plugin_prefix% %player% 阵亡了！"
     Lobby:
       Start-In: "%plugin_prefix% 游戏将在 %arena_time% 秒后开始！"
       Waiting-For-Players: "%plugin_prefix% 等待玩家加入... 至少需要 %arena_min_players% 名玩家才能开始。"
@@ -424,7 +424,7 @@ Upgrade-Menu:
       Description: "&3将群体意识升级至等级 &8%tier% ▲&3!;&3从 &8%from% &8范围内的每只狼造成的伤害倍率&3提升到 &8%to%;&3攻击狼附近3格内每多一只狼，&3其造成的伤害越高;&3升级花费: &8%cost%;;&8点击购买"
     Final-Defense:
       Name: "&3&l最终防御"
-      Description: "&3将最终防御升级至等级 &8%tier% ▲&3!;&3爆炸半径从 &8%from% &3提升到 &8%to%;&3铁傀儡阵亡亡后会爆炸，击杀附近的;&3僵尸并眩晕所有存活的僵尸;&3升级花费: &8%cost%;;&8点击购买"
+      Description: "&3将最终防御升级至等级 &8%tier% ▲&3!;&3爆炸半径从 &8%from% &3提升到 &8%to%;&3铁傀儡阵亡后会爆炸，击杀附近的;&3僵尸并眩晕所有存活的僵尸;&3升级花费: &8%cost%;;&8点击购买"
 
 
 #
@@ -455,7 +455,7 @@ Leaderboard:
     Orbs: "能量球 ▸ %number%"
     Highest-Wave: "最高波次 ▸ %number%"
     Kills: "击杀僵尸数 ▸ %number%"
-    Deaths: "阵亡亡次数 ▸ %number%"
+    Deaths: "阵亡次数 ▸ %number%"
     Next-Level-Exp: "升至下级所需经验 ▸ %number%"
   Invalid-Name: "%color_chat_issue%统计项名称无效！请输入: %value%"
   Unknown-Player: "%color_chat_issue%未知玩家"
