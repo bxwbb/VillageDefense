@@ -20,8 +20,10 @@ package plugily.projects.villagedefense.kits.skills;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
@@ -78,6 +80,7 @@ public class SkillManager implements Listener {
 
     public static final String DECOY_METADATA = "VD_SKILL_DECOY";
     private static final String TNT_METADATA = "VD_SKILL_TNT";
+    private static final Particle.DustOptions WHITE_BLADE_DUST = new Particle.DustOptions(Color.WHITE, 1.0F);
     private static final String TNT_ARENA_METADATA = "VD_SKILL_TNT_ARENA";
     private static final long GAME_START_CAST_DELAY_MILLIS = 2000L;
 
@@ -550,10 +553,22 @@ public class SkillManager implements Listener {
                     .add(right.clone().multiply(side))
                     .add(forward.clone().multiply(curve));
             points.add(particle);
-            VersionUtils.sendParticles("FIREWORKS_SPARK", arena.getPlayers(), particle, 1, 0, 0, 0);
+            sendWhiteBladeDust(arena.getPlayers(), particle, 1);
         }
-        VersionUtils.sendParticles("SWEEP_ATTACK", arena.getPlayers(), center, 1, 0, 0, 0);
+        sendWhiteBladeDust(arena.getPlayers(), center, 3);
         return points;
+    }
+
+    private void sendWhiteBladeDust(Collection<Player> viewers, Location location, int count) {
+        if (location == null || location.getWorld() == null) {
+            return;
+        }
+        for (Player viewer : viewers) {
+            if (viewer == null || !viewer.isOnline() || !viewer.getWorld().equals(location.getWorld())) {
+                continue;
+            }
+            viewer.spawnParticle(Particle.DUST, location, count, 0.02d, 0.02d, 0.02d, 0.0d, WHITE_BLADE_DUST);
+        }
     }
 
     private boolean isNearAnyPoint(LivingEntity enemy, List<Location> points, double radius) {

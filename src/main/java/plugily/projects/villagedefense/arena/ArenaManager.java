@@ -79,6 +79,7 @@ public class ArenaManager extends PluginArenaManager {
     @Override
     public void leaveAttempt(@NotNull Player player, @NotNull IPluginArena arena) {
         Arena gameArena = (Arena) arena;
+        gameArena.clearPendingTimedRespawn(player);
         gameArena.hideBossBars(player);
         if (plugin.getSkillManager() != null) {
             plugin.getSkillManager().clearPlayerState(player);
@@ -104,11 +105,13 @@ public class ArenaManager extends PluginArenaManager {
             vehicle.eject();
         }
         super.leaveAttempt(player, arena);
+        publishNetworkRooms();
     }
 
     @Override
     public void stopGame(boolean quickStop, @NotNull IPluginArena arena) {
         Arena gameArena = ((Arena) arena);
+        gameArena.clearPendingTimedRespawns();
         int wave = gameArena.getWave();
         for (Player player : arena.getPlayers()) {
             if (plugin.getSkillManager() != null) {
@@ -144,6 +147,7 @@ public class ArenaManager extends PluginArenaManager {
             }
         }
         super.stopGame(quickStop, arena);
+        publishNetworkRooms();
     }
 
     /**
@@ -442,6 +446,12 @@ public class ArenaManager extends PluginArenaManager {
             return Integer.parseInt(value);
         } catch (NumberFormatException ignored) {
             return fallback;
+        }
+    }
+
+    private void publishNetworkRooms() {
+        if (plugin.getNetworkRoomManager() != null) {
+            plugin.getNetworkRoomManager().requestRoomPublish(2L);
         }
     }
 

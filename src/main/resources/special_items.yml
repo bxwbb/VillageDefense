@@ -15,7 +15,7 @@ Kit-Menu:
   permission: ""
   execute:
     - ""
-  displayname: "&b&l职业菜单 &7(右键使用)"
+  displayname: "&b&l职业菜单"
   lore:
     - "&7右键点击选择游戏职业"
   material: NETHER_STAR
@@ -30,7 +30,7 @@ Lobby-Leave:
   permission: ""
   execute:
     - ""
-  displayname: "&c&l返回大厅 &7(右键使用)"
+  displayname: "&c&l返回大厅"
   lore:
     - "&7右键离开小游戏返回大厅"
   material: BED
@@ -45,7 +45,7 @@ Spectator-Leave:
   permission: ""
   execute:
     - ""
-  displayname: "&c&l退出游戏 &7(右键使用)"
+  displayname: "&c&l退出游戏"
   lore:
     - "&7右键离开本局游戏返回大厅"
   material: BED
@@ -59,7 +59,7 @@ Player-List:
   permission: ""
   execute:
     - ""
-  displayname: "&a&l存活玩家 &7(右键使用)"
+  displayname: "&a&l存活玩家"
   lore:
     - "&7右键查看当前存活玩家列表"
   material: PLAYER_HEAD
@@ -73,7 +73,7 @@ Spectator-Settings:
   permission: ""
   execute:
     - ""
-  displayname: "&b&l旁观设置 &7(右键使用)"
+  displayname: "&b&l旁观设置"
   lore:
     - "&7右键调整旁观者相关设置"
   material: COMPASS
@@ -87,7 +87,7 @@ Forcestart:
   permission: "plugily.projects.forcestart"
   execute:
     - ""
-  displayname: "&c&l手动开局 &7(右键使用)"
+  displayname: "&c&l手动开局"
   lore:
     - "&7使用需要拥有以下权限"
     - "&7plugily.projects.forcestart"
@@ -103,7 +103,7 @@ Arena-Selector:
   permission: ""
   execute:
     - "p:vd arenas"
-  displayname: "&c&l竞技场选择 &7(右键使用)"
+  displayname: "&c&l竞技场选择"
   lore:
     - "&7右键查看所有可用竞技场"
   material: CHEST
@@ -118,7 +118,7 @@ Stats:
   permission: ""
   execute:
     - "p:vd stats"
-  displayname: "&c&l个人战绩 &7(右键使用)"
+  displayname: "&c&l个人战绩"
   lore:
     - "&7右键查看自己的游戏统计数据"
   material: PLAYER_HEAD
@@ -133,7 +133,7 @@ Back-To-Hub:
   permission: ""
   execute:
     - "p:hub"
-  displayname: "&c&l返回主大厅 &7(右键使用)"
+  displayname: "&c&l返回大厅"
   lore:
     - "&7右键传送回服务器大厅"
   material: Bed

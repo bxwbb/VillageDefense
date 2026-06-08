@@ -9,7 +9,7 @@ description:
   - ""
   - "&6专属技能："
   - "&7获得 &b抗性等级3"
-  - "&b持续时间: &f20s &8| &e冷却时间: &f100s"
+  - "&b持续时间: &f20s &8| &e冷却时间: &f90s"
   - "&8右键释放"
 enabled: true
 display_item:

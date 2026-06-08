@@ -18,16 +18,13 @@
 
 package plugily.projects.villagedefense.commands.arguments.admin;
 
-import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
 import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.commands.arguments.data.CommandArgument;
 import plugily.projects.minigamesbox.classic.commands.arguments.data.LabelData;
 import plugily.projects.minigamesbox.classic.commands.arguments.data.LabeledCommandArgument;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
-import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.arena.ArenaUtils;
 import plugily.projects.villagedefense.commands.arguments.ArgumentsRegistry;
@@ -76,20 +73,7 @@ public class RespawnArgument {
         if(!user.isSpectator()) {
           return;
         }
-        target.setGameMode(GameMode.SURVIVAL);
-        target.removePotionEffect(PotionEffectType.NIGHT_VISION);
-        target.removePotionEffect(PotionEffectType.SPEED);
-        //the default fly speed
-        target.setFlySpeed(0.1f);
-        user.setSpectator(false);
-        VersionUtils.teleport(target, arena.getStartLocation());
-        target.setFlying(false);
-        target.setAllowFlight(false);
-        ArenaUtils.showPlayer(target, arena);
-        target.getInventory().clear();
-        user.getKit().giveKitItems(target);
-        arena.applyRottenFleshHealthBonus(target);
-        new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWNED").asKey().player(player).arena(arena).send(target);
+        ArenaUtils.respawnPlayer(arena, target, !arena.hasPendingTimedRespawn(target));
       }
     });
   }

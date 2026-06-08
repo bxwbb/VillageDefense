@@ -27,15 +27,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.api.user.IUser;
 import plugily.projects.minigamesbox.classic.arena.PluginArenaEvents;
-import plugily.projects.minigamesbox.classic.handlers.items.SpecialItem;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.misc.complement.ComplementAccessor;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
@@ -62,6 +59,7 @@ import java.util.Random;
  */
 public class ArenaEvents extends PluginArenaEvents {
 
+    private static final int PLAYER_RESPAWN_SECONDS = 40;
     private final Main plugin;
 
     public ArenaEvents(Main plugin) {
@@ -441,17 +439,11 @@ public class ArenaEvents extends PluginArenaEvents {
         }
 
         final Player player = e.getEntity();
-        PlayerInventory inventory = player.getInventory();
-
-        // 手动掉落背包，再清空 Bukkit 默认掉落，避免死亡和旁观切换过程中重复物品。
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item != null && Material.AIR != item.getType() && item.getType().isItem()) {
-                player.getWorld().dropItemNaturally(player.getLocation(), item);
-            }
-        }
 
         plugin.getRewardsHandler().performReward(player, arena, plugin.getRewardsHandler().getRewardType("PLAYER_DEATH"));
         ComplementAccessor.getComplement().setDeathMessage(e, "");
+        e.setKeepInventory(true);
+        e.setKeepLevel(true);
         e.getDrops().clear();
         e.setDroppedExp(0);
         plugin.getHolidayManager().applyHolidayDeathEffects(player);
@@ -467,7 +459,6 @@ public class ArenaEvents extends PluginArenaEvents {
 
             if (arena.getArenaState() == IArenaState.ENDING || arena.getArenaState() == IArenaState.RESTARTING) {
                 // 结束/重启阶段只做清理和传送，避免玩家卡在竞技场世界。
-                inventory.clear();
                 player.setFlying(false);
                 player.setAllowFlight(false);
                 plugin.getUserManager().getUser(player).setStatistic("ORBS", 0);
@@ -478,8 +469,9 @@ public class ArenaEvents extends PluginArenaEvents {
             IUser user = plugin.getUserManager().getUser(player);
             boolean shouldModifyOrbs = !user.isSpectator();
 
-            // 战斗阶段死亡后成为本波旁观者，是否下一波复活由配置控制。
+            // 战斗阶段死亡后临时旁观，40 秒后自动复活，背包由 keepInventory 保留。
             plugin.getUserManager().addStat(user, plugin.getStatsStorage().getStatisticType("DEATHS"));
+            arena.markPendingTimedRespawn(player);
             VersionUtils.teleport(player, arena.getStartLocation());
             user.setSpectator(true);
             player.setGameMode(GameMode.SURVIVAL);
@@ -491,33 +483,39 @@ public class ArenaEvents extends PluginArenaEvents {
             ArenaUtils.hidePlayer(player, arena);
             player.setAllowFlight(true);
             player.setFlying(true);
-            inventory.clear();
             VersionUtils.sendTitle(player, new MessageBuilder("IN_GAME_DEATH_SCREEN").asKey().build(), 0, 5 * 20, 0);
-            sendSpectatorActionBar(user, arena);
+            sendTimedRespawnActionBar(user, arena, player);
             new MessageBuilder(MessageBuilder.ActionType.DEATH).arena(arena).player(player).sendArena();
-
-            plugin.getSpecialItemManager().addSpecialItemsOfStage(player, SpecialItem.DisplayStage.SPECTATOR);
 
             arena.getCreatureTargetManager().unTargetPlayerFromZombies(player, arena);
         });
     }
 
-    private void sendSpectatorActionBar(IUser user, Arena arena) {
+    private void sendTimedRespawnActionBar(IUser user, Arena arena, Player player) {
         new BukkitRunnable() {
+            private int secondsLeft = PLAYER_RESPAWN_SECONDS;
+
             @Override
             public void run() {
-                if (arena.getArenaState() == IArenaState.ENDING || !user.isSpectator()) {
+                if (arena.getArenaState() == IArenaState.ENDING
+                        || arena.getArenaState() == IArenaState.RESTARTING
+                        || !arena.hasPendingTimedRespawn(player)
+                        || !user.isSpectator()
+                        || !player.isOnline()
+                        || plugin.getArenaRegistry().getArena(player) != arena) {
                     cancel();
                     return;
                 }
-                Player player = user.getPlayer();
-                if (player == null) {
+
+                if (secondsLeft <= 0) {
+                    ArenaUtils.respawnPlayer(arena, player, false);
                     cancel();
                 } else {
-                    VersionUtils.sendActionBar(player, new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWN_ON_NEXT").asKey().player(player).arena(arena).build());
+                    VersionUtils.sendActionBar(player, "§e将在 §f" + secondsLeft + " §e秒后复活");
+                    secondsLeft--;
                 }
             }
-        }.runTaskTimer(plugin, 30, 30);
+        }.runTaskTimer(plugin, 0L, 20L);
     }
 
 
@@ -528,19 +526,20 @@ public class ArenaEvents extends PluginArenaEvents {
             return;
         }
         Player player = e.getPlayer();
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> arena.applyRottenFleshHealthBonus(player), 1L);
-        player.setAllowFlight(true);
-        player.setFlying(true);
-        IUser user = plugin.getUserManager().getUser(player);
-        if (!user.isSpectator()) {
-            user.setSpectator(true);
+        e.setRespawnLocation(arena.getStartLocation());
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            arena.applyRottenFleshHealthBonus(player);
+            if (!arena.hasPendingTimedRespawn(player)) {
+                return;
+            }
+            ArenaUtils.hidePlayer(player, arena);
+            player.setAllowFlight(true);
+            player.setFlying(true);
             player.setGameMode(GameMode.SURVIVAL);
             player.removePotionEffect(PotionEffectType.NIGHT_VISION);
             player.removePotionEffect(PotionEffectType.SPEED);
-
-            modifyUserOrbs(user);
-        }
-        e.setRespawnLocation(arena.getStartLocation());
+            arena.getCreatureTargetManager().unTargetPlayerFromZombies(player, arena);
+        }, 1L);
     }
 
     private void modifyUserOrbs(IUser user) {

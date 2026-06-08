@@ -58,8 +58,8 @@ public class InGameState extends PluginInGameState {
         // 内部有计数器，不是每 tick 全量扫描实体。
         pluginArena.getEnemySpawnManager().spawnGlitchCheck();
 
-        // 村民全灭或存活玩家全灭即结束。ENDING 状态下避免重复 stopGame。
-        if (pluginArena.getVillagers().isEmpty() || arena.getPlayersLeft().isEmpty() && arena.getArenaState() != IArenaState.ENDING) {
+        // 失败条件只看村民全灭；玩家全死会等待定时复活，不直接判负。
+        if (pluginArena.getVillagers().isEmpty() && arena.getArenaState() != IArenaState.ENDING) {
             getPlugin().getArenaManager().stopGame(false, arena);
             return;
         }

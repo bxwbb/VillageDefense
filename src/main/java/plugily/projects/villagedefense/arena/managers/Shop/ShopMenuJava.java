@@ -88,16 +88,7 @@ public class ShopMenuJava extends ShopMenu {
         gui.addOpenHandler(inventoryOpenEvent -> {
             Player player = (Player) inventoryOpenEvent.getPlayer();
             for (Merchandise merchandise : ShopManager.merchandises) {
-                if (!getShopManager().playerData.containsKey(player)) {
-                    getShopManager().playerData.put(player, new HashMap<>());
-                }
-                if (!getShopManager().playerData.get(player).containsKey(merchandise)) {
-                    boolean allShow = false;
-                    if (merchandise instanceof UpgradableMerchandise upgradableMerchandise)
-                        allShow = upgradableMerchandise.isAllShow();
-                    getShopManager().playerData.get(player).put(merchandise, new ShopManager.DataInfo(allShow ? merchandise.MAX_LEVEL : 1, allShow ? merchandise.MAX_LEVEL : 1));
-                }
-                ShopManager.DataInfo dataInfo = getShopManager().playerData.get(player).get(merchandise);
+                ShopManager.DataInfo dataInfo = getShopManager().getOrCreatePlayerData(player, merchandise);
                 gui.setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo), inventoryClickEvent -> {
                     Player clickPlayer = (Player) inventoryClickEvent.getWhoClicked();
                     if (inventoryClickEvent.getClick().isShiftClick()) {
@@ -171,16 +162,7 @@ public class ShopMenuJava extends ShopMenu {
             gui.addOpenHandler(inventoryOpenEvent -> {
                 Player inventoryOpenEventPlayer = (Player) inventoryOpenEvent.getPlayer();
                 for (Merchandise merchandise : ShopManager.merchandises) {
-                    if (!getShopManager().playerData.containsKey(inventoryOpenEventPlayer)) {
-                        getShopManager().playerData.put(inventoryOpenEventPlayer, new HashMap<>());
-                    }
-                    if (!getShopManager().playerData.get(inventoryOpenEventPlayer).containsKey(merchandise)) {
-                        boolean allShow = false;
-                        if (merchandise instanceof UpgradableMerchandise upgradableMerchandise)
-                            allShow = upgradableMerchandise.isAllShow();
-                        getShopManager().playerData.get(inventoryOpenEventPlayer).put(merchandise, new ShopManager.DataInfo(allShow ? merchandise.MAX_LEVEL : 1, allShow ? merchandise.MAX_LEVEL : 1));
-                    }
-                    ShopManager.DataInfo dataInfo = getShopManager().playerData.get(inventoryOpenEventPlayer).get(merchandise);
+                    ShopManager.DataInfo dataInfo = getShopManager().getOrCreatePlayerData(inventoryOpenEventPlayer, merchandise);
                     gui.setItem(merchandise.SLOT, getLevelItemWithLore(merchandise, dataInfo.level, dataInfo), inventoryClickEvent -> {
                         Player clickPlayer = (Player) inventoryClickEvent.getWhoClicked();
                         if (inventoryClickEvent.getClick().isShiftClick()) {

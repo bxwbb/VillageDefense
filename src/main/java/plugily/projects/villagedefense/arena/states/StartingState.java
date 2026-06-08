@@ -52,6 +52,8 @@ public class StartingState extends PluginStartingState {
             pluginArena.spawnVillagers();
 
             pluginArena.getShopManager().resetPlayerData();
+            pluginArena.resetRottenFleshHealthState();
+            pluginArena.clearPendingTimedRespawns();
 
             // 设置村民血量为200并给恢复一
             pluginArena.getVillagers().forEach(villager -> {

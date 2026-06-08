@@ -468,6 +468,25 @@ public class ShopManager {
         player.updateInventory();
     }
 
+    public DataInfo getOrCreatePlayerData(Player player, Merchandise merchandise) {
+        if (!this.playerData.containsKey(player)) {
+            this.playerData.put(player, new HashMap<>());
+        }
+        Map<Merchandise, DataInfo> merchandiseData = this.playerData.get(player);
+        if (!merchandiseData.containsKey(merchandise)) {
+            boolean allShow = merchandise instanceof UpgradableMerchandise upgradableMerchandise && upgradableMerchandise.isAllShow();
+            int initialLevel = allShow ? merchandise.MAX_LEVEL : 1;
+            merchandiseData.put(merchandise, new ShopManager.DataInfo(initialLevel, initialLevel));
+        }
+        DataInfo dataInfo = merchandiseData.get(merchandise);
+        if (merchandise instanceof UpgradableMerchandise upgradableMerchandise && upgradableMerchandise.isAllShow()
+                && dataInfo.maxLevel < merchandise.MAX_LEVEL) {
+            dataInfo.maxLevel = merchandise.MAX_LEVEL;
+            dataInfo.level = Math.max(1, Math.min(dataInfo.level, dataInfo.maxLevel));
+        }
+        return dataInfo;
+    }
+
     boolean isCurrentMenu(Player player, ShopMenu menu) {
         return player != null
                 && menu != null
@@ -632,13 +651,8 @@ public class ShopManager {
     }
 
     public void playerBuy(Player player, Merchandise merchandise, int level) {
-        if (!this.playerData.containsKey(player)) {
-            this.playerData.put(player, new HashMap<>());
-        }
-        if (!this.playerData.get(player).containsKey(merchandise)) {
-            this.playerData.get(player).put(merchandise, new ShopManager.DataInfo(1, 1));
-        }
-        ShopManager.DataInfo dataInfo = this.playerData.get(player).get(merchandise);
+        ShopManager.DataInfo dataInfo = getOrCreatePlayerData(player, merchandise);
+        level = Math.max(1, Math.min(level, dataInfo.maxLevel));
         int cost = merchandise.getLevelPrice(level);
         IUser user = this.plugin.getUserManager().getUser(player);
         int orbs = user.getStatistic("ORBS");

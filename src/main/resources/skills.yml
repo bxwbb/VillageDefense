@@ -29,15 +29,15 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&f&l剑刃"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
     # 剑刃最大飞行距离，单位：格。
     Max-Distance: 20
     # 剑刃移动速度，单位：格/秒。
     Speed-Per-Second: 7
     # 剑刃横向长度，单位：格；3 = 约 3 格宽的弧形剑气。
-    Width: 3
-    # 命中后造成目标最大生命值百分比伤害，20 = 25%。
-    Damage-Percent: 25
+    Width: 5
+    # 命中后造成目标最大生命值百分比伤害，40%。
+    Damage-Percent: 40
 
   # 爆破：在玩家面前生成 TNT。
   explosion:
@@ -67,11 +67,11 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&7&l石砖墙"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
     # 石砖墙持续时间，单位：秒。
     Duration: 20
     # 石砖墙宽度，单位：格。
-    Width: 9
+    Width: 11
     # 石砖墙高度，单位：格。
     Height: 3
     # 石砖墙生成在玩家前方的距离，单位：格。
@@ -86,7 +86,7 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&e&l诱饵"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
     # 诱饵存在时间，单位：秒。
     Duration: 15
     # 诱饵生命值。
@@ -103,7 +103,7 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&a&l治疗"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
     # 治疗持续时间，单位：秒。
     Duration: 20
     # 每秒恢复生命值，3 = 1.5 颗心。
@@ -118,7 +118,7 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&b&l抗性提升"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
     # 抗性持续时间，单位：秒。
     Duration: 20
     # 药水效果等级，2 = 抗性 II。
@@ -132,8 +132,8 @@ Skills:
     Type: LIGHTNING
     # 技能显示名称；被动技能不会显示 BossBar。
     Display-Name: "&e&l雷电"
-    # 触发概率，10 = 10%。
-    Chance-Percent: 10
+    # 触发概率 15%。
+    Chance-Percent: 15
     # 触发后额外造成目标最大生命值百分比伤害，10 = 15%。
     Damage-Percent: 15
 
@@ -146,15 +146,15 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&e&l击退"
     # 技能冷却时间，单位：秒。
-    Cooldown: 120
+    Cooldown: 90
     # 技能作用半径，单位：格。
     Radius: 6
     # 水平击退力度。
     Knockback-Strength: 2.5
     # 垂直击退力度。
     Knockback-Y: 0.5
-    # 造成目标最大生命值百分比伤害，10 = 20%。
-    Damage-Percent: 20
+    # 造成目标最大生命值百分比伤害 30%。
+    Damage-Percent: 30
 
   # 黑洞：召唤黑洞吸引怪物，并持续造成伤害。
   black_hole:
@@ -165,7 +165,7 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&5&l黑洞"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
     # 黑洞持续时间，单位：秒。
     Duration: 7
     # 黑洞吸引半径，单位：格。
@@ -175,8 +175,8 @@ Skills:
     # 黑洞释放后会沿玩家朝向缓慢前进，固定速度：每秒 2 格。
     # 黑洞吸引力度。
     Pull-Strength: 0.65
-    # 每秒造成目标最大生命值百分比伤害，8 = 8%。
-    Damage-Percent: 8
+    # 每秒造成目标最大生命值百分比伤害，10%。
+    Damage-Percent: 10
     # 黑洞刷新间隔，单位：tick；20 tick = 1 秒。
     Interval-Ticks: 5
     # 黑洞显示粒子名称。
@@ -213,7 +213,7 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&f&l铁傀儡"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
 
   # 粒子箭：向前连续释放蓝色粒子箭。
   particle_arrow:
@@ -224,7 +224,7 @@ Skills:
     # BossBar 显示的技能名称。
     Display-Name: "&b&l粒子箭"
     # 技能冷却时间，单位：秒。
-    Cooldown: 100
+    Cooldown: 90
     # 连续释放粒子箭数量。
     Count: 50
     # 每支粒子箭之间的间隔，单位：tick；20 tick = 1 秒。
@@ -233,7 +233,7 @@ Skills:
     Max-Distance: 20
     # 单支粒子箭飞行速度，单位：格/秒。
     Speed-Per-Second: 10
-    # 命中后造成目标最大生命值百分比伤害， 10%。
-    Damage-Percent: 10
+    # 命中后造成目标最大生命值百分比伤害， 15%。
+    Damage-Percent: 15
     # 粒子箭显示粒子名称。
     Particle: FLAME

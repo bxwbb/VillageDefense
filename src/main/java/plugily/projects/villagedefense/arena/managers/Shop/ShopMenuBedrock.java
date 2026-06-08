@@ -100,11 +100,8 @@ public class ShopMenuBedrock extends ShopMenu {
                 data.add(dataObject);
             }
             jsonObject.put("slot", merchandise.SLOT);
-            if (getShopManager().playerData.containsKey(player) && getShopManager().playerData.get(player).containsKey(merchandise)) {
-                jsonObject.put("maxLevel", getShopManager().playerData.get(player).get(merchandise).maxLevel - 1);
-            } else {
-                jsonObject.put("maxLevel", 0);
-            }
+            ShopManager.DataInfo dataInfo = getShopManager().getOrCreatePlayerData(player, merchandise);
+            jsonObject.put("maxLevel", dataInfo.maxLevel - 1);
             jsonObject.put("data", data);
             catArray.add(jsonObject);
             cat++;
@@ -143,11 +140,8 @@ public class ShopMenuBedrock extends ShopMenu {
                 data.add(dataObject);
             }
             jsonObject.put("slot", merchandise.SLOT);
-            if (getShopManager().playerData.containsKey(player) && getShopManager().playerData.get(player).containsKey(merchandise)) {
-                jsonObject.put("maxLevel", getShopManager().playerData.get(player).get(merchandise).maxLevel - 1);
-            } else {
-                jsonObject.put("maxLevel", 0);
-            }
+            ShopManager.DataInfo dataInfo = getShopManager().getOrCreatePlayerData(player, merchandise);
+            jsonObject.put("maxLevel", dataInfo.maxLevel - 1);
             jsonObject.put("data", data);
             catArray.add(jsonObject);
             cat++;

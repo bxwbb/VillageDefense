@@ -71,6 +71,9 @@ public class Arena extends PluginArena {
     private final List<Entity> spawnedEntities = new ArrayList<>();
     private final Set<String> spawnedBossKeys = new HashSet<>();
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
+    private final Map<UUID, Double> rottenFleshBaseMaxHealth = new HashMap<>();
+    private final Map<UUID, Double> rottenFleshAppliedBonus = new HashMap<>();
+    private final Set<UUID> pendingTimedRespawns = new HashSet<>();
     private MapRestorerManager mapRestorerManager;
     private WaveType waveType;
     private GameMode gameMode = GameMode.ENDLESS;
@@ -583,12 +586,13 @@ public class Arena extends PluginArena {
         if (player == null) {
             return;
         }
-        IKit kit = getPlugin().getUserManager().getUser(player).getKit();
-        double baseMaxHealth = kit == null ? VersionUtils.getMaxHealth(player) : getKitBaseMaxHealth(kit, VersionUtils.getMaxHealth(player));
-        double maxHealth = Math.max(1.0d, baseMaxHealth + getRottenFleshHealthBonus());
+        double healthBonus = getRottenFleshHealthBonus();
+        double baseMaxHealth = getOrCapturePlayerBaseMaxHealth(player);
+        double maxHealth = Math.max(1.0d, baseMaxHealth + healthBonus);
         double currentHealth = Math.min(Math.max(1.0d, player.getHealth()), maxHealth);
         VersionUtils.setMaxHealth(player, maxHealth);
         player.setHealth(currentHealth);
+        rottenFleshAppliedBonus.put(player.getUniqueId(), healthBonus);
     }
 
     public void applyRottenFleshHealthBonusToPlayers() {
@@ -601,12 +605,84 @@ public class Arena extends PluginArena {
         return Math.max(0, getArenaOption("ROTTEN_FLESH_LEVEL")) * 2.0d;
     }
 
+    public void resetRottenFleshHealthState() {
+        setArenaOption("ROTTEN_FLESH_LEVEL", 0);
+        setArenaOption("ROTTEN_FLESH_AMOUNT", 0);
+        rottenFleshBaseMaxHealth.clear();
+        rottenFleshAppliedBonus.clear();
+    }
+
+    public void markPendingTimedRespawn(Player player) {
+        if (player != null) {
+            pendingTimedRespawns.add(player.getUniqueId());
+        }
+    }
+
+    public boolean hasPendingTimedRespawn(Player player) {
+        return player != null && pendingTimedRespawns.contains(player.getUniqueId());
+    }
+
+    public void clearPendingTimedRespawn(Player player) {
+        if (player != null) {
+            pendingTimedRespawns.remove(player.getUniqueId());
+        }
+    }
+
+    public void clearPendingTimedRespawns() {
+        pendingTimedRespawns.clear();
+    }
+
+    private double getOrCapturePlayerBaseMaxHealth(Player player) {
+        UUID uuid = player.getUniqueId();
+        Double stored = rottenFleshBaseMaxHealth.get(uuid);
+        if (stored != null && stored > 0.0d) {
+            return stored;
+        }
+
+        IKit kit = getPlugin().getUserManager().getUser(player).getKit();
+        double currentMaxHealth = Math.max(1.0d, VersionUtils.getMaxHealth(player));
+        double previouslyAppliedBonus = rottenFleshAppliedBonus.getOrDefault(uuid, 0.0d);
+        double baseMaxHealth = getKitBaseMaxHealth(kit, Math.max(1.0d, currentMaxHealth - previouslyAppliedBonus));
+        rottenFleshBaseMaxHealth.put(uuid, baseMaxHealth);
+        return baseMaxHealth;
+    }
+
     private double getKitBaseMaxHealth(IKit kit, double fallback) {
+        if (kit == null) {
+            return Math.max(1.0d, fallback);
+        }
+
+        Double reflected = getKitMaxHealthField(kit);
+        if (reflected != null && reflected > 0.0d) {
+            return reflected;
+        }
+
         Object configured = kit.getOptionalConfiguration("Health");
-        if (configured instanceof org.bukkit.configuration.ConfigurationSection section) {
+        if (configured instanceof org.bukkit.configuration.ConfigurationSection) {
+            org.bukkit.configuration.ConfigurationSection section = (org.bukkit.configuration.ConfigurationSection) configured;
             return Math.max(1.0d, section.getDouble("Max", fallback));
         }
-        return Math.max(1.0d, fallback - getRottenFleshHealthBonus());
+        return Math.max(1.0d, fallback);
+    }
+
+    private Double getKitMaxHealthField(IKit kit) {
+        Class<?> type = kit.getClass();
+        while (type != null) {
+            try {
+                java.lang.reflect.Field field = type.getDeclaredField("maxHealth");
+                field.setAccessible(true);
+                Object value = field.get(kit);
+                if (value instanceof Number) {
+                    return ((Number) value).doubleValue();
+                }
+                return null;
+            } catch (NoSuchFieldException ignored) {
+                type = type.getSuperclass();
+            } catch (IllegalAccessException | RuntimeException ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 
     protected void addVillager(Villager villager) {

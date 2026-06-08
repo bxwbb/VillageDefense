@@ -48,10 +48,12 @@ public class ArenaUtils extends PluginArenaUtils {
 
     public static void bringDeathPlayersBack(Arena arena) {
         List<Player> left = arena.getPlayersLeft();
-        org.bukkit.Location startLoc = arena.getStartLocation();
 
         for (Player player : arena.getPlayers()) {
             if (left.contains(player)) {
+                continue;
+            }
+            if (arena.hasPendingTimedRespawn(player)) {
                 continue;
             }
 
@@ -60,30 +62,45 @@ public class ArenaUtils extends PluginArenaUtils {
                 continue;
             }
 
-            VillagePlayerRespawnEvent event = new VillagePlayerRespawnEvent(player, arena);
-            Bukkit.getPluginManager().callEvent(event);
-            if (event.isCancelled()) {
-                continue;
-            }
-
-            user.setSpectator(false);
-
-            VersionUtils.teleport(player, startLoc);
-            player.setFlying(false);
-            player.setAllowFlight(false);
-            //the default fly speed
-            player.setFlySpeed(0.1f);
-            player.setGameMode(GameMode.SURVIVAL);
-            player.removePotionEffect(PotionEffectType.NIGHT_VISION);
-            player.removePotionEffect(PotionEffectType.SPEED);
-            player.getInventory().clear();
-            ArenaUtils.showPlayer(player, arena);
-            user.getKit().giveKitItems(player);
-            arena.applyRottenFleshHealthBonus(player);
-            player.updateInventory();
-            arena.showBossBars(player);
-            new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWNED").asKey().player(player).arena(arena).sendPlayer();
+            respawnPlayer(arena, player, true);
         }
+    }
+
+    public static boolean respawnPlayer(Arena arena, Player player, boolean restoreKitItems) {
+        if (arena == null || player == null) {
+            return false;
+        }
+
+        IUser user = getPlugin().getUserManager().getUser(player);
+        if (user == null) {
+            return false;
+        }
+
+        VillagePlayerRespawnEvent event = new VillagePlayerRespawnEvent(player, arena);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return false;
+        }
+
+        arena.clearPendingTimedRespawn(player);
+        user.setSpectator(false);
+        VersionUtils.teleport(player, arena.getStartLocation());
+        player.setFlying(false);
+        player.setAllowFlight(false);
+        player.setFlySpeed(0.1f);
+        player.setGameMode(GameMode.SURVIVAL);
+        player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+        player.removePotionEffect(PotionEffectType.SPEED);
+        ArenaUtils.showPlayer(player, arena);
+        if (restoreKitItems) {
+            player.getInventory().clear();
+            user.getKit().giveKitItems(player);
+        }
+        arena.applyRottenFleshHealthBonus(player);
+        player.updateInventory();
+        arena.showBossBars(player);
+        new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_RESPAWNED").asKey().player(player).arena(arena).sendPlayer();
+        return true;
     }
 
     public static void removeSpawnedEnemies(Arena arena) {

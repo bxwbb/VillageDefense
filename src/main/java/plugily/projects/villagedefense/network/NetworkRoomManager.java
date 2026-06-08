@@ -9,10 +9,13 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
+import plugily.projects.minigamesbox.api.events.game.PlugilyGameStateChangeEvent;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +37,8 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
     private final Map<String, RoomSnapshot> localRooms = new ConcurrentHashMap<>();
     private final RedisRoomDirectory redisRoomDirectory;
     private final String configuredServerName;
+    private BukkitTask queuedPublishTask;
+    private long queuedPublishAt;
     private volatile String detectedServerName;
     private volatile boolean serverNameRequested;
 
@@ -48,7 +53,7 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
         Bukkit.getMessenger().registerIncomingPluginChannel(plugin, CHANNEL, this);
 
         long interval = 20L * Math.max(5, plugin.getConfig().getInt("Network.Rooms.Publish-Interval-Seconds", 10));
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::publishLocalRooms, 20L, interval);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::publishLocalRooms, 20L, interval);
     }
 
     public void shutdown() {
@@ -57,6 +62,10 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
             Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin, CHANNEL);
             Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin, CHANNEL, this);
         } catch (IllegalArgumentException ignored) {
+        }
+        if (queuedPublishTask != null) {
+            queuedPublishTask.cancel();
+            queuedPublishTask = null;
         }
         redisRoomDirectory.close();
     }
@@ -70,6 +79,7 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
         if (!isEnabled()) {
             return new ArrayList<>(localRooms.values());
         }
+        requestRoomPublish();
 
         Map<String, RoomSnapshot> merged = new LinkedHashMap<>();
         for (RoomSnapshot snapshot : redisRoomDirectory.loadAllRooms()) {
@@ -150,10 +160,51 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
         return isEnabled() && snapshot != null && !isLocalRoom(snapshot);
     }
 
+    public void requestRoomPublish() {
+        requestRoomPublish(1L);
+    }
+
+    public void requestRoomPublish(long delayTicks) {
+        if (!Bukkit.isPrimaryThread()) {
+            Bukkit.getScheduler().runTask(plugin, () -> requestRoomPublish(delayTicks));
+            return;
+        }
+        if (!isEnabled()) {
+            return;
+        }
+
+        long normalizedDelay = Math.max(0L, delayTicks);
+        long requestedAt = System.currentTimeMillis() + normalizedDelay * 50L;
+        if (queuedPublishTask != null && queuedPublishAt <= requestedAt) {
+            return;
+        }
+        if (queuedPublishTask != null) {
+            queuedPublishTask.cancel();
+        }
+
+        queuedPublishAt = requestedAt;
+        queuedPublishTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            queuedPublishTask = null;
+            queuedPublishAt = 0L;
+            publishLocalRooms();
+        }, normalizedDelay);
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         requestLocalServerName(event.getPlayer());
         Bukkit.getScheduler().runTaskLater(plugin, () -> handleJoinOnServer(event.getPlayer()), 20L);
+        requestRoomPublish(40L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        requestRoomPublish(20L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onGameStateChange(PlugilyGameStateChangeEvent event) {
+        requestRoomPublish(1L);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -225,7 +276,7 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
                 if (!serverName.isEmpty()) {
                     detectedServerName = serverName;
                     serverNameRequested = false;
-                    Bukkit.getScheduler().runTask(plugin, this::publishLocalRooms);
+                    requestRoomPublish(0L);
                 }
             }
         } catch (IOException ignored) {
@@ -233,6 +284,10 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
     }
 
     private void publishLocalRooms() {
+        if (!Bukkit.isPrimaryThread()) {
+            Bukkit.getScheduler().runTask(plugin, this::publishLocalRooms);
+            return;
+        }
         if (!isEnabled()) {
             return;
         }
@@ -241,9 +296,8 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
             return;
         }
         refreshLocalRoomsFromArenas();
-        for (RoomSnapshot snapshot : localRooms.values()) {
-            redisRoomDirectory.saveRoom(snapshot);
-        }
+        List<RoomSnapshot> snapshots = new ArrayList<>(localRooms.values());
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> snapshots.forEach(redisRoomDirectory::saveRoom));
     }
 
     private void joinBestRandomRoom(Player player, String mode) {
@@ -262,6 +316,7 @@ public class NetworkRoomManager implements Listener, PluginMessageListener {
             return;
         }
         plugin.getArenaManager().joinAttempt(player, arena);
+        requestRoomPublish(2L);
     }
 
     private void requestLocalServerName(Player player) {

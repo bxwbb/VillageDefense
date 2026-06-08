@@ -7,7 +7,7 @@ description:
   - ""
   - "&6专属技能："
   - "&7在当前位置生成一个铁傀儡帮助作战"
-  - "&e冷却时间: &f100s"
+  - "&e冷却时间: &f90s"
   - "&8右键释放"
 enabled: true
 display_item:
