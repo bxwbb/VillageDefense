@@ -223,8 +223,8 @@ public class NetherMobSummoner {
             int rnd = random.nextInt(100);
             SimpleEnemySpawner spawner;
 
-            if (wave < 50) {
-                spawner = (rnd < 60) ? blaze : witherSkeleton;
+            if (wave < 20) {
+                return;
             } else if (wave < 70) {
                 if (rnd < 40) spawner = blaze;
                 else if (rnd < 80) spawner = witherSkeleton;

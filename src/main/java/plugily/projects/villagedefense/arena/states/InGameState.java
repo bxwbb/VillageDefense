@@ -108,7 +108,7 @@ public class InGameState extends PluginInGameState {
                 arena.setArenaOption("ZOMBIES_TO_SPAWN", 0);
             }
             Iterator<LivingEntity> livingEntityIterator = pluginArena.getEnemies().iterator();
-            if (pluginArena.getWave() > 50) {
+            if (pluginArena.getWave() >= 20) {
                 Random random = new Random();
                 while (livingEntityIterator.hasNext()) {
                     LivingEntity livingEntity = livingEntityIterator.next();

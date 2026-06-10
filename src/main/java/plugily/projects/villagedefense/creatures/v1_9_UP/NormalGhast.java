@@ -50,7 +50,7 @@ public class NormalGhast implements SimpleEnemySpawner {
 
     @Override
     public int getMinWave() {
-        return 51;
+        return 20;
     }
 
     @Override
