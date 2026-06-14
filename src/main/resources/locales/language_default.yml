@@ -255,6 +255,7 @@ In-Game:
         Names: "Jagger,Kelsey,Kelton,Haylie,Harlow,Howard,Wulffric,Winfred,Ashley,Bailey,Beckett,Alfredo,Alfred,Adair,Edgar,ED,Eadwig,Edgaras,Buckley,Stanley,Nuffley,Mary,Jeffry,Rosaly,Elliot,Harry,Sam,Rosaline,Tom,Ivan,Kevin,Adam"
       Wave:
         Stuck-Zombies: "%color_chat_issue%%plugin_prefix% It seems like the last zombie got stuck somewhere. No worries! The gods killed him for you!"
+        Timeout: "%color_chat_issue%%plugin_prefix% This wave exceeded %number% seconds, so the remaining enemies were slain!"
         Spectator-Warning: "%color_chat_issue%%plugin_prefix% You are a spectator! You can't do anything until you'd respawned at the start of the next wave!"
         Respawn-On-Next: "&e&lDON'T LEAVE! &aYou'll respawn once the next wave ends!"
         Respawned: "%plugin_prefix% You're not a spectator anymore! You're back in the game!"

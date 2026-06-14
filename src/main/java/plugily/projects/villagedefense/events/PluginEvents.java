@@ -28,13 +28,18 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFertilizeEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.inventory.ItemStack;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
@@ -124,7 +129,7 @@ public class PluginEvents implements Listener {
                 return;
             }
             Villager villager = (Villager) event.getRightClicked();
-            if (villager.getProfession().equals(Villager.Profession.CLERIC)) {
+            if (arena.isPotionShopVillager(villager) || villager.getProfession() == Villager.Profession.CLERIC) {
                 arena.getShopManager().openPotionShop(event.getPlayer());
             } else {
                 arena.getShopManager().openShop(event.getPlayer());
@@ -179,6 +184,10 @@ public class PluginEvents implements Listener {
 
     @EventHandler
     public void onEntityCombust(EntityCombustByEntityEvent event) {
+        if (cancelArenaFire(event.getEntity())) {
+            event.setCancelled(true);
+            return;
+        }
         if (!(event.getCombuster() instanceof Projectile)) {
             return;
         }
@@ -271,6 +280,63 @@ public class PluginEvents implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBoneMealUse(PlayerInteractEvent event) {
+        if (!XMaterial.BONE_MEAL.isSimilar(event.getItem()) || plugin.getArenaRegistry().getArena(event.getPlayer()) == null) {
+            return;
+        }
+
+        event.setCancelled(true);
+        event.setUseItemInHand(Event.Result.DENY);
+        event.setUseInteractedBlock(Event.Result.DENY);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBoneMealFertilize(BlockFertilizeEvent event) {
+        Player player = event.getPlayer();
+        if ((player != null && plugin.getArenaRegistry().getArena(player) != null)
+                || (player == null && isArenaWorld(event.getBlock().getWorld()))) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onFireSpread(BlockSpreadEvent event) {
+        if (!isArenaFireDisabled() || !isArenaWorld(event.getBlock().getWorld())) {
+            return;
+        }
+        if (isFire(event.getSource().getType()) || isFire(event.getNewState().getType())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockBurn(BlockBurnEvent event) {
+        if (isArenaFireDisabled() && isArenaWorld(event.getBlock().getWorld())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockIgnite(BlockIgniteEvent event) {
+        if (!isArenaFireDisabled() || !isArenaWorld(event.getBlock().getWorld())) {
+            return;
+        }
+        event.setCancelled(true);
+        if (isFire(event.getBlock().getType())) {
+            event.getBlock().setType(Material.AIR);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onArenaFireDamage(EntityDamageEvent event) {
+        if (!cancelArenaFire(event.getEntity()) || !isFireDamage(event.getCause())) {
+            return;
+        }
+        event.setCancelled(true);
+        event.setDamage(0);
+    }
+
 
     @EventHandler
     public void onSecretWellDrop(InventoryPickupItemEvent event) {
@@ -333,6 +399,10 @@ public class PluginEvents implements Listener {
      */
     @EventHandler(ignoreCancelled = true)
     public void onCombust(EntityCombustEvent event) {
+        if (cancelArenaFire(event.getEntity())) {
+            event.setCancelled(true);
+            return;
+        }
         // Ignore if this is caused by an event lower down the chain.
         if (event instanceof EntityCombustByEntityEvent || event instanceof EntityCombustByBlockEvent
                 || !(event.getEntity() instanceof Creature)
@@ -351,5 +421,44 @@ public class PluginEvents implements Listener {
     @EventHandler
     public void onRaidTrigger(RaidTriggerEvent event) {
         event.setCancelled(true);
+    }
+
+    private boolean isArenaFireDisabled() {
+        return !plugin.getConfig().getBoolean("Damage.Fire-Spread", false);
+    }
+
+    private boolean cancelArenaFire(Entity entity) {
+        if (entity == null || !isArenaFireDisabled() || !isArenaWorld(entity.getWorld())) {
+            return false;
+        }
+        entity.setFireTicks(0);
+        return true;
+    }
+
+    private boolean isFireDamage(EntityDamageEvent.DamageCause cause) {
+        return cause == EntityDamageEvent.DamageCause.FIRE
+                || cause == EntityDamageEvent.DamageCause.FIRE_TICK
+                || cause == EntityDamageEvent.DamageCause.HOT_FLOOR;
+    }
+
+    private boolean isArenaWorld(World world) {
+        if (world == null) {
+            return false;
+        }
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            Location startLocation = arena.getStartLocation();
+            if (startLocation != null && world.equals(startLocation.getWorld())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isFire(Material material) {
+        if (material == null) {
+            return false;
+        }
+        String name = material.name();
+        return "FIRE".equals(name) || "SOUL_FIRE".equals(name);
     }
 }

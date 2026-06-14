@@ -26,6 +26,7 @@ import plugily.projects.minigamesbox.classic.arena.states.PluginInGameState;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.villagedefense.arena.Arena;
+import plugily.projects.villagedefense.arena.ArenaUtils;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -67,6 +68,16 @@ public class InGameState extends PluginInGameState {
         int zombiesLeft = pluginArena.getZombiesLeft();
         getPlugin().getDebugger().debug("Arena {0} Zombies to spawn {1} Zombies left {2} Fighting {3}", arena.getId(), arena.getArenaOption("ZOMBIES_TO_SPAWN"), zombiesLeft, pluginArena.isFighting());
         if (pluginArena.isFighting()) {
+            int maxWaveDuration = getPlugin().getConfig().getInt("Limit.Wave.Duration-Seconds", 300);
+            if (pluginArena.hasWaveExceededDuration(maxWaveDuration)) {
+                arena.setArenaOption("ZOMBIES_TO_SPAWN", 0);
+                ArenaUtils.removeSpawnedEnemies(pluginArena);
+                pluginArena.setFighting(false);
+                pluginArena.clearWaveTimer();
+                new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_TIMEOUT").asKey().integer(maxWaveDuration).arena(arena).sendArena();
+                pluginArena.getPlugin().getArenaManager().endWave(pluginArena);
+                return;
+            }
             if (ServerVersion.Version.isCurrentHigher(ServerVersion.Version.v1_8_8)) {
                 // 1.9+ 路径没有 1.8 NMS 那套目标 AI，运行中主动刷新目标。
                 pluginArena.getCreatureTargetManager().targetCreatures();
@@ -75,6 +86,7 @@ public class InGameState extends PluginInGameState {
             if (zombiesLeft <= 0) {
                 // 待生成和已生成敌人均清空，当前波结束。
                 pluginArena.setFighting(false);
+                pluginArena.clearWaveTimer();
                 pluginArena.getPlugin().getArenaManager().endWave(pluginArena);
             } else if (arena.getArenaOption("ZOMBIES_TO_SPAWN") > 0) {
                 // 还有待生成敌人时继续刷，并把波次超时清理计时器拉长。
@@ -112,7 +124,7 @@ public class InGameState extends PluginInGameState {
                 Random random = new Random();
                 while (livingEntityIterator.hasNext()) {
                     LivingEntity livingEntity = livingEntityIterator.next();
-                    if (livingEntity.getType().equals(EntityType.GHAST) || livingEntity.getType().equals(EntityType.BLAZE) || livingEntity.getType().equals(EntityType.ENDERMAN))
+                    if (livingEntity.getType().equals(EntityType.BLAZE) || livingEntity.getType().equals(EntityType.ENDERMAN))
                         return;
                     if (random.nextInt(100) <= 3) {
                         pluginArena.getPlugin().getNetherMobSummoner().startSummon(livingEntity, pluginArena,pluginArena.getWave());

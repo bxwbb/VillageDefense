@@ -47,13 +47,18 @@ public class NormalRavager implements SimpleEnemySpawner {
     }
 
     @Override
+    public int getMinWave() {
+        return 16;
+    }
+
+    @Override
     public ItemStack getDropItem() {
         return new ItemStack(Material.SADDLE);
     }
 
     @Override
     public double getSpawnRate(Arena arena, int wave, int phase, int spawnAmount) {
-        if (wave < 12) {
+        if (wave < getMinWave()) {
             return 0.0;
         }
         return Math.min(0.15, 0.05 + wave * 0.01);

@@ -23,6 +23,7 @@ import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -396,14 +397,41 @@ public class ShopManager {
     }
 
     public void resetPlayerData() {
+        playerData.clear();
+        clearOpenMenus();
         for (Player player : arena.getPlayers()) {
-            playerData.put(player, new HashMap<>());
+            resetPlayerData(player);
         }
         this.potionEffectData.clear();
         potionEffectPrices.forEach((potionEffectType, integers) -> {
             // level是当前腐肉数量,maxLevel是当前等级
             this.potionEffectData.put(potionEffectType, new DataInfo(0, 0));
         });
+    }
+
+    public void resetPlayerData(Player player) {
+        if (player != null) {
+            playerData.put(player, new HashMap<>());
+        }
+    }
+
+    public void clearPlayerData(Player player) {
+        if (player == null) {
+            return;
+        }
+        playerData.remove(player);
+        ShopMenu menu = openMenus.remove(player);
+        if (menu != null) {
+            HandlerList.unregisterAll(menu);
+        }
+    }
+
+    private void clearOpenMenus() {
+        Set<ShopMenu> menus = new HashSet<>(openMenus.values());
+        for (ShopMenu menu : menus) {
+            HandlerList.unregisterAll(menu);
+        }
+        openMenus.clear();
     }
 
     public void setOpenMenuConsumer(@NotNull Consumer<Player> openMenuConsumer) {

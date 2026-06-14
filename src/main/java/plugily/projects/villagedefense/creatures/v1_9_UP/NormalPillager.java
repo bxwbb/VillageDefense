@@ -19,17 +19,21 @@ public class NormalPillager implements SimpleEnemySpawner {
     private final Main plugin;
     public NormalPillager(Main plugin) { this.plugin = plugin; }
 
+    @Override
+    public int getMinWave() {
+        return 10;
+    }
+
     @Override public ItemStack getDropItem() { return new ItemStack(Material.ARROW); }
 
     @Override
     public double getSpawnRate(Arena arena, int wave, int phase, int spawnAmount) {
-        if(wave < 3) return 0;
-        return Math.min(0.85, 0.5 + wave * 0.03);
+        return Math.min(0.35, 0.08 + wave * 0.012);
     }
 
     @Override
     public int getFinalAmount(Arena arena, int wave, int phase, int spawnAmount) {
-        return (int) (spawnAmount * (1.0 + wave * 0.08));
+        return Math.max(1, (int) (spawnAmount * 0.45));
     }
 
     @Override public boolean checkPhase(Arena arena, int wave, int phase, int spawnAmount) { return true; }

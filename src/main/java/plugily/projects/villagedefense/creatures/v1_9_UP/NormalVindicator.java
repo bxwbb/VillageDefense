@@ -47,21 +47,23 @@ public class NormalVindicator implements SimpleEnemySpawner {
     }
 
     @Override
+    public int getMinWave() {
+        return 10;
+    }
+
+    @Override
     public ItemStack getDropItem() {
         return new ItemStack(Material.EMERALD);
     }
 
     @Override
     public double getSpawnRate(Arena arena, int wave, int phase, int spawnAmount) {
-        if (wave < 5) {
-            return 0.0;
-        }
-        return Math.min(0.55, 0.3 + wave * 0.025);
+        return Math.min(0.28, 0.06 + wave * 0.01);
     }
 
     @Override
     public int getFinalAmount(Arena arena, int wave, int phase, int spawnAmount) {
-        return (int) (spawnAmount * (0.6 + wave * 0.04));
+        return Math.max(1, (int) (spawnAmount * 0.35));
     }
 
     @Override

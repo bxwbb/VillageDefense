@@ -61,6 +61,8 @@ import java.util.stream.Collectors;
  */
 public class Arena extends PluginArena {
 
+    public static final String POTION_SHOP_VILLAGER_METADATA = "VD_POTION_SHOP";
+
     private static Main plugin;
     private final List<LivingEntity> enemies = new ArrayList<>();
     private final List<Wolf> wolves = new ArrayList<>();
@@ -70,6 +72,7 @@ public class Arena extends PluginArena {
     private final List<Item> droppedFleshes = new ArrayList<>();
     private final List<Entity> spawnedEntities = new ArrayList<>();
     private final Set<String> spawnedBossKeys = new HashSet<>();
+    private final Set<UUID> bossEntities = new HashSet<>();
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
     private final Map<UUID, Double> rottenFleshBaseMaxHealth = new HashMap<>();
     private final Map<UUID, Double> rottenFleshAppliedBonus = new HashMap<>();
@@ -78,6 +81,7 @@ public class Arena extends PluginArena {
     private WaveType waveType;
     private GameMode gameMode = GameMode.ENDLESS;
     private boolean finalWaveCompleted = false;
+    private long waveStartedAtMillis = 0L;
 
     private final Map<SpawnPoint, List<Location>> spawnPoints = new EnumMap<>(SpawnPoint.class);
     public final Map<Player, Integer> playerPoints  = new HashMap<>();
@@ -129,6 +133,40 @@ public class Arena extends PluginArena {
         return shopManager;
     }
 
+    public void resetRoundPlayerData() {
+        playerPoints.clear();
+        setArenaOption("TOTAL_ORBS_SPENT", 0);
+        setArenaOption("TOTAL_KILLED_ZOMBIES", 0);
+        setFinalWaveCompleted(false);
+        shopManager.resetPlayerData();
+        for (Player player : getPlayers()) {
+            initializePlayerRoundData(player);
+        }
+    }
+
+    public void initializePlayerRoundData(Player player) {
+        if (player == null) {
+            return;
+        }
+        playerPoints.put(player, 0);
+        shopManager.resetPlayerData(player);
+        getPlugin().getUserManager().getUser(player).setStatistic("ORBS", getStartingOrbs());
+    }
+
+    public void clearPlayerRoundData(Player player) {
+        if (player == null) {
+            return;
+        }
+        playerPoints.remove(player);
+        shopManager.clearPlayerData(player);
+        clearPendingTimedRespawn(player);
+        getPlugin().getUserManager().getUser(player).setStatistic("ORBS", 0);
+    }
+
+    private int getStartingOrbs() {
+        return getPlugin().getConfig().getInt("Orbs.Start.Amount", 20);
+    }
+
     public EnemySpawnManager getEnemySpawnManager() {
         return enemySpawnManager;
     }
@@ -162,6 +200,50 @@ public class Arena extends PluginArena {
 
         if (villagers.isEmpty()) {
             getPlugin().getDebugger().debug(Level.WARNING, "Spawning villagers for {0} failed! Are villager spawns set in safe and valid locations?", getId());
+            return;
+        }
+        configurePotionShopVillager();
+    }
+
+    public void configurePotionShopVillager() {
+        int amount = Math.max(0, getPlugin().getConfig().getInt("Limit.Spawn.Potion-Shop-Villagers", 3));
+        getActiveVillagers().stream()
+                .limit(amount)
+                .forEach(this::markPotionShopVillager);
+    }
+
+    public boolean isPotionShopVillager(Villager villager) {
+        return villager != null && villager.hasMetadata(POTION_SHOP_VILLAGER_METADATA);
+    }
+
+    private List<Villager> getActiveVillagers() {
+        villagers.removeIf(villager -> villager == null || villager.isDead() || !villager.isValid());
+        return new ArrayList<>(villagers);
+    }
+
+    private void markPotionShopVillager(Villager villager) {
+        villager.setMetadata(POTION_SHOP_VILLAGER_METADATA, new FixedMetadataValue(plugin, true));
+        applyClericProfession(villager);
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (!villager.isDead() && villager.isValid()) {
+                applyClericProfession(villager);
+            }
+        }, 1L);
+    }
+
+    private void applyClericProfession(Villager villager) {
+        try {
+            villager.setProfession(Villager.Profession.CLERIC);
+        } catch (IllegalArgumentException | LinkageError ignored) {
+            return;
+        }
+
+        try {
+            if (villager.getVillagerLevel() < 2) {
+                villager.setVillagerLevel(2);
+            }
+        } catch (IllegalArgumentException | LinkageError ignored) {
+            // Older server APIs do not expose villager levels.
         }
     }
 
@@ -171,6 +253,18 @@ public class Arena extends PluginArena {
 
     public void setFighting(boolean fighting) {
         this.fighting = fighting;
+    }
+
+    public void markWaveStarted() {
+        waveStartedAtMillis = System.currentTimeMillis();
+    }
+
+    public void clearWaveTimer() {
+        waveStartedAtMillis = 0L;
+    }
+
+    public boolean hasWaveExceededDuration(int seconds) {
+        return seconds > 0 && waveStartedAtMillis > 0L && System.currentTimeMillis() - waveStartedAtMillis >= seconds * 1000L;
     }
 
 
@@ -187,6 +281,9 @@ public class Arena extends PluginArena {
 
     public void removeEnemy(LivingEntity enemy) {
         removeBossBar(enemy);
+        if (enemy != null) {
+            bossEntities.remove(enemy.getUniqueId());
+        }
         enemies.remove(enemy);
     }
 
@@ -304,6 +401,17 @@ public class Arena extends PluginArena {
 
     public void clearSpawnedBossWaves() {
         spawnedBossKeys.clear();
+        bossEntities.clear();
+    }
+
+    public void addBoss(LivingEntity boss) {
+        if (boss != null) {
+            bossEntities.add(boss.getUniqueId());
+        }
+    }
+
+    public boolean isBoss(Entity entity) {
+        return entity != null && bossEntities.contains(entity.getUniqueId());
     }
 
     public void addBossBar(LivingEntity boss, BossBar bossBar) {

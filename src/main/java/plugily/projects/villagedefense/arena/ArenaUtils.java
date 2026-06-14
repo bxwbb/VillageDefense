@@ -108,7 +108,14 @@ public class ArenaUtils extends PluginArenaUtils {
     }
 
     public static void removeSpawnedEnemies(Arena arena, int amount, double maxHealthToRemove) {
+        removeSpawnedEnemies(arena, amount, maxHealthToRemove, true);
+    }
+
+    public static void removeSpawnedEnemies(Arena arena, int amount, double maxHealthToRemove, boolean includeBosses) {
         List<LivingEntity> toRemove = new ArrayList<>(arena.getEnemies());
+        if (!includeBosses) {
+            toRemove.removeIf(arena::isBoss);
+        }
         toRemove.removeIf(creature -> creature.getHealth() > maxHealthToRemove);
         if (toRemove.size() > amount) {
             Collections.shuffle(toRemove, ThreadLocalRandom.current());

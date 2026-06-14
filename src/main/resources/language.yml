@@ -251,6 +251,7 @@ In-Game:
         Names: "星汉,初云,Kaelthas,蜜蜂,封神,混合,冰心,寒筏,西瓜,天蝎,支恒,白黑之间,青蛙,无邪,村正,猫七街,帕西,雪狐,凯莉尼亚,杉本,倔强男同,超级扫把星"
       Wave:
         Stuck-Zombies: "%color_chat_issue%%plugin_prefix% 似乎最后一只僵尸卡在某个地方了。别担心！神明已经替你消灭了它！"
+        Timeout: "%color_chat_issue%%plugin_prefix% 当前波次已超过 %number% 秒，剩余怪物已被斩杀！"
         Spectator-Warning: "%color_chat_issue%%plugin_prefix% 您是旁观者！在下波次开始时您重生前无法做任何事！"
         Respawn-On-Next: "&e&l别离开！ &a你将在下一波结束后复活！"
         Respawned: "%plugin_prefix% 您不再是旁观者了！您已重返游戏！"

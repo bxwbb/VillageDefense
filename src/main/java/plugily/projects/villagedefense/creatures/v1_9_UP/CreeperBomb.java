@@ -36,7 +36,7 @@ import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.arena.managers.spawner.SimpleEnemySpawner;
 
 import java.util.Objects;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author Tigerpanzer_02
@@ -115,6 +115,9 @@ public class CreeperBomb implements SimpleEnemySpawner {
         creeper.getEquipment().setBootsDropChance(0f);
         creeper.getEquipment().setItemInMainHand(new ItemStack(Material.AIR));
         creeper.getEquipment().setItemInMainHandDropChance(0F);
+        if (ThreadLocalRandom.current().nextDouble() < 0.10d) {
+            creeper.setPowered(true);
+        }
         assert XAttribute.FOLLOW_RANGE.get() != null;
         Objects.requireNonNull(creeper.getAttribute(XAttribute.FOLLOW_RANGE.get())).setBaseValue(200D);
         creeper.setRemoveWhenFarAway(false);

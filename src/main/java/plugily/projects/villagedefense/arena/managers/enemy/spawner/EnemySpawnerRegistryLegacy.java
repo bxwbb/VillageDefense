@@ -68,9 +68,14 @@ public class EnemySpawnerRegistryLegacy {
     public void registerCreatures() {
         enemySpawnerSet.add(new NormalWitherSkeleton(plugin));
         enemySpawnerSet.add(new NormalBlaze(plugin));
-        enemySpawnerSet.add(new NormalGhast(plugin));
         enemySpawnerSet.add(new NormalVex(plugin));
         enemySpawnerSet.add(new NormalPhantom(plugin));
+        enemySpawnerSet.add(new NormalPiglinBrute(plugin));
+        enemySpawnerSet.add(new NormalPiglin(plugin));
+        enemySpawnerSet.add(new NormalRavager(plugin));
+        enemySpawnerSet.add(new NormalEvoker(plugin));
+        enemySpawnerSet.add(new NormalVindicator(plugin));
+        enemySpawnerSet.add(new NormalPillager(plugin));
         enemySpawnerSet.add(new NormalCaveSpider(plugin));
         enemySpawnerSet.add(new NormalSpider(plugin));
         enemySpawnerSet.add(new CreeperBomb(plugin));
@@ -115,11 +120,11 @@ public class EnemySpawnerRegistryLegacy {
         a.前期（如1-5波）#发育期
 	        原版自然生成僵尸，穿插骷髅
         b.中期（如6-20波）#快速发育+人海战术
-            数量增加，生成点开始随机，僵尸随机获得速度药水效果（不包含伤害提升类），小概率僵尸获得武器盔甲，均为铁质以下，开始生成苦力怕，蜘蛛
+            数量增加，生成点开始随机，僵尸随机获得速度药水效果（不包含伤害提升类），小概率僵尸获得武器盔甲，均为铁质以下，开始生成苦力怕、蜘蛛、灾厄怪物
         c.后期（如21-50波）#伤害提升
         	僵尸获得更高级护甲，药水效果升级，开始生成小僵尸、洞穴蜘蛛
         d.无尽（如51+）
-        	增加幻翼（速度2），生成恼鬼（少量，太超模了，可以穿墙），天空出现地狱门生成恶魂、烈焰人、凋零骷髅（主世界生物召唤下界生物帮忙），出现小鸡骑士，蜘蛛骑士，[设计新增生物]，骷髅马骑士（骷髅马若存活玩家可骑）
+        	增加幻翼（速度2），生成恼鬼（少量，太超模了，可以穿墙）、猪灵、猪灵蛮兵，天空出现地狱门生成烈焰人、凋零骷髅（主世界生物召唤下界生物帮忙），出现小鸡骑士，蜘蛛骑士，[设计新增生物]，骷髅马骑士（骷髅马若存活玩家可骑）
         e.其他
             BOSS波：每10波出现精英生物，提供可选的额外药水效果
             劫掠波：村庄外随机生成灾厄大队长（超雄版，索敌范围不变，伤害不变，获得速度2效果），若玩家击杀则获得灾厄BUFF，会给村庄引来劫掠战（白日会出现），打完村民会在村庄中心的箱子里随机放奖励

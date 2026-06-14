@@ -410,6 +410,9 @@ public class SkillManager implements Listener {
         if (arena == null || !arena.getEnemies().contains(target)) {
             return;
         }
+        if (arena.isBoss(target)) {
+            return;
+        }
         IUser user = plugin.getUserManager().getUser(player);
         if (user == null || user.isSpectator()) {
             return;
@@ -429,6 +432,16 @@ public class SkillManager implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onSkillTntDamage(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof LivingEntity target) {
+            for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+                if (arena.isBoss(target) && isSkillTntFromArena(event.getDamager(), arena)) {
+                    event.setCancelled(true);
+                    event.setDamage(0.0d);
+                    return;
+                }
+            }
+        }
+
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
@@ -526,7 +539,7 @@ public class SkillManager implements Listener {
                 Location center = start.clone().add(bladeDirection.clone().multiply(traveled));
                 List<Location> bladePoints = drawBlade(center, bladeForward, bladeRight, arena, skill);
                 for (LivingEntity enemy : new ArrayList<>(arena.getEnemies())) {
-                    if (enemy == null || enemy.isDead() || damaged.contains(enemy.getUniqueId())) {
+                    if (enemy == null || enemy.isDead() || damaged.contains(enemy.getUniqueId()) || arena.isBoss(enemy)) {
                         continue;
                     }
                     if (isNearAnyPoint(enemy, bladePoints, 1.2d)) {
@@ -663,6 +676,9 @@ public class SkillManager implements Listener {
         decoys.computeIfAbsent(arena.getId(), key -> new ArrayList<>()).add(villager);
 
         for (LivingEntity enemy : arena.getEnemies()) {
+            if (arena.isBoss(enemy)) {
+                continue;
+            }
             if (enemy instanceof org.bukkit.entity.Creature creature) {
                 creature.setTarget(villager);
             }
@@ -715,7 +731,7 @@ public class SkillManager implements Listener {
     private void castKnockback(Player player, Arena arena, SkillConfig skill) {
         int affected = 0;
         for (LivingEntity enemy : new ArrayList<>(arena.getEnemies())) {
-            if (enemy == null || enemy.isDead() || !enemy.getWorld().equals(player.getWorld())) {
+            if (enemy == null || enemy.isDead() || !enemy.getWorld().equals(player.getWorld()) || arena.isBoss(enemy)) {
                 continue;
             }
             if (enemy.getLocation().distanceSquared(player.getLocation()) > skill.radius * skill.radius) {
@@ -755,7 +771,7 @@ public class SkillManager implements Listener {
             VersionUtils.sendParticles("FIREWORKS_SPARK", arena.getPlayers(), center, 12, skill.radius * 0.12d, 0.2d, skill.radius * 0.12d);
 
             for (LivingEntity enemy : new ArrayList<>(arena.getEnemies())) {
-                if (enemy == null || enemy.isDead() || !enemy.getWorld().equals(center.getWorld())) {
+                if (enemy == null || enemy.isDead() || !enemy.getWorld().equals(center.getWorld()) || arena.isBoss(enemy)) {
                     continue;
                 }
                 if (enemy.getLocation().distanceSquared(center) > skill.radius * skill.radius) {
@@ -818,7 +834,7 @@ public class SkillManager implements Listener {
                 Location location = start.clone().add(direction.clone().multiply(traveled));
                 VersionUtils.sendParticles(skill.particle, arena.getPlayers(), location, 2, 0.02d, 0.02d, 0.02d);
                 for (LivingEntity enemy : new ArrayList<>(arena.getEnemies())) {
-                    if (enemy == null || enemy.isDead() || damaged.contains(enemy.getUniqueId())) {
+                    if (enemy == null || enemy.isDead() || damaged.contains(enemy.getUniqueId()) || arena.isBoss(enemy)) {
                         continue;
                     }
                     if (enemy.getWorld().equals(location.getWorld()) && enemy.getLocation().add(0, 1.0d, 0).distanceSquared(location) <= 1.0d) {
@@ -1064,6 +1080,11 @@ public class SkillManager implements Listener {
     private void damageBySkill(Player player, LivingEntity target, double damage) {
         if (damage <= 0.0d || target == null || target.isDead()) {
             return;
+        }
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            if (arena.isBoss(target)) {
+                return;
+            }
         }
         skillDamageSources.add(player.getUniqueId());
         try {

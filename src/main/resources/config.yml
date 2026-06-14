@@ -199,7 +199,9 @@ Damage:
   # 是否开启溺水伤害
   Drowning: true
   # 是否开启火焰伤害
-  Fire: true
+  Fire: false
+  # 是否允许竞技场世界火焰点燃、蔓延和烧毁方块
+  Fire-Spread: false
   # 是否开启游戏内饥饿掉血机制
   Hunger: true
 
@@ -252,12 +254,16 @@ Limit:
     Unlimited: true
     # 最大波次限制，到达后游戏直接结束（关闭无限波次生效）
     Game-End: 200
+    # 单波最长持续时间，单位秒；超过后自动斩杀剩余怪物并进入下一波，0 = 关闭
+    Duration-Seconds: 300
   Spawn:
     # 全局可生成宠物数量上限（仅商店购买生效）
     Wolves: 20
     Golems: 15
     # 单局竞技场生成村民数量
     Villagers: 10
+    # 单局竞技场生成药水商店牧师村民数量
+    Potion-Shop-Villagers: 3
     # 单波怪物最大生成数量，超过后会截断并转为强化怪物属性
     Creatures: 120
   # 宠物死亡后是否允许重新购买（无视数量上限和权限限制）
@@ -277,7 +283,7 @@ Game-Modes:
         Wave: 20
         Type: WITHER
         Name: "&5&l凋零Boss"
-        Health: 200.0
+        Health: 500.0
   HARD:
     # 困难模式最终波数
     Final-Wave: 30
@@ -287,13 +293,13 @@ Game-Modes:
         Wave: 20
         Type: WITHER
         Name: "&5&l凋零Boss"
-        Health: 200.0
+        Health: 500.0
       '2':
         Enabled: true
         Wave: 30
         Type: WARDEN
         Name: "&1&l坚守者Boss"
-        Health: 200.0
+        Health: 2000.0
   ENDLESS:
     # 0 = 无尽模式不自动结束
     Final-Wave: 0
@@ -303,13 +309,13 @@ Game-Modes:
         Wave: 20
         Type: WITHER
         Name: "&5&l凋零Boss"
-        Health: 200.0
+        Health: 500.0
       '2':
         Enabled: true
         Wave: 30
         Type: WARDEN
         Name: "&1&l坚守者Boss"
-        Health: 200.0
+        Health: 2000.0
 
 
 # 怪物属性配置
@@ -318,7 +324,7 @@ Creatures:
   Health:
     Base: 10.0
     Per-Wave: 2.0
-  # 怪物基础伤害公式：最终伤害 = Base + 当前波次 * Per-Wave
+  # 怪物基础伤害公式：最终伤害 = 怪物原始伤害 + Base + 当前波次 * Per-Wave
   Damage:
     Base: 2.0
     Per-Wave: 0.5

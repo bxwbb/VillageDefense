@@ -22,7 +22,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Evoker;
+import org.bukkit.entity.PiglinBrute;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
@@ -33,37 +33,37 @@ import plugily.projects.villagedefense.arena.managers.spawner.SimpleEnemySpawner
 
 import java.util.Objects;
 
-/**
- * @author Tigerpanzer_02
- * <p>
- * Created at 15.01.2022
- */
-public class NormalEvoker implements SimpleEnemySpawner {
+public class NormalPiglinBrute implements SimpleEnemySpawner {
 
     private final Main plugin;
 
-    public NormalEvoker(Main plugin) {
+    public NormalPiglinBrute(Main plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public int getMinWave() {
-        return 10;
+        return 25;
     }
 
     @Override
     public ItemStack getDropItem() {
-        return new ItemStack(Material.TOTEM_OF_UNDYING);
+        return new ItemStack(Material.GOLD_NUGGET, 2);
     }
 
     @Override
     public double getSpawnRate(Arena arena, int wave, int phase, int spawnAmount) {
-        return Math.min(0.12, 0.03 + wave * 0.004);
+        return Math.min(0.12, 0.03 + wave * 0.003);
     }
 
     @Override
     public int getFinalAmount(Arena arena, int wave, int phase, int spawnAmount) {
-        return 1 + (wave >= 15 ? 1 : 0);
+        return wave >= 40 ? 2 : 1;
+    }
+
+    @Override
+    public int getSpawnWeight(Arena arena, int wave, int phase, int spawnAmount) {
+        return 2;
     }
 
     @Override
@@ -71,26 +71,31 @@ public class NormalEvoker implements SimpleEnemySpawner {
         return true;
     }
 
+    @Override
     public Creature spawn(Location location) {
-        Evoker evoker = (Evoker) VersionUtils.spawnEntity(location, EntityType.EVOKER);
-        evoker.getEquipment().setHelmet(new ItemStack(Material.AIR));
-        evoker.getEquipment().setHelmetDropChance(0f);
-        evoker.getEquipment().setChestplate(new ItemStack(Material.AIR));
-        evoker.getEquipment().setChestplateDropChance(0f);
-        evoker.getEquipment().setLeggings(new ItemStack(Material.AIR));
-        evoker.getEquipment().setLeggingsDropChance(0f);
-        evoker.getEquipment().setBoots(new ItemStack(Material.AIR));
-        evoker.getEquipment().setBootsDropChance(0f);
+        PiglinBrute brute = (PiglinBrute) VersionUtils.spawnEntity(location, EntityType.PIGLIN_BRUTE);
+        brute.setAdult();
+        brute.setImmuneToZombification(true);
+        brute.getEquipment().setHelmet(new ItemStack(Material.AIR));
+        brute.getEquipment().setHelmetDropChance(0f);
+        brute.getEquipment().setChestplate(new ItemStack(Material.AIR));
+        brute.getEquipment().setChestplateDropChance(0f);
+        brute.getEquipment().setLeggings(new ItemStack(Material.AIR));
+        brute.getEquipment().setLeggingsDropChance(0f);
+        brute.getEquipment().setBoots(new ItemStack(Material.AIR));
+        brute.getEquipment().setBootsDropChance(0f);
+        brute.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
+        brute.getEquipment().setItemInMainHandDropChance(0F);
 
         assert XAttribute.FOLLOW_RANGE.get() != null;
-        Objects.requireNonNull(evoker.getAttribute(XAttribute.FOLLOW_RANGE.get())).setBaseValue(200D);
-        evoker.setRemoveWhenFarAway(false);
-        evoker.setMetadata("PlugilyProjects-VillageDefense-Name", new FixedMetadataValue(plugin, "NormalEvoker"));
-        return evoker;
+        Objects.requireNonNull(brute.getAttribute(XAttribute.FOLLOW_RANGE.get())).setBaseValue(200D);
+        brute.setRemoveWhenFarAway(false);
+        brute.setMetadata("PlugilyProjects-VillageDefense-Name", new FixedMetadataValue(plugin, "NormalPiglinBrute"));
+        return brute;
     }
 
     @Override
     public String getName() {
-        return "NormalEvoker";
+        return "NormalPiglinBrute";
     }
 }

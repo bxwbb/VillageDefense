@@ -26,6 +26,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -50,6 +51,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class KitAbilityInitializer {
+
+    private static final String SKILL_PROJECTILE_METADATA = "VD_KIT_SKILL_PROJECTILE";
 
     private final Main plugin;
 
@@ -106,7 +109,7 @@ public class KitAbilityInitializer {
                 },
                 entityDeathEvent -> {
                     org.bukkit.entity.LivingEntity entity = entityDeathEvent.getEntity();
-                    if (!CreatureUtils.isEnemy(entity)) {
+                    if (!CreatureUtils.isEnemy(entity) || isBoss(entity)) {
                         return;
                     }
                     entity.getKiller().getInventory().addItem(XMaterial.ROTTEN_FLESH.parseItem());
@@ -172,12 +175,13 @@ public class KitAbilityInitializer {
                     if (!user.checkCanCastCooldownAndMessage("zombie")) {
                         return;
                     }
-                    if (arena.getEnemies().isEmpty()) {
+                    List<LivingEntity> enemies = getSkillTargets(arena);
+                    if (enemies.isEmpty()) {
                         new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_NEXT_IN").asKey().integer(arena.getTimer()).player(user.getPlayer()).sendPlayer();
                         return;
                     }
 
-                    LivingEntity creature = arena.getEnemies().get(arena.getEnemies().size() == 1 ? 0 : plugin.getRandom().nextInt(arena.getEnemies().size()));
+                    LivingEntity creature = enemies.get(enemies.size() == 1 ? 0 : plugin.getRandom().nextInt(enemies.size()));
                     VersionUtils.teleport(creature, playerInteractHandler.getPlayer().getLocation());
                     creature.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20 * 30, 0));
                     new MessageBuilder("KIT_CONTENT_ZOMBIE_TELEPORTER_TELEPORT_ZOMBIE").asKey().player(user.getPlayer()).sendPlayer();
@@ -292,6 +296,7 @@ public class KitAbilityInitializer {
                             pr.setBounce(false);
                             pr.setShooter(playerInteractHandler.getPlayer());
                             pr.setCritical(true);
+                            pr.setMetadata(SKILL_PROJECTILE_METADATA, new FixedMetadataValue(plugin, true));
 
                             org.bukkit.inventory.PlayerInventory inv = playerInteractHandler.getPlayer().getInventory();
 
@@ -310,6 +315,10 @@ public class KitAbilityInitializer {
                 entityDeathEvent -> {
                 },
                 entityDamageByEntityEvent -> {
+                    if (isBoss(entityDamageByEntityEvent.getEntity()) && entityDamageByEntityEvent.getDamager().hasMetadata(SKILL_PROJECTILE_METADATA)) {
+                        entityDamageByEntityEvent.setCancelled(true);
+                        entityDamageByEntityEvent.setDamage(0.0d);
+                    }
                 }
         ));
         plugin.getKitAbilityManager().registerKitAbility("TORNADO", new KitAbility("TORNADO",
@@ -416,7 +425,7 @@ public class KitAbilityInitializer {
                         VersionUtils.setGlowing(player, true);
                         applyRageParticles(player);
                         for (Entity entity : player.getNearbyEntities(2, 2, 2)) {
-                            if (CreatureUtils.isEnemy(entity)) {
+                            if (CreatureUtils.isEnemy(entity) && !isBoss(entity)) {
                                 ((Creature) entity).damage(9.0, player);
                             }
                         }
@@ -444,6 +453,9 @@ public class KitAbilityInitializer {
                         return;
                     }
                     if (!wizardsOnDuty.contains(entityDamageByEntityEvent.getEntity()) || plugin.getArenaRegistry().getArena((Player) entityDamageByEntityEvent.getEntity()) == null) {
+                        return;
+                    }
+                    if (isBoss(entityDamageByEntityEvent.getDamager())) {
                         return;
                     }
                     ((Creature) entityDamageByEntityEvent.getDamager()).damage(2.0, entityDamageByEntityEvent.getEntity());
@@ -475,12 +487,13 @@ public class KitAbilityInitializer {
                     if (!user.checkCanCastCooldownAndMessage("clean")) {
                         return;
                     }
-                    if (arena.getEnemies().isEmpty()) {
+                    List<LivingEntity> enemies = getSkillTargets(arena);
+                    if (enemies.isEmpty()) {
                         new MessageBuilder("KIT_CONTENT_CLEANER_CLEANED_NOTHING").asKey().player(user.getPlayer()).sendPlayer();
                         return;
                     }
-                    int amount = (int) (arena.getEnemies().size() * Math.max(Math.random(), 0.5));
-                    ArenaUtils.removeSpawnedEnemies(arena, amount, arena.getEnemies().get(0).getHealth());
+                    int amount = (int) (enemies.size() * Math.max(Math.random(), 0.5));
+                    ArenaUtils.removeSpawnedEnemies(arena, amount, enemies.get(0).getHealth(), false);
 
                     VersionUtils.playSound(playerInteractHandler.getPlayer().getLocation(), "ENTITY_ZOMBIE_DEATH");
                     new MessageBuilder("KIT_CONTENT_CLEANER_CLEANED_MAP").asKey().arena(arena).player(user.getPlayer()).sendArena();
@@ -529,7 +542,7 @@ public class KitAbilityInitializer {
                 loc.add(x, y, z);
                 VersionUtils.sendParticles("TOWN_AURA", null, loc, 5, 0, 0, 0);
                 for (Entity en : loc.getChunk().getEntities()) {
-                    if (!(CreatureUtils.isEnemy(en)) || en.getLocation().distance(loc) >= 1.5 || en.equals(player)) {
+                    if (!(CreatureUtils.isEnemy(en)) || isBoss(en) || en.getLocation().distance(loc) >= 1.5 || en.equals(player)) {
                         continue;
                     }
                     ((LivingEntity) en).damage(6.0, player);
@@ -633,7 +646,7 @@ public class KitAbilityInitializer {
 
         private void pushNearbyEnemies() {
             for (Entity entity : location.getWorld().getNearbyEntities(location, 2, 2, 2)) {
-                if (CreatureUtils.isEnemy(entity)) {
+                if (CreatureUtils.isEnemy(entity) && !isBoss(entity)) {
                     entities++;
 
                     Vector velocityVec = vector.multiply(2).setY(0).add(new Vector(0, 1, 0));
@@ -645,6 +658,25 @@ public class KitAbilityInitializer {
                 }
             }
         }
+    }
+
+    private List<LivingEntity> getSkillTargets(Arena arena) {
+        List<LivingEntity> targets = new ArrayList<>();
+        for (LivingEntity enemy : arena.getEnemies()) {
+            if (!arena.isBoss(enemy)) {
+                targets.add(enemy);
+            }
+        }
+        return targets;
+    }
+
+    private boolean isBoss(Entity entity) {
+        for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+            if (arena.isBoss(entity)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void healNearbyPlayers(Entity en) {

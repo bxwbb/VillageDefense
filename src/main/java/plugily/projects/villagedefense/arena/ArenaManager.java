@@ -70,6 +70,9 @@ public class ArenaManager extends PluginArenaManager {
     @Override
     public void additionalSpectatorSettings(Player player, IPluginArena arena) {
         super.additionalSpectatorSettings(player, arena);
+        if (arena instanceof Arena gameArena) {
+            gameArena.initializePlayerRoundData(player);
+        }
         // 禁止中途复活时，中途加入者应保持永久旁观，避免影响当前波次难度。
         if (!plugin.getConfigPreferences().getOption("RESPAWN_IN_GAME_JOIN")) {
             plugin.getUserManager().getUser(player).setPermanentSpectator(true);
@@ -79,7 +82,7 @@ public class ArenaManager extends PluginArenaManager {
     @Override
     public void leaveAttempt(@NotNull Player player, @NotNull IPluginArena arena) {
         Arena gameArena = (Arena) arena;
-        gameArena.clearPendingTimedRespawn(player);
+        gameArena.clearPlayerRoundData(player);
         gameArena.hideBossBars(player);
         if (plugin.getSkillManager() != null) {
             plugin.getSkillManager().clearPlayerState(player);
@@ -269,6 +272,7 @@ public class ArenaManager extends PluginArenaManager {
         long start = System.currentTimeMillis();
 
         int wave = arena.getWave();
+        arena.markWaveStarted();
 
         Bukkit.getPluginManager().callEvent(new VillageWaveStartEvent(arena, wave));
 
@@ -283,7 +287,7 @@ public class ArenaManager extends PluginArenaManager {
         	僵尸获得更高级护甲，药水效果升级，开始生成小僵尸、洞穴蜘蛛
         d.无尽（如51+）
             增加幻翼（速度2），生成恼鬼（少量，太超模了，可以穿墙），
-            天空出现地狱门生成恶魂、烈焰人、凋零骷髅（主世界生物召唤下界生物帮忙），
+            天空出现地狱门生成烈焰人、凋零骷髅（主世界生物召唤下界生物帮忙），
             出现小鸡骑士，蜘蛛骑士，[设计新增生物]，
             骷髅马骑士（骷髅马若存活玩家可骑）
          */
@@ -388,6 +392,7 @@ public class ArenaManager extends PluginArenaManager {
         boss.setCustomName(bossName);
         boss.setCustomNameVisible(true);
         arena.getEnemies().add(boss);
+        arena.addBoss(boss);
         if (shouldCreateBossBar(bossType)) {
             BossBar bossBar = Bukkit.createBossBar(bossName, BarColor.RED, BarStyle.SEGMENTED_10);
             arena.addBossBar(boss, bossBar);

@@ -35,7 +35,6 @@ public class NetherMobSummoner {
     private final Random random = new Random();
     private final NormalWitherSkeleton witherSkeleton;
     private final NormalBlaze blaze;
-    private final NormalGhast ghast;
 
     private final Set<UUID> summoning = new HashSet<>();
     private final Map<UUID, Boolean> originalAIState = new HashMap<>();
@@ -44,7 +43,6 @@ public class NetherMobSummoner {
         this.plugin = plugin;
         this.witherSkeleton = new NormalWitherSkeleton(plugin);
         this.blaze = new NormalBlaze(plugin);
-        this.ghast = new NormalGhast(plugin);
     }
 
     public void startSummon(LivingEntity entity, Arena arena, int wave) {
@@ -220,19 +218,12 @@ public class NetherMobSummoner {
             double z = (random.nextDouble() - 0.5) * 3;
             Location spawnLoc = center.clone().add(x, -2, z);
 
-            int rnd = random.nextInt(100);
             SimpleEnemySpawner spawner;
 
             if (wave < 20) {
                 return;
-            } else if (wave < 70) {
-                if (rnd < 40) spawner = blaze;
-                else if (rnd < 80) spawner = witherSkeleton;
-                else spawner = ghast;
             } else {
-                if (rnd < 30) spawner = blaze;
-                else if (rnd < 70) spawner = witherSkeleton;
-                else spawner = ghast;
+                spawner = random.nextBoolean() ? blaze : witherSkeleton;
             }
             spawn(random, arena, i, spawner, spawnLoc);
         }

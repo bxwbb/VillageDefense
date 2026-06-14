@@ -20,6 +20,7 @@
 package plugily.projects.villagedefense.arena.managers.spawner;
 
 import org.bukkit.Location;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
@@ -141,7 +142,10 @@ public interface SimpleEnemySpawner extends EnemySpawner {
         double health = getConfiguredHealth(arena);
         VersionUtils.setMaxHealth(livingEntity, health);
         livingEntity.setHealth(health);
-        livingEntity.getAttribute(XAttribute.ATTACK_DAMAGE.get()).setBaseValue(getConfiguredDamage(arena));
+        AttributeInstance attackDamage = livingEntity.getAttribute(XAttribute.ATTACK_DAMAGE.get());
+        if (attackDamage != null) {
+            attackDamage.setBaseValue(getConfiguredDamage(arena, attackDamage.getBaseValue()));
+        }
         if (livingEntity instanceof Creature creature) {
             if (canApplyAttributes()) {
                 CreatureUtils.applyAttributes(creature, arena);
@@ -159,10 +163,10 @@ public interface SimpleEnemySpawner extends EnemySpawner {
         return Math.max(1.0d, base + (arena.getWave() * perWave));
     }
 
-    default double getConfiguredDamage(Arena arena) {
+    default double getConfiguredDamage(Arena arena, double creatureBaseDamage) {
         double base = arena.getPlugin().getConfig().getDouble("Creatures.Damage.Base", 2.0d);
         double perWave = arena.getPlugin().getConfig().getDouble("Creatures.Damage.Per-Wave", 0.5d);
-        return Math.max(0.0d, base + (arena.getWave() * perWave));
+        return Math.max(0.0d, creatureBaseDamage + base + (arena.getWave() * perWave));
     }
 
     //TODO Simplify creature spawn reduce to one method e.g. spawn; add weight to creatures configurable!

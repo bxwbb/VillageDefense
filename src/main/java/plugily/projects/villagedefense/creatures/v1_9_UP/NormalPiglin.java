@@ -22,7 +22,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Evoker;
+import org.bukkit.entity.Piglin;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
@@ -32,38 +32,35 @@ import plugily.projects.villagedefense.arena.Arena;
 import plugily.projects.villagedefense.arena.managers.spawner.SimpleEnemySpawner;
 
 import java.util.Objects;
+import java.util.Random;
 
-/**
- * @author Tigerpanzer_02
- * <p>
- * Created at 15.01.2022
- */
-public class NormalEvoker implements SimpleEnemySpawner {
+public class NormalPiglin implements SimpleEnemySpawner {
 
     private final Main plugin;
+    private final Random random = new Random();
 
-    public NormalEvoker(Main plugin) {
+    public NormalPiglin(Main plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public int getMinWave() {
-        return 10;
+        return 25;
     }
 
     @Override
     public ItemStack getDropItem() {
-        return new ItemStack(Material.TOTEM_OF_UNDYING);
+        return new ItemStack(Material.GOLD_NUGGET);
     }
 
     @Override
     public double getSpawnRate(Arena arena, int wave, int phase, int spawnAmount) {
-        return Math.min(0.12, 0.03 + wave * 0.004);
+        return Math.min(0.28, 0.08 + wave * 0.006);
     }
 
     @Override
     public int getFinalAmount(Arena arena, int wave, int phase, int spawnAmount) {
-        return 1 + (wave >= 15 ? 1 : 0);
+        return Math.max(1, (int) (spawnAmount * 0.35));
     }
 
     @Override
@@ -71,26 +68,31 @@ public class NormalEvoker implements SimpleEnemySpawner {
         return true;
     }
 
+    @Override
     public Creature spawn(Location location) {
-        Evoker evoker = (Evoker) VersionUtils.spawnEntity(location, EntityType.EVOKER);
-        evoker.getEquipment().setHelmet(new ItemStack(Material.AIR));
-        evoker.getEquipment().setHelmetDropChance(0f);
-        evoker.getEquipment().setChestplate(new ItemStack(Material.AIR));
-        evoker.getEquipment().setChestplateDropChance(0f);
-        evoker.getEquipment().setLeggings(new ItemStack(Material.AIR));
-        evoker.getEquipment().setLeggingsDropChance(0f);
-        evoker.getEquipment().setBoots(new ItemStack(Material.AIR));
-        evoker.getEquipment().setBootsDropChance(0f);
+        Piglin piglin = (Piglin) VersionUtils.spawnEntity(location, EntityType.PIGLIN);
+        piglin.setAdult();
+        piglin.setImmuneToZombification(true);
+        piglin.getEquipment().setHelmet(new ItemStack(Material.AIR));
+        piglin.getEquipment().setHelmetDropChance(0f);
+        piglin.getEquipment().setChestplate(new ItemStack(Material.AIR));
+        piglin.getEquipment().setChestplateDropChance(0f);
+        piglin.getEquipment().setLeggings(new ItemStack(Material.AIR));
+        piglin.getEquipment().setLeggingsDropChance(0f);
+        piglin.getEquipment().setBoots(new ItemStack(Material.AIR));
+        piglin.getEquipment().setBootsDropChance(0f);
+        piglin.getEquipment().setItemInMainHand(new ItemStack(random.nextBoolean() ? Material.GOLDEN_SWORD : Material.CROSSBOW));
+        piglin.getEquipment().setItemInMainHandDropChance(0F);
 
         assert XAttribute.FOLLOW_RANGE.get() != null;
-        Objects.requireNonNull(evoker.getAttribute(XAttribute.FOLLOW_RANGE.get())).setBaseValue(200D);
-        evoker.setRemoveWhenFarAway(false);
-        evoker.setMetadata("PlugilyProjects-VillageDefense-Name", new FixedMetadataValue(plugin, "NormalEvoker"));
-        return evoker;
+        Objects.requireNonNull(piglin.getAttribute(XAttribute.FOLLOW_RANGE.get())).setBaseValue(200D);
+        piglin.setRemoveWhenFarAway(false);
+        piglin.setMetadata("PlugilyProjects-VillageDefense-Name", new FixedMetadataValue(plugin, "NormalPiglin"));
+        return piglin;
     }
 
     @Override
     public String getName() {
-        return "NormalEvoker";
+        return "NormalPiglin";
     }
 }
