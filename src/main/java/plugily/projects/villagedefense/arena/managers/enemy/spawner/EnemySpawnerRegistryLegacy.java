@@ -91,7 +91,7 @@ public class EnemySpawnerRegistryLegacy {
      */
     public void spawnEnemies(Random random, Arena arena) {
         int spawn = arena.getZombieSpawns().size();
-        if (spawn <= 0) {
+        if (spawn == 0) {
             return;
         }
         // 生物生成限制
@@ -133,55 +133,36 @@ public class EnemySpawnerRegistryLegacy {
          */
         int wave = arena.getWave();
 
-        arena.setWaveType(Arena.WaveType.DEFAULT);
-        if (wave % 10 != 0 && wave > 15) {
-            if (random.nextInt(100) <= 20) {
-                // 触发特殊波次
+        // 触发特殊波次
                 /*
                 劫掠波：村庄外随机生成灾厄大队长（超雄版，索敌范围不变，伤害不变，获得速度2效果），若玩家击杀则获得灾厄BUFF，会给村庄引来劫掠战（白日会出现），打完村民会在村庄中心的箱子里随机放奖励
                 寒潮波：天气变为下雪，僵尸数量减少，生成溺尸，流浪者（偏远程），玩家获得缓慢1
                 沙尘波：切换时间为黄昏，生成大量尸壳（偏近战）玩家获得饥饿1
                  */
-                int which = random.nextInt(3);
-                World world = arena.getVillagerSpawns().getFirst().getWorld();
-                switch (which) {
-                    case 0:
-                        // 寒潮波
-                        world.setStorm(true);
-                        world.setWeatherDuration(999999);
-                        world.setThundering(false);
-                        world.setThunderDuration(0);
-                        BiomeUtil.setBiome5ChunkRadius(arena.getStartLocation(), Biome.SNOWY_PLAINS);
-                        enemySpawners.add(new NormalDrowned(plugin));
-                        enemySpawners.add(new NormalStray(plugin));
-                        for (Player player : arena.getPlayers()) {
-                            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 10000, 0));
-                            player.sendMessage(Component.text("寒潮来袭"));
-                        }
-                        arena.setWaveType(Arena.WaveType.STORM);
-                        break;
-                    case 1:
-                        // 沙尘波
-                        smoothToDusk(world);
-                        enemySpawners.clear();
-                        enemySpawners.add(new NormalHusk(plugin));
-                        enemySpawners.add(new SkeletonArcher(plugin));
-                        enemySpawners.add(new NormalZombie(plugin));
-                        for (Player player : arena.getPlayers()) {
-                            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 10000, 0));
-                            player.sendMessage(Component.text("沙尘来袭"));
-                        }
-                        arena.setWaveType(Arena.WaveType.SAND);
-                        break;
-                    case 2:
-                        // 劫掠波
-                        enemySpawners.add(new NormalRaidCaptain(plugin));
-                        for (Player player : arena.getPlayers()) {
-                            player.sendMessage(Component.text("劫掠队长来袭"));
-                        }
-                        break;
-                }
-            }
+        World world = arena.getVillagerSpawns().getFirst().getWorld();
+        switch (arena.getWaveType()) {
+            case STORM:
+                // 寒潮波
+                world.setStorm(true);
+                world.setWeatherDuration(999999);
+                world.setThundering(false);
+                world.setThunderDuration(0);
+                BiomeUtil.setBiome5ChunkRadius(arena.getStartLocation(), Biome.SNOWY_PLAINS);
+                enemySpawners.add(new NormalDrowned(plugin));
+                enemySpawners.add(new NormalStray(plugin));
+                break;
+            case SAND:
+                // 沙尘波
+                smoothToDusk(world);
+                enemySpawners.clear();
+                enemySpawners.add(new NormalHusk(plugin));
+                enemySpawners.add(new SkeletonArcher(plugin));
+                enemySpawners.add(new NormalZombie(plugin));
+                break;
+            case THEFT:
+                // 劫掠波
+                enemySpawners.add(new NormalRaidCaptain(plugin));
+                break;
         }
 
         for (Player player : arena.getPlayers()) {
@@ -244,9 +225,10 @@ public class EnemySpawnerRegistryLegacy {
 
     /**
      * 丝滑渐变到指定游戏时间
-     * @param world 目标世界
+     *
+     * @param world      目标世界
      * @param targetTime 目标时间 0~24000
-     * @param dayLength 过渡占用的游戏时间段长度(0~24000)
+     * @param dayLength  过渡占用的游戏时间段长度(0~24000)
      */
     public void smoothSetTime(World world, long targetTime, long dayLength) {
         if (world == null || dayLength <= 0) return;

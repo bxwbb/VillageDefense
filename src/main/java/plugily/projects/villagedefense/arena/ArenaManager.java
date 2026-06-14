@@ -18,6 +18,7 @@
 
 package plugily.projects.villagedefense.arena;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.boss.BarColor;
@@ -43,6 +44,7 @@ import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.api.event.wave.VillageWaveEndEvent;
 import plugily.projects.villagedefense.api.event.wave.VillageWaveStartEvent;
 import plugily.projects.villagedefense.creatures.CreatureUtils;
+import plugily.projects.villagedefense.creatures.v1_9_UP.*;
 import plugily.projects.villagedefense.kits.KitUtils;
 import plugily.projects.villagedefense.utils.BiomeUtil;
 
@@ -315,6 +317,46 @@ public class ArenaManager extends PluginArenaManager {
         arena.setArenaOption("ZOMBIES_TO_SPAWN", zombiesAmount);
         arena.setArenaOption("ZOMBIE_IDLE_PROCESS", zombieIdle);
         spawnModeBoss(arena, wave);
+
+        // 设置波次类型
+        Random random = new Random();
+        arena.setWaveType(Arena.WaveType.DEFAULT);
+        if (wave % 10 != 0 && wave > 15) {
+            if (random.nextInt(100) <= 20) {
+                // 触发特殊波次
+                /*
+                劫掠波：村庄外随机生成灾厄大队长（超雄版，索敌范围不变，伤害不变，获得速度2效果），若玩家击杀则获得灾厄BUFF，会给村庄引来劫掠战（白日会出现），打完村民会在村庄中心的箱子里随机放奖励
+                寒潮波：天气变为下雪，僵尸数量减少，生成溺尸，流浪者（偏远程），玩家获得缓慢1
+                沙尘波：切换时间为黄昏，生成大量尸壳（偏近战）玩家获得饥饿1
+                 */
+                int which = random.nextInt(3);
+                switch (which) {
+                    case 0:
+                        // 寒潮波
+                        for (Player player : arena.getPlayers()) {
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 10000, 0));
+                            player.sendMessage(Component.text("寒潮来袭"));
+                        }
+                        arena.setWaveType(Arena.WaveType.STORM);
+                        break;
+                    case 1:
+                        // 沙尘波
+                        for (Player player : arena.getPlayers()) {
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 10000, 0));
+                            player.sendMessage(Component.text("沙尘来袭"));
+                        }
+                        arena.setWaveType(Arena.WaveType.SAND);
+                        break;
+                    case 2:
+                        // 劫掠波
+                        for (Player player : arena.getPlayers()) {
+                            player.sendMessage(Component.text("劫掠队长来袭"));
+                        }
+                        arena.setWaveType(Arena.WaveType.THEFT);
+                        break;
+                }
+            }
+        }
 
         if (zombieIdle > 0) {
             plugin.getDebugger().debug("[{0}] Spawn idle process initiated to prevent server overload! Value: {1}", arena.getId(), zombieIdle);

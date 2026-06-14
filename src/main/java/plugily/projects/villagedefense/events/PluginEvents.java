@@ -282,7 +282,7 @@ public class PluginEvents implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBoneMealUse(PlayerInteractEvent event) {
-        if (!XMaterial.BONE_MEAL.isSimilar(event.getItem()) || plugin.getArenaRegistry().getArena(event.getPlayer()) == null) {
+        if (event.getItem() != null && (!XMaterial.BONE_MEAL.isSimilar(event.getItem()) || plugin.getArenaRegistry().getArena(event.getPlayer()) == null)) {
             return;
         }
 
