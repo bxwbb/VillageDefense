@@ -40,6 +40,8 @@ import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.inventory.ItemStack;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
@@ -66,6 +68,22 @@ public class PluginEvents implements Listener {
     public PluginEvents(Main plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (plugin.getPlayerStatsPersistence() == null) {
+            return;
+        }
+        plugin.getPlayerStatsPersistence().load(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (plugin.getPlayerStatsPersistence() == null) {
+            return;
+        }
+        plugin.getPlayerStatsPersistence().save(event.getPlayer());
     }
 
 

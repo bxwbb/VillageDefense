@@ -52,6 +52,7 @@ import plugily.projects.villagedefense.kits.purchase.KitPurchaseManager;
 import plugily.projects.villagedefense.kits.selection.BedrockKitSelectionManager;
 import plugily.projects.villagedefense.kits.skills.SkillManager;
 import plugily.projects.villagedefense.network.NetworkRoomManager;
+import plugily.projects.villagedefense.storage.PlayerStatsPersistence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +80,7 @@ public class Main extends PluginMain {
     private SkillManager skillManager;
     private KitPurchaseManager kitPurchaseManager;
     private BedrockKitSelectionManager bedrockKitSelectionManager;
+    private PlayerStatsPersistence playerStatsPersistence;
 
     @TestOnly
     public Main() {
@@ -100,6 +102,7 @@ public class Main extends PluginMain {
         new PlaceholderInitializer(this);
         messageInitializer.registerMessages();
         new AdditionalValueInitializer(this);
+        playerStatsPersistence = new PlayerStatsPersistence(this);
         initializePluginClasses();
         addKits();
         if (getConfigPreferences().getOption("KITS")) {
@@ -245,7 +248,14 @@ public class Main extends PluginMain {
         return bedrockKitSelectionManager;
     }
 
+    public PlayerStatsPersistence getPlayerStatsPersistence() {
+        return playerStatsPersistence;
+    }
+
     public void onDisable() {
+        if (playerStatsPersistence != null) {
+            playerStatsPersistence.saveAll();
+        }
         if (kitPurchaseManager != null) {
             kitPurchaseManager.shutdown();
         }
