@@ -24,6 +24,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.type.Gate;
+import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -479,6 +481,18 @@ public class PluginEvents implements Listener {
 
         victim.setHealth(0);
         victim.remove();
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Block block = event.getClickedBlock();
+        if (block == null) return;
+
+        if ((block.getBlockData() instanceof Gate || block.getBlockData() instanceof TrapDoor)
+                && !(plugin.getArenaRegistry().getArena(event.getPlayer()) == null)) {
+            event.setCancelled(true);
+        }
     }
 
     private boolean isArenaFireDisabled() {
