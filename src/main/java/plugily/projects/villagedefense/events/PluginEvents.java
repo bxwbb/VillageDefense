@@ -463,7 +463,7 @@ public class PluginEvents implements Listener {
 
         event.setCancelled(true);
 
-        AnvilInventory gui = (AnvilInventory) Bukkit.createInventory(player, InventoryType.ANVIL);
+        Inventory gui = Bukkit.createInventory(player, InventoryType.ANVIL);
 
         player.openInventory(gui);
     }
