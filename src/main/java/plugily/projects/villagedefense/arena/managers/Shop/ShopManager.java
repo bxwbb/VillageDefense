@@ -191,7 +191,7 @@ public class ShopManager {
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.KNOCKBACK, 1), 190, "击退 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.FIRE_ASPECT, 1), 210, "火焰附加 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.POWER, 1), 200, "力量 I"),
-                new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.KNOCKBACK, 1), 190, "冲击 I"),
+                new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.PUNCH, 1), 190, "冲击 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.FLAME, 1), 210, "火矢 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.PIERCING, 1), 220, "穿透 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.MULTISHOT, 1), 260, "多重射击 I"),

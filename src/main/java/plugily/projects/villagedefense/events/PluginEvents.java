@@ -23,26 +23,25 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockFertilizeEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.BlockSpreadEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.raid.RaidTriggerEvent;
+import org.bukkit.inventory.AnvilInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.api.user.IUser;
@@ -300,7 +299,11 @@ public class PluginEvents implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBoneMealUse(PlayerInteractEvent event) {
-        if (event.getItem() != null && (!XMaterial.BONE_MEAL.isSimilar(event.getItem()) || plugin.getArenaRegistry().getArena(event.getPlayer()) == null)) {
+        ItemStack item = event.getItem();
+        if (item == null) {
+            return;
+        }
+        if (!XMaterial.BONE_MEAL.isSimilar(item) || plugin.getArenaRegistry().getArena(event.getPlayer()) == null) {
             return;
         }
 
@@ -439,6 +442,43 @@ public class PluginEvents implements Listener {
     @EventHandler
     public void onRaidTrigger(RaidTriggerEvent event) {
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onRightClickAnvil(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Block block = event.getClickedBlock();
+        if (block == null) return;
+
+        if (block.getType() != Material.ANVIL
+                && block.getType() != Material.CHIPPED_ANVIL
+                && block.getType() != Material.DAMAGED_ANVIL) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        if (plugin.getArenaRegistry().getArena(event.getPlayer()) == null) return;
+
+        event.setCancelled(true);
+
+        AnvilInventory gui = (AnvilInventory) Bukkit.createInventory(player, InventoryType.ANVIL);
+
+        player.openInventory(gui);
+    }
+
+    @EventHandler
+    public void onPreDeath(EntityDeathEvent event) {
+        LivingEntity victim = event.getEntity();
+        Entity killer = victim.getKiller();
+
+        if (killer == null || killer.getType() != EntityType.WITHER) {
+            return;
+        }
+
+        event.setCancelled(true);
+
+        victim.setHealth(0);
+        victim.remove();
     }
 
     private boolean isArenaFireDisabled() {
