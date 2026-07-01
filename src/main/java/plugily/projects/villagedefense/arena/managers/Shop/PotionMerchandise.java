@@ -24,6 +24,22 @@ public class PotionMerchandise extends UpgradableMerchandise {
         }
     }
 
+    public PotionMerchandise(int maxLevel, int slot, PotionEffectType potionEffectType, int basePrice, boolean isSplash) {
+        super(maxLevel, slot);
+        for (int i = 0; i < maxLevel; i++) {
+            ItemStack itemStack = new ItemStack(isSplash ? Material.SPLASH_POTION :Material.POTION);
+            PotionMeta potionMeta = (PotionMeta) itemStack.getItemMeta();
+            PotionEffect poison = new PotionEffect(potionEffectType, 1200, i);
+            potionMeta.addCustomEffect(poison, true);
+            itemStack.setItemMeta(potionMeta);
+            int bp = basePrice;
+            if (ShopManager.fileConfiguration.contains("Potion." + potionEffectType.getName())) {
+                bp = ShopManager.fileConfiguration.getInt("Potion." + potionEffectType.getName());
+            }
+            this.getMerchandiseList().add(new AUpgradableMerchandise(itemStack, bp * (i + 1) * (i + 1), intToRoman(i + 1)));
+        }
+    }
+
     public static String intToRoman(int num) {
         if (num < 1 || num > 3999) {
             return "";

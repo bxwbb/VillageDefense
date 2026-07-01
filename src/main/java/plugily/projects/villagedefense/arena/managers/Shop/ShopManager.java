@@ -174,15 +174,15 @@ public class ShopManager {
                 new UpgradableMerchandise.AUpgradableMerchandise(arrowSlowness, 160, "迟缓药箭"),
                 new UpgradableMerchandise.AUpgradableMerchandise(arrowPoison, 320, "剧毒药箭")
         )));
-        merchandises.add(new PotionMerchandise(10, 9, PotionEffectType.INSTANT_HEALTH, 200));
-        merchandises.add(new PotionMerchandise(10, 10, PotionEffectType.SPEED, 180));
-        merchandises.add(new PotionMerchandise(10, 11, PotionEffectType.SLOWNESS, 170));
-        merchandises.add(new PotionMerchandise(10, 12, PotionEffectType.STRENGTH, 220));
-        merchandises.add(new PotionMerchandise(10, 13, PotionEffectType.WEAKNESS, 160));
-        merchandises.add(new PotionMerchandise(10, 14, PotionEffectType.REGENERATION, 210));
-        merchandises.add(new PotionMerchandise(10, 15, PotionEffectType.JUMP_BOOST, 175));
-        merchandises.add(new PotionMerchandise(10, 16, PotionEffectType.INVISIBILITY, 260));
-        merchandises.add(new PotionMerchandise(10, 17, PotionEffectType.FIRE_RESISTANCE, 240));
+        merchandises.add(new PotionMerchandise(10, 9, PotionEffectType.INSTANT_HEALTH, 200, true));
+        merchandises.add(new PotionMerchandise(10, 10, PotionEffectType.SPEED, 180, true));
+        merchandises.add(new PotionMerchandise(10, 11, PotionEffectType.SLOWNESS, 170, true));
+        merchandises.add(new PotionMerchandise(10, 12, PotionEffectType.STRENGTH, 220, true));
+        merchandises.add(new PotionMerchandise(10, 13, PotionEffectType.WEAKNESS, 160, true));
+        merchandises.add(new PotionMerchandise(10, 14, PotionEffectType.REGENERATION, 210, true));
+        merchandises.add(new PotionMerchandise(10, 15, PotionEffectType.JUMP_BOOST, 175, true));
+        merchandises.add(new PotionMerchandise(10, 16, PotionEffectType.INVISIBILITY, 260, true));
+        merchandises.add(new PotionMerchandise(10, 17, PotionEffectType.FIRE_RESISTANCE, 240, true));
         merchandises.add(new UpgradableMerchandise(13, 18, Arrays.asList(
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.PROTECTION, 1), 220, "保护 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.FIRE_PROTECTION, 1), 230, "火焰保护 I"),
