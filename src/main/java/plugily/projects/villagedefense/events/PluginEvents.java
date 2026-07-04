@@ -18,6 +18,7 @@
 
 package plugily.projects.villagedefense.events;
 
+import com.destroystokyo.paper.event.block.AnvilDamagedEvent;
 import io.papermc.paper.registry.keys.VillagerProfessionKeys;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -447,25 +448,8 @@ public class PluginEvents implements Listener {
     }
 
     @EventHandler
-    public void onRightClickAnvil(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        Block block = event.getClickedBlock();
-        if (block == null) return;
-
-        if (block.getType() != Material.ANVIL
-                && block.getType() != Material.CHIPPED_ANVIL
-                && block.getType() != Material.DAMAGED_ANVIL) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        if (plugin.getArenaRegistry().getArena(event.getPlayer()) == null) return;
-
+    public void onAnvilDamagedEvent(AnvilDamagedEvent event) {
         event.setCancelled(true);
-
-        Inventory gui = Bukkit.createInventory(player, InventoryType.ANVIL);
-
-        player.openInventory(gui);
     }
 
     @EventHandler
