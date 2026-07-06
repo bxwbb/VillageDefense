@@ -31,7 +31,7 @@ Powerups:
       # 你可以添加任意数量的药水效果
       # 格式: 药水名称, 持续时间, 强度
       potion-effect:
-        - "INCREASE_DAMAGE, 20, 1"
+        - "INCREASE_DAMAGE, 300, 1"
       # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: ALL
       # 类似于奖励
@@ -44,7 +44,7 @@ Powerups:
       # 你可以添加任意数量的药水效果
       # 格式: 药水名称, 持续时间, 强度
       potion-effect:
-        - "REGENERATION, 10, 1"
+        - "REGENERATION, 300, 1"
       # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: ALL
       # 类似于奖励
@@ -70,7 +70,7 @@ Powerups:
       # 你可以添加任意数量的药水效果
       # 格式: 药水名称, 持续时间, 强度
       potion-effect:
-        - "INCREASE_DAMAGE, 15, 1000"
+        - "INCREASE_DAMAGE, 300, 1000"
       # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: ALL
       # 类似于奖励
@@ -84,7 +84,7 @@ Powerups:
       # 你可以添加任意数量的药水效果
       # 格式: 药水名称, 持续时间, 强度
       potion-effect:
-        - "SPEED, 15, 1"
+        - "SPEED, 300, 1"
       # PLAYER 为拾取玩家 | ALL 为竞技场所有玩家
       potion-type: PLAYER
       # 类似于奖励

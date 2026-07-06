@@ -183,13 +183,12 @@ public class ShopManager {
         merchandises.add(new PotionMerchandise(10, 15, PotionEffectType.JUMP_BOOST, 175, true));
         merchandises.add(new PotionMerchandise(10, 16, PotionEffectType.INVISIBILITY, 260, true));
         merchandises.add(new PotionMerchandise(10, 17, PotionEffectType.FIRE_RESISTANCE, 240, true));
-        merchandises.add(new UpgradableMerchandise(13, 18, Arrays.asList(
+        merchandises.add(new UpgradableMerchandise(12, 18, Arrays.asList(
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.PROTECTION, 1), 220, "保护 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.FIRE_PROTECTION, 1), 230, "火焰保护 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.PROJECTILE_PROTECTION, 1), 230, "弹射物保护 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.SHARPNESS, 1), 200, "锋利 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.KNOCKBACK, 1), 190, "击退 I"),
-                new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.FIRE_ASPECT, 1), 210, "火焰附加 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.POWER, 1), 200, "力量 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.PUNCH, 1), 190, "冲击 I"),
                 new UpgradableMerchandise.AUpgradableMerchandise(createEnchBook(Enchantment.FLAME, 1), 210, "火矢 I"),
@@ -219,7 +218,7 @@ public class ShopManager {
         ItemStack advancedShield = new ItemStack(Material.SHIELD);
         ItemMeta meta2 = advancedShield.getItemMeta();
         if (meta2 != null) {
-            meta2.addEnchant(Enchantment.UNBREAKING, 2, true);
+            meta2.addEnchant(Enchantment.UNBREAKING, 3, true);
             meta2.addEnchant(Enchantment.MENDING, 1, true);
             advancedShield.setItemMeta(meta2);
         }

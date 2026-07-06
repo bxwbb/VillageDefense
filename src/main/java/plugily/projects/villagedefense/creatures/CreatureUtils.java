@@ -21,6 +21,7 @@ package plugily.projects.villagedefense.creatures;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
@@ -138,7 +139,6 @@ public class CreatureUtils {
         }
         double maxHealth = VersionUtils.getMaxHealth(creature);
         ChatColor hpColor;
-        // 用颜色表达血量阶段，比纯数字更容易在战斗中快速识别目标状态。
         if (health >= maxHealth * 0.75) {
             hpColor = ChatColor.GREEN;
         } else if (health >= maxHealth * 0.5) {
@@ -148,8 +148,19 @@ public class CreatureUtils {
         } else {
             hpColor = ChatColor.RED;
         }
-        String name = creature.getMetadata(creatureInitializer.getCreatureCustomNameMetadata()).get(0).asString();
-        return name + " " + hpColor + "" + ChatColor.BOLD + "" + Math.round(health) + ChatColor.GRAY + "" + ChatColor.BOLD + "/" + ChatColor.GREEN + "" + ChatColor.BOLD + Math.round(maxHealth) + " ❤";
+
+        String name;
+        String metaKey = creatureInitializer.getCreatureCustomNameMetadata();
+        List<MetadataValue> metaList = creature.getMetadata(metaKey);
+        if (!metaList.isEmpty()) {
+            MetadataValue metaVal = metaList.get(0);
+            name = metaVal.asString();
+        } else {
+            name = creature.getName();
+        }
+        return name + " " + hpColor + ChatColor.BOLD + Math.round(health)
+                + ChatColor.GRAY + ChatColor.BOLD + "/"
+                + ChatColor.GREEN + ChatColor.BOLD + Math.round(maxHealth) + " ❤";
     }
 
     public static String getHealthNameTag(Creature creature) {

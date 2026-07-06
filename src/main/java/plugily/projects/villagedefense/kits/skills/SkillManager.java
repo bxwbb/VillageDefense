@@ -369,7 +369,8 @@ public class SkillManager implements Listener {
                 || materialName.equals("BOW")
                 || materialName.equals("CROSSBOW")
                 || materialName.equals("TRIDENT")
-                || materialName.equals("MACE");
+                || materialName.equals("MACE")
+                || materialName.equals("OAK_FENCE");
     }
 
     private void preparePlayerForGameStart(Player player) {
@@ -453,6 +454,13 @@ public class SkillManager implements Listener {
         event.setDamage(0.0d);
     }
 
+    /**
+     * 释放主动技能
+     * @param player 玩家
+     * @param arena 区域
+     * @param skill 技能
+     * @return 是否成功释放技能
+     */
     private boolean castActiveSkill(Player player, Arena arena, SkillConfig skill) {
         switch (skill.type) {
             case RAGE:

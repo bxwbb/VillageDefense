@@ -423,10 +423,10 @@ public class PluginEvents implements Listener {
      */
     @EventHandler(ignoreCancelled = true)
     public void onCombust(EntityCombustEvent event) {
-        if (cancelArenaFire(event.getEntity())) {
-            event.setCancelled(true);
-            return;
-        }
+//        if (cancelArenaFire(event.getEntity())) {
+//            event.setCancelled(true);
+//            return;
+//        }
         // Ignore if this is caused by an event lower down the chain.
         if (event instanceof EntityCombustByEntityEvent || event instanceof EntityCombustByBlockEvent
                 || !(event.getEntity() instanceof Creature)
@@ -436,7 +436,36 @@ public class PluginEvents implements Listener {
 
         for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
             if (arena.getEnemies().contains(event.getEntity())) {
-                event.setCancelled(true);
+                Entity entity = event.getEntity();
+                switch (entity.getType()) {
+                    case ZOMBIE:
+                        Zombie zombie = (Zombie) entity;
+                        zombie.setShouldBurnInDay(false);
+                        break;
+                    case ZOMBIE_VILLAGER:
+                        ZombieVillager zombieVillager = (ZombieVillager) entity;
+                        zombieVillager.setShouldBurnInDay(false);
+                        break;
+                    case SKELETON:
+                        Skeleton skeleton = (Skeleton) entity;
+                        skeleton.setShouldBurnInDay(false);
+                        break;
+                    case STRAY:
+                        Stray stray = (Stray) entity;
+                        stray.setShouldBurnInDay(false);
+                        break;
+                    case BOGGED:
+                        Bogged bogged = (Bogged) entity;
+                        bogged.setShouldBurnInDay(false);
+                        break;
+                    case PHANTOM:
+                        Phantom phantom = (Phantom) entity;
+                        phantom.setShouldBurnInDay(false);
+                        break;
+                    // 其他生物不处理
+                    default:
+                        break;
+                }
                 break;
             }
         }
