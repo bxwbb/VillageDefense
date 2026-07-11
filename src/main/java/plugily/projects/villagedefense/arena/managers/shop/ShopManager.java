@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package plugily.projects.villagedefense.arena.managers.Shop;
+package plugily.projects.villagedefense.arena.managers.shop;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -39,7 +39,6 @@ import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.arena.Arena;
 
-import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 

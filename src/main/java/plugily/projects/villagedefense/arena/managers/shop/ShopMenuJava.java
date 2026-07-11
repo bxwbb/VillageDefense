@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package plugily.projects.villagedefense.arena.managers.Shop;
+package plugily.projects.villagedefense.arena.managers.shop;
 
 
 import com.xigua.baseAPI.api.events.NeteasePythonEvent;
@@ -34,7 +34,6 @@ import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.misc.complement.ComplementAccessor;
 import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

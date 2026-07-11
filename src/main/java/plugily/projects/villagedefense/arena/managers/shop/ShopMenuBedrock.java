@@ -1,4 +1,4 @@
-package plugily.projects.villagedefense.arena.managers.Shop;
+package plugily.projects.villagedefense.arena.managers.shop;
 
 import com.xigua.baseAPI.BaseAPI;
 import com.xigua.baseAPI.api.events.NeteasePythonEvent;

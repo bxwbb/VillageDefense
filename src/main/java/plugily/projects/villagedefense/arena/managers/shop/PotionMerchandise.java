@@ -1,12 +1,10 @@
-package plugily.projects.villagedefense.arena.managers.Shop;
+package plugily.projects.villagedefense.arena.managers.shop;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import static org.bukkit.potion.PotionEffectType.SPEED;
 
 public class PotionMerchandise extends UpgradableMerchandise {
 

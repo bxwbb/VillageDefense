@@ -1,4 +1,4 @@
-package plugily.projects.villagedefense.arena.managers.Shop;
+package plugily.projects.villagedefense.arena.managers.shop;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
