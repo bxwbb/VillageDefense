@@ -26,7 +26,7 @@ Powerups:
         - ""
     Double-Damage:
       name: "&c&l双倍伤害"
-      description: "&7双倍伤害持续 %number% 秒！"
+      description: "&7双倍伤害持续 %number% 刻！"
       material: REDSTONE
       # 你可以添加任意数量的药水效果
       # 格式: 药水名称, 持续时间, 强度

@@ -254,7 +254,7 @@ public class PluginEvents implements Listener {
             return;
         }
         for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-            if (!arena.getEnemies().contains(event.getEntity())) {
+            if (!arena.getEnemies().contains(event.getEntity()) || arena.isBoss(event.getEntity())) {
                 continue;
             }
             event.setCancelled(false);
@@ -498,13 +498,17 @@ public class PluginEvents implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
         Block block = event.getClickedBlock();
-        if (block == null) return;
+        if (block == null) {
+            return;
+        }
 
         if ((block.getBlockData() instanceof Gate || block.getBlockData() instanceof TrapDoor)
-                && !(plugin.getArenaRegistry().getArena(event.getPlayer()) == null)) {
-            event.setCancelled(true);
+                && plugin.getArenaRegistry().getArena(event.getPlayer()) != null) {
+            event.setUseInteractedBlock(Event.Result.DENY);
         }
     }
 

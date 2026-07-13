@@ -149,14 +149,14 @@ public class CreatureUtils {
             hpColor = ChatColor.RED;
         }
 
-        String name;
+        String name = "";
         String metaKey = creatureInitializer.getCreatureCustomNameMetadata();
         List<MetadataValue> metaList = creature.getMetadata(metaKey);
-        if (!metaList.isEmpty()) {
-            MetadataValue metaVal = metaList.get(0);
-            name = metaVal.asString();
-        } else {
-            name = creature.getName();
+        for (MetadataValue metaVal : metaList) {
+            if (metaVal.getOwningPlugin() == plugin) {
+                name = metaVal.asString();
+                break;
+            }
         }
         return name + " " + hpColor + ChatColor.BOLD + Math.round(health)
                 + ChatColor.GRAY + ChatColor.BOLD + "/"
