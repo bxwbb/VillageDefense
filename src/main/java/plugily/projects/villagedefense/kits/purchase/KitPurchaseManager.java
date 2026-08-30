@@ -47,6 +47,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import plugily.projects.minigamesbox.api.kit.IKit;
 import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
+import plugily.projects.minigamesbox.database.MysqlDatabase;
 import plugily.projects.villagedefense.Main;
 import plugily.projects.villagedefense.utils.BedrockSupport;
 
@@ -54,6 +55,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +72,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 /**
  * Handles persistent kit purchases while keeping the original kit selector compatible.
@@ -75,6 +83,8 @@ public class KitPurchaseManager implements Listener {
 
     private static final String CONFIG_NAME = "kit_shop";
     private static final String PURCHASE_FILE = "kit_purchases.yml";
+    private static final String DEFAULT_MYSQL_TABLE = "vd_playerstats_kit_purchases";
+    private static final Pattern SAFE_TABLE_NAME = Pattern.compile("[A-Za-z0-9_]+");
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.##");
     private static final Set<String> COMMAND_ALIASES = new HashSet<>();
 
@@ -88,20 +98,37 @@ public class KitPurchaseManager implements Listener {
     private final Main plugin;
     private final File purchasesFile;
     private final Map<UUID, PermissionAttachment> permissionAttachments = new HashMap<>();
+    private final Map<UUID, Set<String>> mysqlPurchaseCache = new ConcurrentHashMap<>();
+    private final Set<String> pendingMysqlPurchases = ConcurrentHashMap.newKeySet();
     private final VaultEconomyBridge economyBridge = new VaultEconomyBridge();
+    private final MysqlDatabase mysqlDatabase;
+    private final String mysqlPurchaseTable;
+    private final boolean mysqlEnabled;
     private FileConfiguration config;
     private FileConfiguration purchases;
+    private volatile boolean mysqlReady;
+    private volatile boolean mysqlInitializationComplete;
 
     public KitPurchaseManager(Main plugin) {
         this.plugin = plugin;
         this.config = ConfigUtils.getConfig(plugin, CONFIG_NAME);
         this.purchasesFile = new File(plugin.getDataFolder(), PURCHASE_FILE);
         this.purchases = YamlConfiguration.loadConfiguration(purchasesFile);
+        this.mysqlEnabled = plugin.getConfigPreferences().getOption("DATABASE");
+        this.mysqlDatabase = resolveMysqlDatabase();
+        this.mysqlPurchaseTable = resolveMysqlPurchaseTable();
 
         ensureKitPermissions();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            applyPurchasedPermissions(player);
+        if (isMysqlStorageAvailable()) {
+            initializeMysqlStorage();
+        } else {
+            if (mysqlEnabled) {
+                plugin.getLogger().severe("MySQL is enabled, but the shared MiniGamesBox connection is unavailable. Kit purchases will temporarily use kit_purchases.yml.");
+            }
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                applyPurchasedPermissions(player);
+            }
         }
     }
 
@@ -109,8 +136,12 @@ public class KitPurchaseManager implements Listener {
         config = ConfigUtils.getConfig(plugin, CONFIG_NAME);
         purchases = YamlConfiguration.loadConfiguration(purchasesFile);
         ensureKitPermissions();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            applyPurchasedPermissions(player);
+        if (isMysqlStorageAvailable()) {
+            reloadOnlineMysqlPurchases();
+        } else {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                applyPurchasedPermissions(player);
+            }
         }
         if (plugin.getBedrockKitSelectionManager() != null) {
             plugin.getBedrockKitSelectionManager().reload();
@@ -118,7 +149,9 @@ public class KitPurchaseManager implements Listener {
     }
 
     public void shutdown() {
-        savePurchases();
+        if (!isMysqlStorageAvailable()) {
+            savePurchases();
+        }
         for (Map.Entry<UUID, PermissionAttachment> entry : new ArrayList<>(permissionAttachments.entrySet())) {
             Player player = Bukkit.getPlayer(entry.getKey());
             if (player != null && player.isOnline()) {
@@ -134,11 +167,16 @@ public class KitPurchaseManager implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Bukkit.getScheduler().runTaskLater(plugin, () -> applyPurchasedPermissions(event.getPlayer()), 5L);
+        if (isMysqlStorageAvailable()) {
+            loadMysqlPurchases(event.getPlayer().getUniqueId(), true);
+        } else {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> applyPurchasedPermissions(event.getPlayer()), 5L);
+        }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
+        mysqlPurchaseCache.remove(event.getPlayer().getUniqueId());
         PermissionAttachment attachment = permissionAttachments.remove(event.getPlayer().getUniqueId());
         if (attachment != null) {
             try {
@@ -356,12 +394,94 @@ public class KitPurchaseManager implements Listener {
             return false;
         }
 
+        if (isMysqlStorageAvailable()) {
+            return buyKitWithMysql(player, kit, entry, refreshJavaMenu, bedrockSuccessCallback);
+        }
+
         if (entry.price > 0 && !economyBridge.withdraw(player, entry.price)) {
             player.sendMessage(color(getMessage("Settings.Purchase-Failed-Message", "&c购买失败，请稍后再试。")));
             return false;
         }
 
         markPurchased(player.getUniqueId(), kitKey);
+        finishPurchase(player, kit, entry, refreshJavaMenu, bedrockSuccessCallback);
+        return true;
+    }
+
+    private boolean buyKitWithMysql(Player player, IKit kit, KitShopEntry entry, boolean refreshJavaMenu, Runnable bedrockSuccessCallback) {
+        if (!mysqlReady) {
+            player.sendMessage(color(getMessage("Settings.Purchase-Failed-Message", "&c购买失败，请稍后再试。")));
+            return false;
+        }
+
+        UUID uuid = player.getUniqueId();
+        String pendingKey = uuid + ":" + entry.key;
+        if (!pendingMysqlPurchases.add(pendingKey)) {
+            return false;
+        }
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean inserted;
+            try {
+                inserted = insertMysqlPurchase(uuid, entry.key);
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, "Cannot persist kit purchase for " + uuid + " (" + entry.key + ")", ex);
+                runSync(() -> {
+                    pendingMysqlPurchases.remove(pendingKey);
+                    Player online = Bukkit.getPlayer(uuid);
+                    if (online != null) {
+                        online.sendMessage(color(getMessage("Settings.Purchase-Failed-Message", "&c购买失败，请稍后再试。")));
+                    }
+                });
+                return;
+            }
+
+            if (!plugin.isEnabled()) {
+                pendingMysqlPurchases.remove(pendingKey);
+                if (inserted) {
+                    try {
+                        deleteMysqlPurchase(uuid, entry.key);
+                    } catch (SQLException ex) {
+                        plugin.getLogger().log(Level.SEVERE, "Cannot roll back kit purchase during shutdown for " + uuid + " (" + entry.key + ")", ex);
+                    }
+                }
+                return;
+            }
+            runSync(() -> completeMysqlPurchase(player, kit, entry, refreshJavaMenu, bedrockSuccessCallback, pendingKey, inserted));
+        });
+        return true;
+    }
+
+    private void completeMysqlPurchase(Player player, IKit kit, KitShopEntry entry, boolean refreshJavaMenu,
+                                       Runnable bedrockSuccessCallback, String pendingKey, boolean inserted) {
+        UUID uuid = player.getUniqueId();
+        if (!inserted) {
+            pendingMysqlPurchases.remove(pendingKey);
+            cacheMysqlPurchase(uuid, entry.key);
+            if (player.isOnline()) {
+                applyPurchasedPermissions(player);
+                player.sendMessage(color(replacePlaceholders(getMessage("Settings.Already-Owned-Message",
+                        "&e你已经拥有职业 &f%kit_name%&e。"), player, kit, entry, getStatus(player, kit, entry))));
+            }
+            return;
+        }
+
+        if (!player.isOnline()) {
+            rollbackMysqlPurchase(uuid, entry.key, pendingKey);
+            return;
+        }
+        if (entry.price > 0 && (!economyBridge.has(player, entry.price) || !economyBridge.withdraw(player, entry.price))) {
+            rollbackMysqlPurchase(uuid, entry.key, pendingKey);
+            player.sendMessage(color(getMessage("Settings.Purchase-Failed-Message", "&c购买失败，请稍后再试。")));
+            return;
+        }
+
+        pendingMysqlPurchases.remove(pendingKey);
+        cacheMysqlPurchase(uuid, entry.key);
+        finishPurchase(player, kit, entry, refreshJavaMenu, bedrockSuccessCallback);
+    }
+
+    private void finishPurchase(Player player, IKit kit, KitShopEntry entry, boolean refreshJavaMenu, Runnable bedrockSuccessCallback) {
         applyPurchasedPermissions(player);
         player.sendMessage(color(replacePlaceholders(getMessage("Settings.Bought-Message", "&a你成功购买了职业 &f%kit_name%&a！"), player, kit, entry, getStatus(player, kit, entry))));
         playClick(player, 1.4F);
@@ -373,7 +493,6 @@ public class KitPurchaseManager implements Listener {
         } else if (!refreshJavaMenu && BedrockSupport.isBedrockPlayer(plugin, player)) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> openBedrock(player), 2L);
         }
-        return true;
     }
 
     private ItemStack createKitItem(Player player, IKit kit, KitShopEntry entry) {
@@ -508,6 +627,226 @@ public class KitPurchaseManager implements Listener {
         }
     }
 
+    private MysqlDatabase resolveMysqlDatabase() {
+        if (!mysqlEnabled) {
+            return null;
+        }
+        try {
+            return plugin.getUserManager().getDatabase().getMySQLDatabase();
+        } catch (RuntimeException ex) {
+            plugin.getLogger().log(Level.SEVERE, "Cannot access the shared MiniGamesBox MySQL connection", ex);
+            return null;
+        }
+    }
+
+    private String resolveMysqlPurchaseTable() {
+        FileConfiguration mysqlConfig = ConfigUtils.getConfig(plugin, "mysql");
+        String statsTable = mysqlConfig.getString("table", "vd_playerstats");
+        String fallback = statsTable == null || statsTable.trim().isEmpty()
+                ? DEFAULT_MYSQL_TABLE
+                : statsTable.trim() + "_kit_purchases";
+        String configured = mysqlConfig.getString("kit-purchases-table", fallback);
+        String table = configured == null ? fallback : configured.trim();
+        if (!SAFE_TABLE_NAME.matcher(table).matches()) {
+            plugin.getLogger().warning("Invalid MySQL kit-purchases-table '" + table + "'; using '" + fallback + "'.");
+            table = SAFE_TABLE_NAME.matcher(fallback).matches() ? fallback : DEFAULT_MYSQL_TABLE;
+        }
+        return table;
+    }
+
+    private boolean isMysqlStorageAvailable() {
+        return mysqlEnabled && mysqlDatabase != null;
+    }
+
+    private void initializeMysqlStorage() {
+        List<UUID> onlinePlayers = new ArrayList<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            onlinePlayers.add(player.getUniqueId());
+        }
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                createMysqlPurchaseTable();
+                int migrated = migrateYamlPurchasesToMysql();
+                for (UUID uuid : onlinePlayers) {
+                    mergeMysqlPurchases(uuid, queryMysqlPurchases(uuid));
+                }
+                mysqlReady = true;
+                if (migrated > 0) {
+                    plugin.getLogger().info("Migrated " + migrated + " local kit purchase(s) to MySQL.");
+                }
+                runSync(() -> {
+                    for (UUID uuid : onlinePlayers) {
+                        Player player = Bukkit.getPlayer(uuid);
+                        if (player != null && player.isOnline()) {
+                            applyPurchasedPermissions(player);
+                        }
+                    }
+                });
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, "Cannot initialize MySQL kit purchase storage", ex);
+            } finally {
+                mysqlInitializationComplete = true;
+            }
+        });
+    }
+
+    private void createMysqlPurchaseTable() throws SQLException {
+        String sql = "CREATE TABLE IF NOT EXISTS `" + mysqlPurchaseTable + "` ("
+                + "`player_uuid` CHAR(36) NOT NULL,"
+                + "`kit_key` VARCHAR(64) NOT NULL,"
+                + "`purchased_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                + "PRIMARY KEY (`player_uuid`, `kit_key`)"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+        try (Connection connection = mysqlDatabase.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
+        }
+    }
+
+    private int migrateYamlPurchasesToMysql() throws SQLException {
+        ConfigurationSection players = purchases.getConfigurationSection("players");
+        if (players == null) {
+            return 0;
+        }
+
+        String sql = "INSERT IGNORE INTO `" + mysqlPurchaseTable + "` (`player_uuid`, `kit_key`) VALUES (?, ?)";
+        int queued = 0;
+        try (Connection connection = mysqlDatabase.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (String rawUuid : players.getKeys(false)) {
+                try {
+                    UUID.fromString(rawUuid);
+                } catch (IllegalArgumentException ignored) {
+                    continue;
+                }
+                for (String rawKitKey : players.getStringList(rawUuid + ".kits")) {
+                    String kitKey = normalizeKitKey(rawKitKey);
+                    if (kitKey.isEmpty()) {
+                        continue;
+                    }
+                    statement.setString(1, rawUuid);
+                    statement.setString(2, kitKey);
+                    statement.addBatch();
+                    queued++;
+                }
+            }
+            if (queued == 0) {
+                return 0;
+            }
+            int inserted = 0;
+            for (int result : statement.executeBatch()) {
+                if (result > 0 || result == Statement.SUCCESS_NO_INFO) {
+                    inserted++;
+                }
+            }
+            return inserted;
+        }
+    }
+
+    private void reloadOnlineMysqlPurchases() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            loadMysqlPurchases(player.getUniqueId(), true);
+        }
+    }
+
+    private void loadMysqlPurchases(UUID uuid, boolean applyPermissions) {
+        if (!mysqlReady) {
+            if (!mysqlInitializationComplete) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> loadMysqlPurchases(uuid, applyPermissions), 10L);
+            }
+            return;
+        }
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                mergeMysqlPurchases(uuid, queryMysqlPurchases(uuid));
+                if (applyPermissions) {
+                    runSync(() -> {
+                        Player player = Bukkit.getPlayer(uuid);
+                        if (player != null && player.isOnline()) {
+                            applyPurchasedPermissions(player);
+                        }
+                    });
+                }
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, "Cannot load MySQL kit purchases for " + uuid, ex);
+            }
+        });
+    }
+
+    private Set<String> queryMysqlPurchases(UUID uuid) throws SQLException {
+        Set<String> kits = ConcurrentHashMap.newKeySet();
+        String sql = "SELECT `kit_key` FROM `" + mysqlPurchaseTable + "` WHERE `player_uuid` = ?";
+        try (Connection connection = mysqlDatabase.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, uuid.toString());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String kitKey = normalizeKitKey(resultSet.getString("kit_key"));
+                    if (!kitKey.isEmpty()) {
+                        kits.add(kitKey);
+                    }
+                }
+            }
+        }
+        return kits;
+    }
+
+    private boolean insertMysqlPurchase(UUID uuid, String kitKey) throws SQLException {
+        String sql = "INSERT IGNORE INTO `" + mysqlPurchaseTable + "` (`player_uuid`, `kit_key`) VALUES (?, ?)";
+        try (Connection connection = mysqlDatabase.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, uuid.toString());
+            statement.setString(2, normalizeKitKey(kitKey));
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    private void deleteMysqlPurchase(UUID uuid, String kitKey) throws SQLException {
+        String sql = "DELETE FROM `" + mysqlPurchaseTable + "` WHERE `player_uuid` = ? AND `kit_key` = ?";
+        try (Connection connection = mysqlDatabase.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, uuid.toString());
+            statement.setString(2, normalizeKitKey(kitKey));
+            statement.executeUpdate();
+        }
+    }
+
+    private void rollbackMysqlPurchase(UUID uuid, String kitKey, String pendingKey) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                deleteMysqlPurchase(uuid, kitKey);
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, "Cannot roll back unpaid kit purchase for " + uuid + " (" + kitKey + ")", ex);
+            } finally {
+                pendingMysqlPurchases.remove(pendingKey);
+            }
+        });
+    }
+
+    private void cacheMysqlPurchase(UUID uuid, String kitKey) {
+        Set<String> purchased = ConcurrentHashMap.newKeySet();
+        purchased.add(normalizeKitKey(kitKey));
+        mergeMysqlPurchases(uuid, purchased);
+    }
+
+    private void mergeMysqlPurchases(UUID uuid, Set<String> purchased) {
+        mysqlPurchaseCache.compute(uuid, (ignored, current) -> {
+            Set<String> updated = ConcurrentHashMap.newKeySet();
+            if (current != null) {
+                updated.addAll(current);
+            }
+            updated.addAll(purchased);
+            return updated;
+        });
+    }
+
+    private void runSync(Runnable action) {
+        if (plugin.isEnabled()) {
+            Bukkit.getScheduler().runTask(plugin, action);
+        }
+    }
+
     private void markPurchased(UUID uuid, String kitKey) {
         Set<String> purchasedKits = new LinkedHashSet<>(getPurchasedKits(uuid));
         purchasedKits.add(normalizeKitKey(kitKey));
@@ -522,6 +861,10 @@ public class KitPurchaseManager implements Listener {
     private List<String> getPurchasedKits(UUID uuid) {
         if (uuid == null) {
             return Collections.emptyList();
+        }
+        if (isMysqlStorageAvailable()) {
+            Set<String> kits = mysqlPurchaseCache.get(uuid);
+            return kits == null ? Collections.emptyList() : new ArrayList<>(kits);
         }
         List<String> kits = new ArrayList<>();
         for (String key : purchases.getStringList(getPlayerPath(uuid) + ".kits")) {
